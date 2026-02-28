@@ -79,6 +79,8 @@ El proyecto utiliza una estructura modular plana basada en **Blueprints**, facil
 
 ```
 
+---
+
 # Crear y activar entorno virtual
 ```bash
 py -m venv .env
@@ -89,6 +91,8 @@ py -m venv .env
 ```bash
 npx @tailwindcss/cli -i ./static/css/input.css -o ./static/css/output.css --watch
 ```
+
+---
 
 # Dependencias
 Las dependencias de flask estan enumeradas en el archivo **requirements.txt**, las de node estan en el archivo **packaje.json**
