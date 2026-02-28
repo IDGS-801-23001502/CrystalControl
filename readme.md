@@ -10,7 +10,7 @@ El proyecto utiliza una estructura modular plana basada en **Blueprints**, facil
 
 ```text
 /CrystalControl
-├── modules/                # Lógica de negocio (Blueprints)
+├── modules/                # Lógica de negocio (Blueprints en caso de que nos deje)
 │   ├── users.py            # RDF 1: Gestión de Usuarios
 │   ├── suppliers.py        # RDF 2: Gestión de Proveedores
 │   ├── raw_materials.py    # RDF 3 y 11: Inventario de Insumos
@@ -20,11 +20,57 @@ El proyecto utiliza una estructura modular plana basada en **Blueprints**, facil
 │   ├── products.py         # RDF 7 y 10: Producto Terminado
 │   ├── analytics.py        # RDF 8: Inteligencia de Negocio
 │   └── sales.py            # RDF 9: Punto de Venta y Caja
-├── templates/              # Vistas HTML (Jinja2) organizadas por módulo
-│   ├── base.html           # Layout principal
-│   ├── users/              # Vistas de usuarios
-│   ├── production/         # Vistas de procesos
-│   └── ...                 # (Resto de carpetas de módulos)
+├── templates/
+│   ├── base.html                 # Estructura principal (Navbar, Sidebar, Footer)
+│   ├── index.html                # Dashboard principal con resumen de métricas
+│   │
+│   ├── users/                    # RDF 1: Gestión de Usuarios
+│   │   ├── list.html             # RDF 1.3: Buscar y listar usuarios
+│   │   ├── create.html           # RDF 1.2: Formulario de alta
+│   │   ├── edit.html             # RDF 1.4: Actualizar datos
+│   │   └── password_modal.html   # RDF 1.1: Mostrar contraseña generada
+│   │
+│   ├── suppliers/                # RDF 2: Gestión de Proveedores
+│   │   ├── list.html             # RDF 2.2: Buscar proveedores
+│   │   ├── create.html           # RDF 2.1: Registro de nuevo proveedor
+│   │   └── edit.html             # RDF 2.3: Modificar datos
+│   │
+│   ├── inventory/                # RDF 3 y 11: Materias Primas
+│   │   ├── raw_materials.html    # RDF 11.1: Catálogo de insumos
+│   │   ├── movements.html        # RDF 3.1: Entradas y salidas (merma, abasto)
+│   │   ├── stock_report.html     # RDF 3.3: Reporte de Stock Bajo
+│   │   └── requests.html         # RDF 3.2: Reporte de solicitudes de consumo
+│   │
+│   ├── purchases/                # RDF 4: Compras
+│   │   ├── create_request.html   # RDF 4.1: Generar solicitud de compra
+│   │   ├── list_purchases.html   # RDF 4.2: Listado de folios de compra
+│   │   └── delivery_report.html  # RDF 4.3: Reporte de entrega por proveedor
+│   │
+│   ├── recipes/                  # RDF 5: Explosión de Materiales
+│   │   ├── list.html             # RDF 5.3: Buscador de recetas
+│   │   ├── create.html           # RDF 5.1: Registro de fórmulas y mermas
+│   │   └── edit.html             # RDF 5.2: Actualización de pasos y cantidades
+│   │
+│   ├── production/               # RDF 6: Producción
+│   │   ├── orders.html           # RDF 6.1: Generar y listar órdenes
+│   │   ├── check_stock.html      # RDF 6.2: Validación de disponibilidad
+│   │   └── traceability.html     # RDF 6.3: Registro de lotes y operadores
+│   │
+│   ├── products/                 # RDF 7 y 10: Producto Terminado
+│   │   ├── catalog.html          # RDF 10.1: Registro y precios (men/may)
+│   │   ├── stock.html            # RDF 7.3: Consulta por presentación (litros/galón)
+│   │   └── adjustments.html      # RDF 7.2: Ajustes manuales por daño o auditoría
+│   │
+│   ├── sales/                    # RDF 9: Ventas
+│   │   ├── pos.html              # RDF 9.2: Punto de venta (Generación de ticket)
+│   │   ├── daily_cash.html       # RDF 9.3: Corte de caja diario
+│   │   ├── cash_out.html         # RDF 9.4: Registro de salidas (pago proveedores)
+│   │   └── utility_report.html   # RDF 9.5: Ganancia real del día
+│   │
+│   └── analytics/                # RDF 8: Análisis
+│       ├── costs.html            # RDF 8.1: Costo real vs Precio de venta
+│       ├── efficiency.html       # RDF 8.3: Gráficos de rotación y mermas
+│       └── dashboard_pro.html    # Vista general de inteligencia de negocio
 ├── static/                 # CSS, JS, Imágenes y Assets
 ├── models.py               # Definición de Base de Datos (SQLAlchemy)
 ├── config.py               # Configuración de App y DB
