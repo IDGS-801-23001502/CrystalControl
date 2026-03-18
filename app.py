@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_wtf.csrf import CSRFProtect
 from config import DevelopmentConfig
 from flask_migrate import Migrate
-from modules import (users_bp, suppliers_bp, raw_materials_bp, purchases_bp, recipes_bp, production_bp, products_bp, analytics_bp, sales_bp)
+from modules import users_bp, suppliers_bp, raw_materials_bp, purchases_bp, recipes_bp, production_bp, products_bp, analytics_bp, sales_bp
 from models import db, mongo
 import locale
 
