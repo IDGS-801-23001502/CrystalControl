@@ -74,8 +74,7 @@ El proyecto utiliza una estructura modular plana basada en **Blueprints**, facil
 ├── static/                 # CSS, JS, Imágenes y Assets
 ├── models.py               # Definición de Base de Datos (SQLAlchemy)
 ├── config.py               # Configuración de App y DB
-├── main.py                 # Factory de la aplicación
-└── run.py                  # Script de ejecución
+├── app.py                  # Archivo principal
 
 ```
 
