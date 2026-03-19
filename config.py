@@ -4,7 +4,7 @@ class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or "ClaveSecreta"
     SESSION_COOKIE_SECURE = False
     # Configuraciones generales de MongoDB si fuera necesario
-    MONGO_DBNAME = "examen_db" 
+    MONGO_DBNAME = "crystalcontrol"
 
 class DevelopmentConfig(Config):
     DEBUG = True
