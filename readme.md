@@ -108,7 +108,24 @@ pip install [nombre-dependencia]
 ```
 
 **Node**
-```
+```bash
 npm install
 ```
 
+---
+**Migraciones**
+
+Inicia la carperta de migraciones
+```bash
+flask db init
+```
+
+Crea migraciones despues de mofidicar los modelos
+```bash
+flask db migrate -m "[Mensaje/observaciones]"
+```
+
+Ejecuta las migraciones
+```bash
+flask db upgrade
+```

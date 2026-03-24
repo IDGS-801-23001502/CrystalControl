@@ -6,3 +6,7 @@ users_bp = Blueprint(
     template_folder='templates',
     static_folder='static'
     )
+
+@users_bp.route("/")
+def index():
+    return render_template("users/list.html")
