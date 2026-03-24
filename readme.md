@@ -11,6 +11,7 @@ El proyecto utiliza una estructura modular plana basada en **Blueprints**, facil
 ```text
 /CrystalControl
 ├── modules/                # Lógica de negocio (Blueprints en caso de que nos deje)
+│   ├── login.py            # Login para los accesos al sistema
 │   ├── users.py            # RDF 1: Gestión de Usuarios
 │   ├── suppliers.py        # RDF 2: Gestión de Proveedores
 │   ├── raw_materials.py    # RDF 3 y 11: Inventario de Insumos
@@ -23,6 +24,10 @@ El proyecto utiliza una estructura modular plana basada en **Blueprints**, facil
 ├── templates/
 │   ├── base.html                 # Estructura principal (Navbar, Sidebar, Footer)
 │   ├── index.html                # Dashboard principal con resumen de métricas
+│   ├── layout.html               # Layput base para la parte administrativa del sistema
+│   │
+│   ├── login/                    # Login
+│   │   └── login.html            # Login principal para acceso
 │   │
 │   ├── users/                    # RDF 1: Gestión de Usuarios
 │   │   ├── list.html             # RDF 1.3: Buscar y listar usuarios
