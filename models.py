@@ -1,18 +1,40 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column,String, Integer
+from flask_pymongo import PyMongo
+from flask_security import UserMixin, RoleMixin
 
 db = SQLAlchemy()
-'''
-engine = create_engine("mongodb:///?Server=10.147.17.28&Port=27017&Database=crystalcontrol&User=crystalcontrol&Password=robloxianos") 
-mongo = declarative_base()
+mongo = PyMongo()
 
-# --- MODELOS EN MONGODB (Usando el Bind) ---
-class ModeloMongo(mongo):
-    __bind_key__ = 'mongo_engine'  # <--- IMPORTANTE: Debe coincidir con Config.py
-    __tablename__ = "model"
-    
-    id = db.Column("_id", db.String, primary_key=True) # Mapeo del ID de Mongo
-    dato_ejemplo = db.Column(db.String)
-'''
+##TABLA PERFILES##
+class Perfil(db.Model, RoleMixin):
+    __tablename__ = 'Perfiles'
+    id = db.Column('id_perfil', db.Integer, primary_key=True)
+    name = db.Column('nombre_perfil', db.String(50), unique=True, nullable=False)
+
+##TABLA MODULOS##
+class Modulo(db.Model):
+    __tablename__ = 'Modulos'
+    id = db.Column('id_modulo', db.Integer, primary_key=True)
+    name = db.Column('nombre_modulo', db.String(50), nullable=False)
+
+## Tabla intermedia: Perfil_Modulo ##
+perfil_modulo = db.Table('Perfil_Modulo',
+    db.Column('id_perfil', db.Integer, db.ForeignKey('Perfiles.id_perfil'), primary_key=True),
+    db.Column('id_modulo', db.Integer, db.ForeignKey('Modulos.id_modulo'), primary_key=True),
+    db.Column('permiso_escritura', db.Integer, default=1)
+)
+
+##TABLA USUARIOS ##
+class User(db.Model, UserMixin):
+    __tablename__ = 'Usuarios'
+    id = db.Column('id_usuario', db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column('password_hash', db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    active = db.Column('estatus', db.Boolean) 
+    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
+
+    id_perfil = db.Column(db.Integer, db.ForeignKey('Perfiles.id_perfil'))
+    roles = db.relationship('Role', secondary=None,
+                           backref=db.backref('users', lazy='dynamic'))
