@@ -1,8 +1,8 @@
-"""reinicio total
+"""modelos para materia prima
 
-Revision ID: 4a7bc63f8a49
+Revision ID: f84e3dc514c9
 Revises: 
-Create Date: 2026-03-24 00:00:01.127621
+Create Date: 2026-03-25 00:14:56.004043
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '4a7bc63f8a49'
+revision = 'f84e3dc514c9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,6 +27,15 @@ def upgrade():
     sa.PrimaryKeyConstraint('id_cliente'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('fs_uniquifier')
+    )
+    op.create_table('MateriaPrima',
+    sa.Column('id_materia', sa.Integer(), nullable=False),
+    sa.Column('nombre', sa.String(length=100), nullable=True),
+    sa.Column('stock_min', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('stock_max', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('unidad_medida', sa.String(length=20), nullable=True),
+    sa.Column('estatus', sa.Enum('Activo', 'Inactivo'), nullable=True),
+    sa.PrimaryKeyConstraint('id_materia')
     )
     op.create_table('Modulos',
     sa.Column('id_modulo', sa.Integer(), nullable=False),
@@ -51,6 +60,8 @@ def upgrade():
     op.create_table('Usuarios',
     sa.Column('id_usuario', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
+    sa.Column('nombre', sa.String(length=50), nullable=False),
+    sa.Column('apellidos', sa.String(length=50), nullable=False),
     sa.Column('password_hash', sa.String(length=255), nullable=False),
     sa.Column('fs_uniquifier', sa.String(length=64), nullable=False),
     sa.Column('estatus', sa.Enum('Activo', 'Inactivo'), nullable=True),
@@ -69,5 +80,6 @@ def downgrade():
     op.drop_table('Perfil_Modulo')
     op.drop_table('Perfiles')
     op.drop_table('Modulos')
+    op.drop_table('MateriaPrima')
     op.drop_table('Clientes')
     # ### end Alembic commands ###
