@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Crystal Control{% endblock %}</title>
+    <title>{% block title %}{% endblock %}Crystal Control</title>
+    <link rel="shortcut icon" href="{{url_for('static',filename='img/icons/logo.png')}}">
     <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}" />
   </head>
   <body class="bg-slate-50 flex h-screen overflow-hidden text-slate-900">
@@ -11,13 +12,12 @@
     <nav class="w-64 bg-white border-r border-slate-200 flex flex-col h-full shadow-sm">
       <div class="p-6 border-b border-slate-100">
         <h1 class="text-xl font-bold tracking-tight text-emerald-600 flex items-center gap-2">
-            <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-emerald-200 shadow-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div class="w-24 h-24 rounded-lg flex items-center justify-center">
+                <img class="" src="{{url_for('static',filename='img/icons/logo.png')}}" alt="" srcset="">
             </div>
             CrystalControl
         </h1>
       </div>
-
       <div class="flex-1 overflow-y-auto py-6">
         <ul class="space-y-1 px-3">
           <li class="text-[11px] font-bold text-slate-400 uppercase px-4 pb-2 tracking-widest">Menú Principal</li>
