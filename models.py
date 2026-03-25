@@ -27,6 +27,8 @@ class User(db.Model, UserMixin):
     __tablename__ = 'Usuarios'
     id = db.Column('id_usuario', db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
+    nombre = db.Column(db.String(50),nullable=False)
+    apellidos = db.Column(db.String(50), nullable=False)
     password = db.Column('password_hash', db.String(255), nullable=False)
     fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
@@ -72,3 +74,16 @@ class Cliente(db.Model, UserMixin):
     @property
     def active(self):
         return self.estatus == 'Activo'
+    
+##MATERIAS PRIMAS###
+
+class MateriaPrima(db.Model):
+    __tablename__='materia_prima'
+    id= db.Column('id_materia', db.Integer,primaty_key=True)
+    nombre = db.Column(db.String(100))
+    stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
+    stock_max= db.Column('stock_max',db.Numeric(10,2))
+    unidad_medida = db.Column('unidad_medida',db.String(20))
+    
+    estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
+
