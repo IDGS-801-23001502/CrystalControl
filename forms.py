@@ -1,12 +1,9 @@
-from wtforms import Form
-from wtforms import StringField, IntegerField, PasswordField, FloatField, SelectField
-from wtforms import EmailField
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField
 from wtforms import validators
 
-from wtforms import Form, StringField, IntegerField, PasswordField, SelectField, BooleanField, EmailField, validators
-
-class FormUsuarios(Form):
-    id = IntegerField('id')
+class FormUsuarios(FlaskForm):
+    id = HiddenField('id')  
     username = StringField('Nombre de Usuario', [
         validators.DataRequired(message="El nombre de usuario es requerido"),
         validators.Length(min=4, max=50)
@@ -21,17 +18,13 @@ class FormUsuarios(Form):
     ])
     email = EmailField('Correo Electrónico', [
         validators.DataRequired(message="El email es requerido"),
-        validators.Email(message="Introduce un email válido"),
-        validators.Length(max=255)
+        validators.Email(message="Introduce un email válido")
     ])
     password = PasswordField('Contraseña', [
-        validators.Optional(), # O DataRequired si decides no autogenerarla
-        validators.Length(min=8, max=20)
+        validators.Optional(),
+        validators.Length(min=8, max=20, message="La contraseña debe tener al menos 8 caracteres")
     ])
-    
-    # Cambiado a SelectField para manejar los IDs de la tabla Perfiles
-    # Los 'choices' se deben cargar desde la base de datos en la ruta (view)
     id_perfil = SelectField('Perfil', coerce=int, validators=[
         validators.DataRequired(message="El perfil es requerido")
     ])
-    active = BooleanField('Usuario Activo')
+    active = BooleanField('Usuario Activo', default=True)
