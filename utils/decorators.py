@@ -16,7 +16,7 @@ def roles_accepted(*role_names):
                 return redirect(url_for('login.login_employees'))
 
             # 2. Verificar que sea un Usuario Empleado
-            if not hasattr(current_user, 'username'):
+            if current_user.is_client :
                 flash("Acceso restringido al personal.", "warning")
                 return redirect(url_for('index'))
             # 3. Verificar si tiene alguno de los roles permitidos
@@ -35,8 +35,7 @@ def client_required(f):
             flash("Inicia sesión como cliente.", "info")
             return redirect(url_for('login.login_client'))
             
-        # Verificar que sea Cliente (buscando 'id_cliente')
-        if not hasattr(current_user, 'id_cliente'):
+        if not current_user.is_client:
             flash("Sección exclusiva para clientes.", "warning")
             return redirect(url_for('index')) # Index de empleados
             

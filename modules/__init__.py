@@ -8,3 +8,4 @@ from .products import products_bp
 from .analytics import analytics_bp
 from .sales import sales_bp
 from .login import login_bp
+from .ecommerce import ecommerce_bp

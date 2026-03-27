@@ -42,7 +42,7 @@
         {% endfor %} {% endif %} {% endwith %}
       </div>
 
-      <form action="#" method="POST" class="space-y-6">
+      <form action="{{url_for('login.login_employees')}}" method="POST" class="space-y-6">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
           <label

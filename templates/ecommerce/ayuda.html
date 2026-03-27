@@ -1,0 +1,223 @@
+{% extends "layout_clients.html" %} {% block title %}Manual de Usuario -
+CrystalControl{% endblock %} {% block content %}
+<div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-12">
+  <aside class="lg:w-1/4 sticky top-32 h-fit space-y-4 hidden lg:block">
+    <h4
+      class="text-[10px] font-black uppercase text-[#7dc6e9] tracking-[0.3em] mb-6"
+    >
+      Contenido del Manual
+    </h4>
+    <nav class="flex flex-col gap-2">
+      <a
+        href="#introduccion"
+        class="px-4 py-3 bg-white rounded-2xl text-[11px] font-black uppercase text-[#243c60] shadow-sm hover:translate-x-2 transition-transform border border-slate-50"
+        >01. Introducción</a
+      >
+      <a
+        href="#gestion-pedidos"
+        class="px-4 py-3 bg-white rounded-2xl text-[11px] font-black uppercase text-[#243c60] shadow-sm hover:translate-x-2 transition-transform border border-slate-50"
+        >02. Gestión de Pedidos</a
+      >
+      <a
+        href="#procesos-seguridad"
+        class="px-4 py-3 bg-white rounded-2xl text-[11px] font-black uppercase text-[#243c60] shadow-sm hover:translate-x-2 transition-transform border border-slate-50"
+        >03. Procesos y Seguridad</a
+      >
+      <a
+        href="#facturacion"
+        class="px-4 py-3 bg-white rounded-2xl text-[11px] font-black uppercase text-[#243c60] shadow-sm hover:translate-x-2 transition-transform border border-slate-50"
+        >04. Facturación y Pagos</a
+      >
+    </nav>
+  </aside>
+
+  <main class="lg:w-3/4 space-y-16">
+    <section id="introduccion" class="scroll-mt-32">
+      <div class="mb-8">
+        <h2
+          class="text-3xl font-black text-[#243c60] uppercase tracking-tighter"
+        >
+          01. <span class="text-[#9ec946]">Introducción</span>
+        </h2>
+        <div class="h-1 w-20 bg-[#9ec946] mt-2 rounded-full"></div>
+      </div>
+      <div
+        class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm leading-relaxed text-slate-500 font-medium"
+      >
+        <p class="mb-6 text-sm">
+          Bienvenido al ecosistema **Express and Clean**. Este manual ha sido
+          diseñado para estandarizar el proceso de adquisición de insumos
+          químicos y mantenimiento industrial de su planta.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="p-6 bg-[#f4faf5] rounded-3xl border border-[#9ec946]/20">
+            <h4
+              class="text-[#243c60] font-black uppercase text-[10px] mb-2 tracking-widest"
+            >
+              Objetivo del Sistema
+            </h4>
+            <p class="text-xs">
+              Digitalizar la cadena de suministro y asegurar la trazabilidad de
+              cada reactivo entregado.
+            </p>
+          </div>
+          <div class="p-6 bg-[#f4faf5] rounded-3xl border border-[#7dc6e9]/20">
+            <h4
+              class="text-[#243c60] font-black uppercase text-[10px] mb-2 tracking-widest"
+            >
+              Soporte Técnico
+            </h4>
+            <p class="text-xs">
+              Nuestro equipo de ingeniería está disponible 24/7 para incidencias
+              críticas. [este tambien]
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gestion-pedidos" class="scroll-mt-32">
+      <div class="mb-8">
+        <h2
+          class="text-3xl font-black text-[#243c60] uppercase tracking-tighter"
+        >
+          02. Gestión de <span class="text-[#7dc6e9]">Pedidos</span>
+        </h2>
+        <div class="h-1 w-20 bg-[#7dc6e9] mt-2 rounded-full"></div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="flex gap-6 items-start">
+          <div
+            class="w-12 h-12 shrink-0 bg-[#243c60] text-white flex items-center justify-center rounded-2xl font-black shadow-lg"
+          >
+            A
+          </div>
+          <div class="pt-2">
+            <h3
+              class="text-sm font-black text-[#243c60] uppercase tracking-tight mb-2"
+            >
+              Selección Técnica
+            </h3>
+            <p class="text-xs text-slate-500">
+              Al elegir un producto, verifique siempre la **Ficha Técnica
+              (MSDS)** adjunta. Esto asegura que el químico sea compatible con
+              sus procesos actuales.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-6 items-start">
+          <div
+            class="w-12 h-12 shrink-0 bg-[#243c60] text-white flex items-center justify-center rounded-2xl font-black shadow-lg"
+          >
+            B
+          </div>
+          <div class="pt-2">
+            <h3
+              class="text-sm font-black text-[#243c60] uppercase tracking-tight mb-2"
+            >
+              Validación de Carrito
+            </h3>
+            <p class="text-xs text-slate-500">
+              Antes de proceder al pago, el sistema validará existencias en
+              almacén. Si un producto no tiene stock inmediato, se marcará como
+              "Pedido Bajo Demanda".
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="procesos-seguridad" class="scroll-mt-32">
+      <div class="mb-8">
+        <h2
+          class="text-3xl font-black text-[#243c60] uppercase tracking-tighter"
+        >
+          03. Procesos y <span class="text-red-400">Seguridad</span>
+        </h2>
+        <div class="h-1 w-20 bg-red-400 mt-2 rounded-full"></div>
+      </div>
+
+      <div
+        class="bg-[#243c60] rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl"
+      >
+        <svg
+          class="absolute right-[-50px] top-[-50px] w-64 h-64 text-white/5"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 2L1 21h22L12 2zm0 3.45l8.27 14.3H3.73L12 5.45zM11 16h2v2h-2v-2zm0-7h2v5h-2V9z"
+          />
+        </svg>
+
+        <h3
+          class="text-[#9ec946] font-black uppercase text-xs tracking-[0.3em] mb-6"
+        >
+          Protocolo de Recepción
+        </h3>
+        <ul class="space-y-4 text-xs font-medium text-slate-300">
+          <li class="flex gap-3">
+            <span class="text-[#9ec946] font-black">✓</span> Inspección visual
+            del sellado de envases al momento de la entrega.
+          </li>
+          <li class="flex gap-3">
+            <span class="text-[#9ec946] font-black">✓</span> Firma de la hoja de
+            ruta digital proporcionada por el transportista.
+          </li>
+          <li class="flex gap-3">
+            <span class="text-[#9ec946] font-black">✓</span> Almacenaje
+            inmediato según la temperatura indicada en el envase. [este tambien]
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="facturacion" class="scroll-mt-32 pb-20">
+      <div class="mb-8">
+        <h2
+          class="text-3xl font-black text-[#243c60] uppercase tracking-tighter"
+        >
+          04. Facturación y <span class="text-[#9ec946]">Pagos</span>
+        </h2>
+        <div class="h-1 w-20 bg-[#9ec946] mt-2 rounded-full"></div>
+      </div>
+      <div
+        class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm"
+      >
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+          <div
+            class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-[#7dc6e9]"
+          >
+            <svg
+              class="w-10 h-10"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div class="flex-grow">
+            <h4 class="text-[#243c60] font-black uppercase text-sm mb-2">
+              Ciclo de Facturación
+            </h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Las facturas se generan automáticamente 24 horas después de
+              confirmar la entrega exitosa del pedido. Podrá editarlos datos
+              fiscales desde su **Panel de Configuración** antes de que el
+              pedido sea enviado.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+{% endblock %}
