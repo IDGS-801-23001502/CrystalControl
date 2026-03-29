@@ -1,8 +1,8 @@
-"""BAse de datos
+"""Modelo proveedores
 
-Revision ID: 499958ac2190
+Revision ID: 3f4e13c2322d
 Revises: 
-Create Date: 2026-03-25 22:00:11.393804
+Create Date: 2026-03-29 13:52:59.850561
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '499958ac2190'
+revision = '3f4e13c2322d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,6 +38,17 @@ def upgrade():
     sa.Column('description', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id_perfil'),
     sa.UniqueConstraint('nombre_perfil')
+    )
+    op.create_table('Proveedores',
+    sa.Column('id_proveedor', sa.Integer(), nullable=False),
+    sa.Column('num_unico_prov', sa.String(length=20), nullable=False),
+    sa.Column('nombre', sa.String(length=100), nullable=False),
+    sa.Column('domicilio', sa.Text(), nullable=True),
+    sa.Column('telefono', sa.String(length=20), nullable=True),
+    sa.Column('correo', sa.String(length=100), nullable=True),
+    sa.Column('estatus', sa.Enum('Activo', 'Inactivo'), nullable=True),
+    sa.PrimaryKeyConstraint('id_proveedor'),
+    sa.UniqueConstraint('num_unico_prov')
     )
     op.create_table('Perfil_Modulo',
     sa.Column('id_perfil', sa.Integer(), nullable=False),
@@ -76,6 +87,7 @@ def downgrade():
     op.drop_table('Clientes')
     op.drop_table('Usuarios')
     op.drop_table('Perfil_Modulo')
+    op.drop_table('Proveedores')
     op.drop_table('Perfiles')
     op.drop_table('Modulos')
     op.drop_table('MateriaPrima')
