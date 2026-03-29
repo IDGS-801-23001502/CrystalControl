@@ -5,7 +5,6 @@ from flask_pymongo import PyMongo
 mongo= PyMongo()
 db = SQLAlchemy()
 
-
 # Tabla intermedia Perfil_Modulo (Muchos a Muchos)
 perfil_modulo = db.Table('Perfil_Modulo',
     db.Column('id_perfil', db.Integer, db.ForeignKey('Perfiles.id_perfil'), primary_key=True),
