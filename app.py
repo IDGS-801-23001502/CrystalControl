@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for
 from flask_wtf.csrf import CSRFProtect
 from config import DevelopmentConfig
+from utils.decorators import exclude_roles, roles_accepted
 from flask_migrate import Migrate
 from modules import users_bp, ecommerce_bp ,login_bp,suppliers_bp, raw_materials_bp, purchases_bp, recipes_bp, production_bp, products_bp, analytics_bp, sales_bp
 from models import db, User,Role, mongo
@@ -39,10 +40,12 @@ def inject_functions():
     return dict(hasattr=hasattr)
 
 @app.route("/")
+@exclude_roles('Compras','Almacenista','Vendedor','Produccion','Gerente','Administrador')
 def home():
      return render_template("/ecommerce/index.html")
 
 @app.route("/panel/dashboard")
+@roles_accepted('Compras','Almacenista','Vendedor','Produccion','Gerente','Administrador')
 def panel():
     if not current_user.is_authenticated:
         return redirect(url_for('login.login_employees'))

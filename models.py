@@ -43,7 +43,9 @@ class User(db.Model, UserMixin):
                            uselist=True)
     @property
     def is_client(self):
-        return any(role.name == 'Cliente' for role in self.roles)
+        if not self.roles:
+            return False
+        return any(role.name.strip() == 'Cliente' for role in self.roles)
     
     @property
     def perfil(self):
