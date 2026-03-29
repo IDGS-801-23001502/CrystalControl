@@ -93,3 +93,13 @@ class MateriaPrima(db.Model):
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
 
+class Supplier(db.Model):
+    __tablename__ = 'Proveedores'
+    
+    id = db.Column('id_proveedor', db.Integer, primary_key=True)
+    unique_code = db.Column('num_unico_prov', db.String(20), unique=True, nullable=False)
+    name = db.Column('nombre', db.String(100), nullable=False)
+    address = db.Column('domicilio', db.Text)
+    phone = db.Column('telefono', db.String(20))
+    email = db.Column('correo', db.String(100))
+    status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
