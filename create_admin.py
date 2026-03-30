@@ -87,8 +87,12 @@ def create_admin():
             print(f"Cliente '{email}' creado!")
         else:
             print(f"ℹEl cliente '{email}' ya existe (Cliente Verificado).")
-
         db.session.commit()
+
+        #creacion de modulos
+
+        #asignacion de roles
+
 
 if __name__ == "__main__":
     create_admin()

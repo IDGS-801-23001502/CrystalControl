@@ -79,7 +79,7 @@ def register():
 def logout():
     # Detectamos origen para saber a qué login regresar
     dest = url_for('login.login_employees')
-    if current_user.is_authenticated and hasattr(current_user, 'id_cliente'):
+    if current_user.is_authenticated and current_user.is_client:
         dest = url_for('login.login_client')
     
     logout_user()

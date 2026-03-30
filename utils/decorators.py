@@ -16,7 +16,6 @@ def roles_accepted(*roles_permitidos):
                 if 'Cliente' in user_roles:
                     return redirect(url_for('home'))
                 return redirect(url_for('panel'))
-                
             return f(*args, **kwargs)
         return decorated_function
     return decorator

@@ -47,7 +47,6 @@ def home():
 @app.route("/panel/dashboard")
 @roles_accepted('Compras','Almacenista','Vendedor','Produccion','Gerente','Administrador')
 def panel():
-    print(f"El usuario tiene el nivel de permiso {current_user.nivel_acceso("Proveedores")}")
     if not current_user.is_authenticated:
         return redirect(url_for('login.login_employees'))
     if hasattr(current_user, 'id_cliente'):

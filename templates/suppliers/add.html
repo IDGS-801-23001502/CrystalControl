@@ -1,0 +1,96 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn:hover  { background-color: #047857; }
+  .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
+</style>
+
+<div class="max-w-2xl mx-auto mt-10 px-4">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+      <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl font-semibold text-heading leading-tight">Registrar Proveedor</h1>
+      <p class="text-xs text-body">Completa los datos para Express and Clean</p>
+    </div>
+    <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
+      Nuevo
+    </span>
+  </div>
+
+  <div class="emerald-border-top bg-neutral-primary-soft border border-default rounded-base shadow-xs p-8">
+    <form action="{{ url_for('suppliers.add_supplier') }}" method="post">
+      {{ form.csrf_token }}
+      {{ form.id }}
+
+      <div class="relative z-0 w-full mb-8 group">
+        {{ form.name(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+        <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Nombre o Razón Social
+        </label>
+        {% if form.name.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.name.errors[0] }}</p>
+        {% endif %}
+      </div>
+
+      <div class="grid md:grid-cols-2 md:gap-8">
+        <div class="relative z-0 w-full mb-8 group">
+          {{ form.phone(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+          <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Teléfono
+          </label>
+        </div>
+        <div class="relative z-0 w-full mb-8 group">
+          {{ form.email(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+          <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Correo Electrónico
+          </label>
+        </div>
+      </div>  
+
+      <div class="relative z-0 w-full mb-8 group">
+        {{ form.address(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+        <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Domicilio completo
+        </label>
+      </div>
+
+      <!--<div class="relative z-0 w-full mb-10 group">
+        {{ form.status(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer") }}
+        <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Estado del Proveedor
+        </label>
+      </div>-->
+
+      <div class="flex items-center gap-3">
+        <button type="submit"
+          class="emerald-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-base active:scale-95 transition-all duration-150 shadow-sm focus:outline-none">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          Guardar Proveedor
+        </button>
+        <a href="{{ url_for('suppliers.suppliers') }}"
+          class="cancel-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-base active:scale-95 transition-all duration-150 focus:outline-none">
+          Cancelar
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
