@@ -5,8 +5,10 @@ import string
 import random
 import secrets
 
+module='users'
+
 users_bp = Blueprint(
-    'users',
+    module,
     __name__,
     template_folder='templates',
     static_folder='static'

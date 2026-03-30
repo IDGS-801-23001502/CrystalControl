@@ -32,48 +32,13 @@
           CrystalControl
         </h1>
       </div>
-      {# Resalte de rutas por url Ruta Principal sin sub rutas
-      <a
-        href="{{ url_for('users.index') }}"
-        class="flex items-center p-3 text-sm font-semibold rounded-xl transition-all border 
-              {{ 'text-emerald-700 bg-emerald-50 border-emerald-100 shadow-sm' if request.endpoint == 'users.index' else 'text-slate-600 hover:bg-slate-50 border-transparent' }}"
-      >
-        <svg
-          class="w-5 h-5 mr-3 {{ 'text-emerald-500' if request.endpoint == 'users.index' else 'text-slate-400' }}"
-          ...
-        >
-          ...
-        </svg>
-        Usuarios/Empleados
-      </a>
-
-      Ruta Principal con sub rutas
-      <div
-        class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter
-            {{ 'text-emerald-600' if '/inventario' in request.path else 'text-slate-400' }}"
-      >
-        <svg class="w-4 h-4 mr-3" ...>...</svg>
-        Inventario
-      </div>
-
-      Resalte de subrutas
-      <div class="ml-9 border-l-2 border-slate-100 flex flex-col gap-1 py-1">
-        <a
-          href="{{ url_for('inventario.materias_primas') }}"
-          class="p-2 pl-4 text-xs font-bold transition-colors uppercase 
-              {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.materias_primas') else 'text-slate-400 hover:text-emerald-600' }}"
-        >
-          Materias Primas Existencias
-        </a>
-      </div>
-      #}
 
       <div class="flex-1 overflow-y-auto py-6">
         <ul class="space-y-1 px-3">
           {# --- SECCIÓN INVENTARIO --- #}
           <li class="pt-2">
             <div
-              class="flex items-center p-3 text-[11px] font-black text-slate-400 uppercase tracking-tighter {{ 'text-emerald-600' if '/inventario' in request.path }}"
+              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/inventario' in request.path else 'text-slate-400' }}"
             >
               <svg
                 class="w-4 h-4 mr-3"
@@ -95,41 +60,47 @@
             >
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '/inventario/mp' else 'text-slate-400 hover:text-emerald-600' }}"
-                >Materias Primas Existencias</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.materias_primas') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Materias Primas Existencias
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '/inventario/solicitud-mp' else 'text-slate-400 hover:text-emerald-600' }}"
-                >Solicitud Abastecimiento MP</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.solicitud_mp') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Solicitud Abastecimiento MP
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '/inventario/reporte-mp' else 'text-slate-400 hover:text-emerald-600' }}"
-                >Reporte Solicitudes MP</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.reporte_mp') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Reporte Solicitudes MP
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '/inventario/pt' else 'text-slate-400 hover:text-emerald-600' }}"
-                >Producto Terminado Existencias</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.productos_terminados') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Producto Terminado Existencias
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '/inventario/solicitud-p' else 'text-slate-400 hover:text-emerald-600' }}"
-                >Solicitud Abastecimiento Prod</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.solicitud_prod') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Solicitud Abastecimiento Prod
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '/inventario/reporte-p' else 'text-slate-400 hover:text-emerald-600' }}"
-                >Reporte Solicitudes Prod</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('inventario.reporte_prod') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Reporte Solicitudes Prod
+              </a>
             </div>
           </li>
 
           {# --- SECCIÓN COMPRAS --- #}
           <li class="pt-2">
             <div
-              class="flex items-center p-3 text-[11px] font-black text-slate-400 uppercase tracking-tighter"
+              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/compras' in request.path else 'text-slate-400' }}"
             >
               <svg
                 class="w-4 h-4 mr-3"
@@ -151,21 +122,23 @@
             >
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Lista Entregas</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('compras.entregas') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Lista Entregas
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Lista Compras</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('compras.lista') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Lista Compras
+              </a>
             </div>
           </li>
 
           {# --- SECCIÓN PRODUCCIÓN --- #}
           <li class="pt-2">
             <div
-              class="flex items-center p-3 text-[11px] font-black text-slate-400 uppercase tracking-tighter"
+              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/produccion' in request.path else 'text-slate-400' }}"
             >
               <svg
                 class="w-4 h-4 mr-3"
@@ -187,26 +160,29 @@
             >
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Procesos</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('produccion.procesos') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Procesos
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Solicitud Producción</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('produccion.solicitud') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Solicitud Producción
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Validación</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('produccion.validacion') else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Validación
+              </a>
             </div>
           </li>
 
           {# --- SECCIÓN VENTAS --- #}
           <li class="pt-2">
             <div
-              class="flex items-center p-3 text-[11px] font-black text-slate-400 uppercase tracking-tighter"
+              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/ventas' in request.path else 'text-slate-400' }}"
             >
               <svg
                 class="w-4 h-4 mr-3"
@@ -228,24 +204,28 @@
             >
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-emerald-600 transition-colors uppercase bg-emerald-50/50 rounded-r-lg border-l-2 border-emerald-500 -ml-[2px]"
-                >Punto de Venta POS</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px] bg-emerald-50/50 rounded-r-lg' if request.path == # else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Punto de Venta POS
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Lista Tickets</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#'' else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Lista Tickets
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Cajas</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Cajas
+              </a>
               <a
                 href="#"
-                class="p-2 pl-4 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase"
-                >Reporte Utilidad</a
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Reporte Utilidad
+              </a>
             </div>
           </li>
 
@@ -260,10 +240,10 @@
             {# Usuarios #}
             <a
               href="{{ url_for('users.index') }}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == 'users.index' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('users.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == 'users.index' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('users.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -281,10 +261,10 @@
             {# Recetas #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold text-slate-600 uppercase hover:bg-slate-50 rounded-xl transition-all"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#'catalogos.recetas' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 text-slate-400"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -302,10 +282,10 @@
             {# Análisis #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold text-slate-600 uppercase hover:bg-slate-50 rounded-xl transition-all"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 text-slate-400"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -323,10 +303,10 @@
             {# Productos #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold text-slate-600 uppercase hover:bg-slate-50 rounded-xl transition-all"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 text-slate-400"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -344,10 +324,10 @@
             {# Materia Prima #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold text-slate-600 uppercase hover:bg-slate-50 rounded-xl transition-all"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 text-slate-400"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -365,10 +345,10 @@
             {# Proveedores #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold text-slate-600 uppercase hover:bg-slate-50 rounded-xl transition-all"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 text-slate-400"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
