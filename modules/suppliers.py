@@ -79,9 +79,17 @@ def delete_supplier(id):
 
     if request.method == 'POST':
         try:
-            supplier.status = 'Inactivo' 
+            if supplier.status == 'Activo':
+                supplier.status = 'Inactivo'
+                mensaje = f"Proveedor {supplier.name} desactivado."
+                categoria = "warning"
+            else:
+                supplier.status = 'Activo'
+                mensaje = f"Proveedor {supplier.name} activado correctamente."
+                categoria = "success"
+
             db.session.commit()
-            flash(f"Proveedor {supplier.name} desactivado.", "warning")
+            flash(mensaje, categoria)
             return redirect(url_for('suppliers.suppliers'))
         
         except Exception as e:
