@@ -28,3 +28,35 @@ class FormUsuarios(FlaskForm):
         validators.DataRequired(message="El perfil es requerido")
     ])
     active = BooleanField('Usuario Activo', default=True)
+
+class FormSupplier(FlaskForm):
+    id = HiddenField('id')
+        
+    name = StringField('Nombre o Razón Social', [
+        validators.DataRequired(message="El nombre del proveedor es requerido"),
+        validators.Length(min=3, max=100)
+    ])
+    
+    address = StringField('Domicilio', [
+        validators.DataRequired(message="La dirección es requerida")
+    ])
+    
+    phone = StringField('Teléfono', [
+        validators.DataRequired(message="El teléfono es requerido"),
+        validators.Length(min=10, max=20, message="Introduce un número válido")
+    ])
+    
+    email = EmailField('Correo Electrónico', [
+        validators.DataRequired(message="El email es requerido"),
+        validators.Email(message="Introduce un email válido")
+    ])
+    status = HiddenField('Estatus', default='Activo')
+    
+
+class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para solo agregar los campos para la edicion
+    unique_code = StringField('Número Único', render_kw={'readonly': True})
+    
+    status = SelectField('Estatus', choices=[
+        ('Activo', 'Activo'),
+        ('Inactivo', 'Inactivo')
+    ])
