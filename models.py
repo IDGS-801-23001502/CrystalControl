@@ -57,7 +57,6 @@ class User(db.Model, UserMixin):
     def active(self):
         return self.estatus == 'Activo'
 
-    @property
     def nivel_acceso(self, nombre_modulo):
         """Retorna el nivel de privilegio (1-4) para un módulo específico."""
         if not self.perfil:
