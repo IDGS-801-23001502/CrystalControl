@@ -35,9 +35,9 @@ app.register_blueprint(sales_bp, url_prefix='/panel/sales')
 app.register_blueprint(login_bp, url_prefix='/login')
 app.register_blueprint(ecommerce_bp, url_prefix="/")
 
-@app.context_processor
-def inject_functions():
-    return dict(hasattr=hasattr)
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 @app.route("/")
 @exclude_roles('Compras','Almacenista','Vendedor','Produccion','Gerente','Administrador')

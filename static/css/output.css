@@ -281,6 +281,7 @@
     --radius: 8px;
     --spacing-8xl: 90rem;
     --leading-9: 36px;
+    --leading-7: 28px;
     --leading-6: 24px;
     --leading-none: 1px;
     --radius-base: 12px;
@@ -967,6 +968,9 @@
   }
   .mt-12 {
     margin-top: calc(var(--spacing) * 12);
+  }
+  .mt-16 {
+    margin-top: calc(var(--spacing) * 16);
   }
   .mt-20 {
     margin-top: calc(var(--spacing) * 20);
@@ -1915,6 +1919,9 @@
       margin-block-end: calc(calc(var(--spacing) * 16) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
+  .gap-x-6 {
+    column-gap: calc(var(--spacing) * 6);
+  }
   .space-x-2 {
     :where(& > :not(:last-child)) {
       --tw-space-x-reverse: 0;
@@ -1978,6 +1985,9 @@
   }
   .rounded-lg {
     border-radius: var(--radius-lg);
+  }
+  .rounded-md {
+    border-radius: var(--radius-md);
   }
   .rounded-xl {
     border-radius: var(--radius-xl);
@@ -2286,8 +2296,14 @@
   .bg-emerald-600 {
     background-color: var(--color-emerald-600);
   }
+  .bg-gray-50 {
+    background-color: var(--color-gray-50);
+  }
   .bg-gray-100 {
     background-color: var(--color-gray-100);
+  }
+  .bg-gray-900 {
+    background-color: var(--color-gray-900);
   }
   .bg-gray-900\/50 {
     background-color: color-mix(in srgb, oklch(21% 0.034 264.665) 50%, transparent);
@@ -2297,6 +2313,9 @@
   }
   .bg-green-50 {
     background-color: var(--color-green-50);
+  }
+  .bg-indigo-600 {
+    background-color: var(--color-indigo-600);
   }
   .bg-neutral-primary {
     background-color: var(--color-neutral-primary);
@@ -2645,6 +2664,9 @@
   .pr-6 {
     padding-right: calc(var(--spacing) * 6);
   }
+  .pr-12 {
+    padding-right: calc(var(--spacing) * 12);
+  }
   .pb-2 {
     padding-bottom: calc(var(--spacing) * 2);
   }
@@ -2662,6 +2684,9 @@
   }
   .pl-5 {
     padding-left: calc(var(--spacing) * 5);
+  }
+  .pl-6 {
+    padding-left: calc(var(--spacing) * 6);
   }
   .pl-12 {
     padding-left: calc(var(--spacing) * 12);
@@ -2698,6 +2723,10 @@
   .text-5xl {
     font-size: var(--text-5xl);
     line-height: var(--tw-leading, var(--text-5xl--line-height));
+  }
+  .text-6xl {
+    font-size: var(--text-6xl);
+    line-height: var(--tw-leading, var(--text-6xl--line-height));
   }
   .text-base {
     font-size: var(--text-base);
@@ -2780,6 +2809,10 @@
   .leading-6 {
     --tw-leading: var(--leading-6);
     line-height: var(--leading-6);
+  }
+  .leading-7 {
+    --tw-leading: var(--leading-7);
+    line-height: var(--leading-7);
   }
   .leading-9 {
     --tw-leading: var(--leading-9);
@@ -2909,6 +2942,9 @@
   }
   .text-gray-500 {
     color: var(--color-gray-500);
+  }
+  .text-gray-600 {
+    color: var(--color-gray-600);
   }
   .text-gray-900 {
     color: var(--color-gray-900);
@@ -3052,6 +3088,10 @@
     --tw-shadow: 0 1px 2px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.05));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
+  .ring-1 {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   .shadow-\[\#9ec946\]\/10 {
     --tw-shadow-color: color-mix(in srgb, #9ec946 10%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -3099,6 +3139,9 @@
     @supports (color: color-mix(in lab, red, red)) {
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-slate-200) 50%, transparent) var(--tw-shadow-alpha), transparent);
     }
+  }
+  .ring-gray-300 {
+    --tw-ring-color: var(--color-gray-300);
   }
   .outline {
     outline-style: var(--tw-outline-style);
@@ -3189,6 +3232,9 @@
   .outline-none {
     --tw-outline-style: none;
     outline-style: none;
+  }
+  .ring-inset {
+    --tw-ring-inset: inset;
   }
   .group-focus-within\:text-\[\#7dc6e9\] {
     &:is(:where(.group):focus-within *) {
@@ -3294,6 +3340,11 @@
   .peer-focus\:text-fg-brand {
     &:is(:where(.peer):focus ~ *) {
       color: var(--color-fg-brand);
+    }
+  }
+  .placeholder\:text-gray-400 {
+    &::placeholder {
+      color: var(--color-gray-400);
     }
   }
   .placeholder\:text-slate-400 {
@@ -3407,6 +3458,13 @@
       }
     }
   }
+  .hover\:bg-blue-500 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-blue-500);
+      }
+    }
+  }
   .hover\:bg-blue-700 {
     &:hover {
       @media (hover: hover) {
@@ -3446,6 +3504,20 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-gray-200);
+      }
+    }
+  }
+  .hover\:bg-gray-800 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-gray-800);
+      }
+    }
+  }
+  .hover\:bg-indigo-500 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-indigo-500);
       }
     }
   }
@@ -3529,6 +3601,13 @@
     &:hover {
       @media (hover: hover) {
         color: #243c60;
+      }
+    }
+  }
+  .hover\:text-blue-600 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-blue-600);
       }
     }
   }
@@ -3704,6 +3783,11 @@
       --tw-ring-color: var(--color-blue-500);
     }
   }
+  .focus\:ring-blue-600 {
+    &:focus {
+      --tw-ring-color: var(--color-blue-600);
+    }
+  }
   .focus\:ring-brand-medium {
     &:focus {
       --tw-ring-color: var(--color-brand-medium);
@@ -3724,6 +3808,38 @@
     &:focus {
       --tw-outline-style: none;
       outline-style: none;
+    }
+  }
+  .focus\:ring-inset {
+    &:focus {
+      --tw-ring-inset: inset;
+    }
+  }
+  .focus-visible\:outline {
+    &:focus-visible {
+      outline-style: var(--tw-outline-style);
+      outline-width: 1px;
+    }
+  }
+  .focus-visible\:outline-2 {
+    &:focus-visible {
+      outline-style: var(--tw-outline-style);
+      outline-width: 2px;
+    }
+  }
+  .focus-visible\:outline-offset-2 {
+    &:focus-visible {
+      outline-offset: 2px;
+    }
+  }
+  .focus-visible\:outline-blue-600 {
+    &:focus-visible {
+      outline-color: var(--color-blue-600);
+    }
+  }
+  .focus-visible\:outline-indigo-600 {
+    &:focus-visible {
+      outline-color: var(--color-indigo-600);
     }
   }
   .active\:scale-90 {
@@ -3785,6 +3901,12 @@
   .sm\:text-left {
     @media (width >= 40rem) {
       text-align: left;
+    }
+  }
+  .sm\:text-5xl {
+    @media (width >= 40rem) {
+      font-size: var(--text-5xl);
+      line-height: var(--tw-leading, var(--text-5xl--line-height));
     }
   }
   .md\:inset-0 {
