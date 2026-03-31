@@ -57,37 +57,49 @@ def crear():
             db.session.rollback()
             flash(f"Error al crear usuario: {str(e)}", "danger")
 
-    return render_template("users/create.html", form=form)
+    return render_template("users/crearUsuario.html", form=form)
 
-@users_bp.route("/editar/<int:id>", methods=["GET", "POST"])
+@users_bp.route("/editarUsuario/<int:id>", methods=["GET", "POST"])
 def editar(id):
+    """
+    RDF 1.4: Actualizar Usuario
+    Permite modificar username, nombre, apellidos y perfil.
+    """
     usuario = User.query.get_or_404(id)
+    # Pasamos el objeto usuario al formulario para precargar los datos
     form = FormUsuarios(obj=usuario)
     
+    # RDF 1.6: Cargar perfiles para el SelectField
     form.id_perfil.choices = [(p.id, p.name) for p in Role.query.all()]
     
     if form.validate_on_submit():
         usuario.username = form.username.data
         usuario.nombre = form.nombre.data
         usuario.apellidos = form.apellidos.data
-        usuario.email = form.email.data
         usuario.id_perfil = form.id_perfil.data
-        usuario.active = form.active.data 
+        usuario.estatus = form.estatus.data # RDF 1.5
         
+        # Opcional: Actualizar contraseña solo si se escribe algo nuevo
         if form.password.data:
-            usuario.password = form.password.data
-            
-        db.session.commit()
-        flash("Usuario actualizado correctamente", "success")
-        return redirect(url_for('users.index'))
+            usuario.password = generate_password_hash(form.password.data)
         
-    return render_template("users/edit.html", form=form, usuario=usuario)
+        try:
+            db.session.commit()
+            flash(f"Usuario '{usuario.username}' actualizado correctamente.", "success")
+            return redirect(url_for('users.index'))
+        except Exception as e:
+            db.session.rollback()
+            flash("Error al actualizar: el nombre de usuario ya existe.", "danger")
+            
+    return render_template("users/editarUsuario.html", form=form, usuario=usuario)
 
-@users_bp.route("/status/<int:id>", methods=["POST"])
-def cambiar_estatus(id):
+
+@users_bp.route("/eliminarUsuario/<int:id>", methods=["GET", "POST"])
+def eliminar(id):
     usuario = User.query.get_or_404(id)
-    usuario.active = not usuario.active
-    db.session.commit()
-    
-    status_text = "activado" if usuario.active else "desactivado"
-    return jsonify({"success": True, "message": f"Usuario {status_text}", "nuevo_status": usuario.active})
+    if request.method == "POST":
+        db.session.delete(usuario)
+        db.session.commit()
+        flash(f"Usuario '{usuario.username}' eliminado.", "success")
+        return redirect(url_for('users.index'))
+    return render_template("users/eliminarUsuario.html", usuario=usuario)

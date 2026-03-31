@@ -11,6 +11,7 @@ Flask-Migrate==4.1.0
 Flask-Principal==0.4.0
 Flask-PyMongo==3.0.1
 Flask-Security==5.7.1
+Flask-Security-Too==5.7.1
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 greenlet==3.3.2
