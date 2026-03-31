@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
-
+from flask_pymongo import PyMongo
+ 
+mongo= PyMongo()
 db = SQLAlchemy()
 
 # Tabla intermedia Perfil_Modulo (Muchos a Muchos)
@@ -28,17 +30,23 @@ class User(db.Model, UserMixin):
     id = db.Column('id_usuario', db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     nombre = db.Column(db.String(50),nullable=False)
-    apellidos = db.Column(db.String(50), nullable=False)
     password = db.Column('password_hash', db.String(255), nullable=False)
     fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
     
     # Llave foránea al perfil
     id_perfil = db.Column(db.Integer, db.ForeignKey('Perfiles.id_perfil'))
+    cliente_perfil = db.relationship('Cliente', backref='usuario', uselist=False)
     roles = db.relationship('Role', 
                            primaryjoin="User.id_perfil == Role.id",
-                           viewonly=True, 
+                           viewonly=True,
                            uselist=True)
+    @property
+    def is_client(self):
+        if not self.roles:
+            return False
+        return any(role.name.strip() == 'Cliente' for role in self.roles)
+    
     @property
     def perfil(self):
         if self.roles and len(self.roles) > 0:
@@ -49,34 +57,35 @@ class User(db.Model, UserMixin):
     def active(self):
         return self.estatus == 'Activo'
 
-    def tiene_escritura(self, nombre_modulo):
-        if not self.id_perfil: return 0
-        modulo = Modulo.query.filter_by(name=nombre_modulo).first()
-        if not modulo: return 0
+    @property
+    def nivel_acceso(self, nombre_modulo):
+        """Retorna el nivel de privilegio (1-4) para un módulo específico."""
+        if not self.perfil:
+            return 0
         
-        permiso = db.session.query(perfil_modulo).filter_by(
-            id_perfil=self.id_perfil,
-            id_modulo=modulo.id
-        ).first()
-        return permiso.permiso_escritura if permiso else 0
+        # Buscamos en la relación ya cargada de módulos del perfil
+        # Esto es más rápido que hacer un query manual cada vez
+        for modulo in self.perfil.modulos:
+            if modulo.name == nombre_modulo:
+                # Necesitamos obtener el valor de la tabla intermedia
+                permiso = db.session.query(perfil_modulo.c.permiso_escritura).filter(
+                    perfil_modulo.c.id_perfil == self.id_perfil,
+                    perfil_modulo.c.id_modulo == modulo.id
+                ).scalar()
+                return permiso or 1
+        return 0
 
-class Cliente(db.Model, UserMixin):
+class Cliente(db.Model):
     __tablename__ = 'Clientes'
     id = db.Column('id_cliente', db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column('password_hash', db.String(255), nullable=False)
-    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
-    estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
-
-    # Los clientes no tienen roles, pero Flask-Security lo busca
-    roles = [] 
-
-    @property
-    def active(self):
-        return self.estatus == 'Activo'
+    # Llave foránea que apunta al Usuario
+    id_usuario = db.Column(db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    
+    # Datos específicos del negocio
+    direccion_envio = db.Column(db.Text)
+    telefono = db.Column(db.String(20))
     
 ##MATERIAS PRIMAS###
-
 class MateriaPrima(db.Model):
     __tablename__='MateriaPrima'
     id= db.Column('id_materia', db.Integer,primary_key=True)
@@ -87,3 +96,13 @@ class MateriaPrima(db.Model):
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
 
+class Supplier(db.Model):
+    __tablename__ = 'Proveedores'
+    
+    id = db.Column('id_proveedor', db.Integer, primary_key=True)
+    unique_code = db.Column('num_unico_prov', db.String(20), unique=True, nullable=False)
+    name = db.Column('nombre', db.String(100), nullable=False)
+    address = db.Column('domicilio', db.Text)
+    phone = db.Column('telefono', db.String(20))
+    email = db.Column('correo', db.String(100))
+    status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')

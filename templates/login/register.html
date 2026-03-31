@@ -1,0 +1,161 @@
+{% extends "layout_clients.html" %} {% block title %}Crear Cuenta{% endblock %}
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center py-12">
+  <div class="w-full max-w-2xl">
+    <div
+      class="bg-white rounded-[3rem] shadow-2xl shadow-[#243c60]/5 border border-slate-100 overflow-hidden flex flex-col md:flex-row"
+    >
+      <div
+        class="md:w-1/3 bg-[#243c60] p-10 text-white flex flex-col justify-center relative overflow-hidden"
+      >
+        <div
+          class="absolute -left-10 -bottom-10 w-40 h-40 bg-[#9ec946]/10 rounded-full blur-3xl"
+        ></div>
+        <div class="relative z-10">
+          <h2 class="text-3xl font-black leading-tight mb-6">
+            Únete a la <span class="text-[#9ec946]">Red Crystal</span>
+          </h2>
+          <ul class="space-y-4 text-sm font-medium text-[#7dc6e9]">
+            <li class="flex items-center gap-2">
+              <svg
+                class="w-5 h-5 text-[#9ec946]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Precios Mayoristas
+            </li>
+            <li class="flex items-center gap-2">
+              <svg
+                class="w-5 h-5 text-[#9ec946]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Rastreo de Envíos
+            </li>
+            <li class="flex items-center gap-2">
+              <svg
+                class="w-5 h-5 text-[#9ec946]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Soporte Técnico
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="md:w-2/3 p-10 md:p-14 bg-white">
+        <div class="mb-10">
+          <h2
+            class="text-2xl font-black text-[#243c60] uppercase tracking-tight"
+          >
+            Nueva Cuenta
+          </h2>
+          <p class="text-slate-400 text-sm font-bold">
+            Ingresa tus datos para comenzar.
+          </p>
+        </div>
+
+        <form
+          action="{{ url_for('login.register') }}"
+          method="POST"
+          class="space-y-5"
+        >
+          <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
+            <div>
+              <label
+                class="block text-[10px] font-black text-[#243c60] uppercase tracking-widest mb-2 ml-1"
+                >Nombre(s)</label
+              >
+              <input
+                type="text"
+                name="nombre"
+                required
+                class="w-full px-5 py-4 bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl outline-none transition-all text-[#243c60] font-medium"
+                placeholder="Ej. Julian"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-[10px] font-black text-[#243c60] uppercase tracking-widest mb-2 ml-1"
+              >Email</label
+            >
+            <input
+              type="mail"
+              name="email"
+              required
+              class="w-full px-5 py-4 bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl outline-none transition-all text-[#243c60] font-medium"
+              placeholder="ejemplo@ejemplo.com"
+            />
+          </div>
+
+          <div>
+            <label
+              class="block text-[10px] font-black text-[#243c60] uppercase tracking-widest mb-2 ml-1"
+              >Contraseña</label
+            >
+            <input
+              type="password"
+              name="password"
+              required
+              class="w-full px-5 py-4 bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl outline-none transition-all text-[#243c60] font-medium"
+              placeholder="••••••••"
+            />
+            <p
+              class="text-[9px] text-slate-400 mt-2 ml-1 uppercase font-bold tracking-tighter italic"
+            >
+              Mínimo 8 caracteres, incluye números.
+            </p>
+          </div>
+
+          <div class="pt-4">
+            <button
+              type="submit"
+              class="w-full bg-[#9ec946] text-[#243c60] py-4 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95"
+            >
+              Crear mi cuenta
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-8 text-center">
+          <p class="text-sm text-slate-500 font-medium">
+            ¿Ya tienes cuenta?
+            <a
+              href="{{ url_for('login.login_client') }}"
+              class="text-[#7dc6e9] font-black hover:text-[#243c60] transition-colors ml-1 underline decoration-2 underline-offset-4"
+              >Inicia Sesión</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

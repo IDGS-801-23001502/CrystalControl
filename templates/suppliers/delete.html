@@ -1,0 +1,43 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+<style>
+  .danger-badge { background-color: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.25); color: #dc2626; }
+  .danger-border { border-top: 3px solid #ef4444; }
+  .danger-btn { background-color: #dc2626; color: #fff; }
+  .danger-btn:hover { background-color: #b91c1c; }
+  .field-readonly { opacity: 0.6; pointer-events: none; background-color: #f9fafb; }
+</style>
+
+<div class="max-w-2xl mx-auto mt-10 px-4">
+  <div class="flex items-center gap-3 mb-6">
+    <h1 class="text-xl font-semibold text-heading">Desactivar Proveedor</h1>
+    <span class="danger-badge px-2.5 py-0.5 rounded-full text-xs font-semibold border">Baja</span>
+  </div>
+
+  <div class="danger-border bg-neutral-primary-soft border border-default rounded-base shadow-xs p-8">
+    <form action="{{ url_for('suppliers.delete_supplier', id=supplier.id) }}" method="post">
+      {{ form.csrf_token }}
+      
+      <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-sm">
+        <strong>Atención:</strong> El proveedor <b>{{ supplier.name }}</b> cambiará su estatus a <b>Inactivo</b>.
+      </div>
+
+      <div class="grid md:grid-cols-2 md:gap-8 field-readonly">
+        <div class="relative z-0 w-full mb-8 group">
+          <input type="text" value="{{ supplier.unique_code }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
+          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Código</label>
+        </div>
+        <div class="relative z-0 w-full mb-8 group">
+          <input type="text" value="{{ supplier.name }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
+          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Nombre</label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="danger-btn px-5 py-2.5 text-sm font-medium rounded-base">Confirmar Baja</button>
+        <a href="{{ url_for('suppliers.suppliers') }}" class="cancel-btn px-5 py-2.5 text-sm font-medium rounded-base border border-gray-300">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "layout_clients.html" %} {% block title %}Pasarela de Pago Segura{%
+endblock %} {% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="mb-12 text-center">
+    <div
+      class="inline-flex items-center gap-2 bg-[#9ec946]/10 px-4 py-2 rounded-full mb-4"
+    >
+      <svg
+        class="w-4 h-4 text-[#9ec946]"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="3"
+          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+        />
+      </svg>
+      <span
+        class="text-[10px] font-black text-[#243c60] uppercase tracking-widest"
+        >Encriptación de Grado Industrial SSL</span
+      >
+    </div>
+    <h1
+      class="text-3xl font-black text-[#243c60] uppercase tracking-tighter"
+    >
+      Finalizar <span class="text-[#7dc6e9]">Compra</span>
+    </h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+    <div class="space-y-8">
+      <div
+        class="relative w-full aspect-[1.586/1] bg-gradient-to-br from-[#243c60] via-[#1a2d4a] to-[#243c60] rounded-[2rem] p-8 text-white shadow-2xl overflow-hidden group"
+      >
+        <div
+          class="absolute -right-10 -top-10 w-40 h-40 bg-[#9ec946]/10 rounded-full blur-3xl"
+        ></div>
+        <div
+          class="absolute -left-10 -bottom-10 w-40 h-40 bg-[#7dc6e9]/10 rounded-full blur-3xl"
+        ></div>
+
+        <div class="relative h-full flex flex-col justify-between">
+          <div class="flex justify-between items-start">
+            <svg
+              class="w-12 h-12 text-white/20"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M2 7v10h20V7H2zm18 8H4V9h16v6z" />
+            </svg>
+            <span
+              class="text-[10px] font-black tracking-[0.3em] uppercase opacity-50"
+              >Card</span
+            >
+          </div>
+          <div class="space-y-4">
+            <p
+              class="text-xl md:text-2xl font-black tracking-[0.2em] drop-shadow-md"
+              id="card-display-number"
+            >
+              •••• •••• •••• ••••
+            </p>
+            <div class="flex justify-between items-end">
+              <div>
+                <p class="text-[8px] uppercase tracking-widest opacity-50 mb-1">
+                  Titular
+                </p>
+                <p
+                  class="text-xs font-bold uppercase tracking-widest"
+                  id="card-display-name"
+                >
+                  {{ current_user.nombre|upper }}
+                </p>
+              </div>
+              <div class="text-right">
+                <p class="text-[8px] uppercase tracking-widest opacity-50 mb-1">
+                  Expira
+                </p>
+                <p
+                  class="text-xs font-bold tracking-widest"
+                  id="card-display-expiry"
+                >
+                  MM/AA
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <span
+            class="text-[10px] font-black uppercase text-slate-400 tracking-widest"
+            >Total a pagar</span
+          >
+          <span class="text-2xl font-black text-[#243c60] tracking-tighter"
+            >$522.00</span
+          >
+        </div>
+        <p
+          class="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed"
+        >
+          Al confirmar, autorizas el cargo automático a tu cuenta bancaria bajo
+          los términos de CrystalControl. [este tambien]
+        </p>
+      </div>
+    </div>
+
+    <form
+      action="#"
+      method="POST"
+      class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100 space-y-6"
+    >
+      <div class="space-y-2">
+        <label
+          class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
+          >Nombre en la Tarjeta</label
+        >
+        <input
+          type="text"
+          id="card-name"
+          placeholder="Como aparece en el plástico"
+          class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60] uppercase"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <label
+          class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
+          >Número de Tarjeta</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="card-number"
+            maxlength="19"
+            placeholder="0000 0000 0000 0000"
+            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
+          />
+          <div
+            class="absolute right-6 inset-y-0 flex items-center pointer-events-none opacity-20"
+          >
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v6z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label
+            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
+            >Expiración</label
+          >
+          <input
+            type="text"
+            id="card-expiry"
+            placeholder="MM/AA"
+            maxlength="5"
+            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
+          />
+        </div>
+        <div class="space-y-2">
+          <label
+            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
+            >CVC / CVV</label
+          >
+          <input
+            type="password"
+            maxlength="4"
+            placeholder="***"
+            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
+          />
+        </div>
+      </div>
+
+      <div class="pt-6">
+        <button
+          type="submit"
+          class="w-full bg-[#243c60] text-white py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#1a2d4a] transition-all shadow-xl shadow-[#243c60]/20 active:scale-95 flex items-center justify-center gap-3"
+        >
+          Confirmar Pago Seguro
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M14 5l7 7m0 0l-7 7m7-7H3"
+            />
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  // Script simple para actualizar la vista previa de la tarjeta
+  document
+    .getElementById("card-number")
+    .addEventListener("input", function (e) {
+      let value = e.target.value.replace(/\D/g, "").substring(0, 16);
+      value =
+        value !== "" ? value.match(/.{1,4}/g).join(" ") : "•••• •••• •••• ••••";
+      e.target.value = value === "•••• •••• •••• ••••" ? "" : value;
+      document.getElementById("card-display-number").innerText = value;
+    });
+
+  document.getElementById("card-name").addEventListener("input", function (e) {
+    document.getElementById("card-display-name").innerText =
+      e.target.value || "{{ current_user.nombre|upper }}";
+  });
+
+  document
+    .getElementById("card-expiry")
+    .addEventListener("input", function (e) {
+      let value = e.target.value.replace(/\D/g, "");
+      if (value.length > 2)
+        value = value.substring(0, 2) + "/" + value.substring(2, 4);
+      e.target.value = value;
+      document.getElementById("card-display-expiry").innerText =
+        value || "MM/AA";
+    });
+</script>
+{% endblock %}

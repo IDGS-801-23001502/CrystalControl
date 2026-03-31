@@ -1,67 +1,105 @@
 {% extends "layout_employees.html" %}
-
-{% block title %}Nuevo Usuario - {% endblock %}
+{% block title %}New User - {% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-8">
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <a href="{{ url_for('users.index') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#4882ad] hover:border-[#7dc6e9] transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            </a>
-            <div>
-                <h2 class="text-2xl font-bold text-[#243c60]">Nuevo Registro</h2>
-                <p class="text-sm text-slate-500 font-medium">Complete los campos para dar de alta un usuario</p>
-            </div>
+<div class="max-w-2xl mx-auto space-y-8">
+
+  <div class="flex items-center gap-4">
+    <a href="{{ url_for('users.index') }}"
+       class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#4882ad] hover:border-[#7dc6e9] transition-all">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <h2 class="text-2xl font-bold text-[#243c60]">Nuevo Usuario</h2>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="px-5 py-4 rounded-2xl border text-sm font-medium
+          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
+          {{ msg|safe }}
         </div>
-    </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-    <div class="bg-white border-2 border-[#7dc6e9] rounded-[2.5rem] p-8 md:p-12 shadow-sm">
-        <form action="{{ url_for('users.crear') }}" method="POST" class="space-y-8">
-            {{ form.hidden_tag() }}
+  <div class="bg-white border-2 border-[#7dc6e9] rounded-[2.5rem] p-8 shadow-sm">
+    <form action="{{ url_for('users.crear') }}" method="POST" class="space-y-6">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-[#243c60] ml-1">Nombre de Usuario</label>
-                    {{ form.username(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="ej. admin_crystal") }}
-                    {% if form.username.errors %}<p class="text-xs text-red-500 mt-1 ml-2">{{ form.username.errors[0] }}</p>{% endif %}
-                </div>
+      <div class="space-y-2">
+        <label class="text-sm font-bold text-[#243c60] ml-1">Nombre de USUARIO <span class="text-red-400">*</span></label>
+        <input type="text" name="username" value="{{ form_data.get('username', '') }}" required minlength="4" maxlength="50"
+          class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none"
+          placeholder="">
+        <p class="text-[10px] text-slate-400 ml-2">Mínimo 4 caracteres, debe ser unico</p>
+      </div>
 
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-[#243c60] ml-1">Perfil / Rol</label>
-                    {{ form.id_perfil(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none appearance-none") }}
-                    {% if form.id_perfil.errors %}<p class="text-xs text-red-500 mt-1 ml-2">{{ form.id_perfil.errors[0] }}</p>{% endif %}
-                </div>
+      <div class="space-y-2">
+        <label class="text-sm font-bold text-[#243c60] ml-1">Nombre completo <span class="text-red-400">*</span></label>
+        <input type="text" name="nombre" value="{{ form_data.get('nombre', '') }}" required minlength="2" maxlength="50"
+          class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none"
+          placeholder="">
+      </div>
 
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-[#243c60] ml-1">Nombre(s)</label>
-                    {{ form.nombre(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="Nombre") }}
-                    {% if form.nombre.errors %}<p class="text-xs text-red-500 mt-1 ml-2">{{ form.nombre.errors[0] }}</p>{% endif %}
-                </div>
+      <div class="space-y-2">
+        <label class="text-sm font-bold text-[#243c60] ml-1">Role / Perfil <span class="text-red-400">*</span></label>
+        <select name="id_perfil" required
+          class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none appearance-none">
+          <option value="">Selecciona un rol</option>
+          {% for role in roles %}
+          <option value="{{ role.id }}" {% if form_data.get('id_perfil')|string == role.id|string %}selected{% endif %}>
+            {{ role.name }}{% if role.description %} – {{ role.description }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
 
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-[#243c60] ml-1">Apellidos</label>
-                    {{ form.apellidos(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="Apellidos") }}
-                    {% if form.apellidos.errors %}<p class="text-xs text-red-500 mt-1 ml-2">{{ form.apellidos.errors[0] }}</p>{% endif %}
-                </div>
+      <div class="space-y-2">
+        <label class="text-sm font-bold text-[#243c60] ml-1">Contraseña </label>
+        <div class="relative">
+          <input type="password" name="password" id="passwordInput" minlength="8" maxlength="50"
+            class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none pr-14"
+            placeholder="Dejar en BLANCO para autogenerar">
+          <button type="button" onclick="togglePass()"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#4882ad]">
+            <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="flex items-start gap-2 mt-2 px-2">
+          <svg class="w-4 h-4 text-[#9ec946] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
 
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-[#243c60] ml-1">Contraseña</label>
-                    {{ form.password(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="Dejar vacío para autogenerar") }}
-                    <p class="text-[10px] text-[#4882ad] italic ml-2">*RDF 1.1: Si se deja vacío, el sistema generará una clave.</p>
-                </div>
-
-
-            <div class="flex items-center justify-end gap-4 pt-6">
-                <a href="{{ url_for('users.index') }}" class="px-8 py-3 text-sm font-bold text-[#4882ad] hover:text-[#243c60] transition-colors">
-                    Cancelar
-                </a>
-                <button type="submit" class="px-10 py-3.5 bg-[#9ec946] hover:bg-[#8bb43d] text-white text-sm font-bold rounded-full shadow-lg shadow-[#9ec946]/30 transition-all transform hover:scale-105 active:scale-95">
-                    Registrar
-                </button>
-            </div>
-        </form>
-    </div>
+      <div class="flex items-center justify-end gap-4 pt-2">
+        <a href="{{ url_for('users.index') }}"
+           class="px-8 py-3 text-sm font-bold text-[#4882ad] hover:text-[#243c60] transition-colors">
+          Cancelar
+        </a>
+        <button type="submit"
+          class="px-10 py-3.5 bg-[#9ec946] hover:bg-[#8bb43d] text-white text-sm font-bold rounded-full shadow-lg shadow-[#9ec946]/30 transition-all transform hover:scale-105 active:scale-95">
+          Crear usuario
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
+
+{% block scripts %}
+<script>
+function togglePass() {
+  const inp = document.getElementById('passwordInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+</script>
+{% endblock %}
 {% endblock %}
