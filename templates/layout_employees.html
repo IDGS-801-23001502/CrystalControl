@@ -325,10 +325,10 @@
             {# Materia Prima #}
             <a
               href="{{url_for('raw_materials.index')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('raw_materials.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('raw_materials.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
