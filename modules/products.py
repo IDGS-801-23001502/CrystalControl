@@ -23,8 +23,8 @@ def products():
     all_products = Producto.query.all()
     return render_template('/products/catalog.html', all_products=all_products)
 
-products_bp.route('/add_product', methods=['GET', 'POST'])
-roles_accepted('Administrador')
+@products_bp.route('/add_product', methods=['GET', 'POST'])
+@roles_accepted('Administrador')
 def add_product():
     #Para archivos se usa request.form Y request.files
     form = FormProduct(request.form)
