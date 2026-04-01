@@ -25,7 +25,6 @@ class FormUsuarios(FlaskForm):
         ('Inactivo', 'Inactive')
     ], default='Activo')
 
-
 class FormSupplier(FlaskForm):
     id = HiddenField('id')
         
@@ -48,7 +47,6 @@ class FormSupplier(FlaskForm):
         validators.Email(message="Introduce un email válido")
     ])
     status = HiddenField('Estatus', default='Activo')
-    
 
 class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para solo agregar los campos para la edicion
     unique_code = StringField('Número Único', render_kw={'readonly': True})
@@ -57,7 +55,6 @@ class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para 
         ('Activo', 'Activo'),
         ('Inactivo', 'Inactivo')
     ])
-
 
 class FormRaw_Materials(FlaskForm):
     id = HiddenField('id')
@@ -79,8 +76,6 @@ class FormRaw_Materials(FlaskForm):
         ('Activo', 'Active'),
         ('Inactivo', 'Inactive')
     ], default='Activo')
-
-
 
 class FormProduct(FlaskForm):
     id = HiddenField('id')

@@ -28,8 +28,7 @@ def products():
 def add_product():
     #Para archivos se usa request.form Y request.files
     form = FormProduct(request.form)
-
-    if request.method == 'POST':
+    if request.method == 'POST':        
         #Actualizar el formulario con los archivos recibidos
         form.picture.data = request.files.get('picture')
         
