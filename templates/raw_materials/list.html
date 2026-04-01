@@ -3,17 +3,18 @@
 
 {% block content %}
 <style>
-  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon       { color: #059669; }
-  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
-  .emerald-btn        { background-color: #059669; color: #fff; }
-  .emerald-btn:hover  { background-color: #047857; }
+  /* Se mantienen tus estilos originales */
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
+  .emerald-badge       { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-btn         { background-color: #059669; color: #fff; }
+  .emerald-btn:hover   { background-color: #047857; }
   .emerald-border-top { border-top: 3px solid #10b981; }
-  .emerald-thead      { background-color: rgba(16, 185, 129, 0.05); }
-  .emerald-row:hover  { background-color: rgba(16, 185, 129, 0.05); }
-  .emerald-link       { color: #059669; }
-  .emerald-link:hover { color: #047857; text-decoration: underline; }
-  .emerald-spec       { background-color: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-thead       { background-color: rgba(16, 185, 129, 0.05); }
+  .emerald-row:hover   { background-color: rgba(16, 185, 129, 0.05); }
+  .emerald-link        { color: #059669; }
+  .emerald-link:hover  { color: #047857; text-decoration: underline; }
+  .emerald-spec        { background-color: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.20); color: #047857; }
 
   .filter-pill {
     display: inline-flex; align-items: center; gap: 6px;
@@ -76,14 +77,13 @@
   <div class="bg-white border-2 border-[#7dc6e9] rounded-[2rem] shadow-sm overflow-hidden">
     <div class="p-4 flex flex-wrap items-center gap-4">
 
-      <!-- Búsqueda -->
       <div class="relative">
         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
           <svg class="w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
           </svg>
         </div>
-        <input type="text" id="supplier-search"
+        <input type="text" id="material-search"
           class="block w-full max-w-72 ps-9 pe-3 py-2 bg-slate-50 border border-slate-200
                  text-slate-800 text-sm rounded-lg shadow-sm placeholder:text-slate-400"
           placeholder="Buscar materia...">
@@ -123,11 +123,12 @@
             <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider">Nombre</th>
             <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Stock Min/Max</th>
             <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Unidad</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Proveedores</th>
             <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Estatus</th>
             <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Acciones</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="divide-y divide-slate-50" id="materials-body">
           {% for material in raw_materials %}
           <tr class="material-row hover:bg-slate-50/80 transition-colors"
                 data-status="{{ material.estatus }}"
@@ -143,6 +144,17 @@
                 {{ material.unidad_medida }}
               </span>
             </td>
+            
+            <td class="px-6 py-4 text-center">
+              <a href="{{ url_for('raw_materials.suppliers_material', id=material.id) }}"
+                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#f4faf5] text-[#9ec946] border border-[#9ec946]/20 hover:border-[#9ec946] transition-all">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Asociar
+              </a>
+            </td>
+
             <td class="px-6 py-4 text-center">
               {% if material.estatus == 'Activo' %}
               <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#f4faf5] text-[#9ec946] border border-[#9ec946]/30">
@@ -154,6 +166,7 @@
               </span>
               {% endif %}
             </td>
+
             <td class="px-6 py-4">
               <div class="flex items-center justify-center gap-3">
                 <a href="{{ url_for('raw_materials.edit_raw_material', id=material.id) }}"
@@ -176,13 +189,10 @@
                 </form>
               </div>
             </td>
-            <div id="no-results-materials" class="hidden py-12 text-center text-slate-400 text-sm">
-              <p>No se encontraron materias primas con esos criterios</p>
-            </div>
           </tr>
           {% else %}
           <tr>
-            <td colspan="6" class="px-6 py-16 text-center">
+            <td colspan="7" class="px-6 py-16 text-center">
               <div class="flex flex-col items-center gap-3 text-slate-400">
                 <svg class="w-12 h-12 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
@@ -194,10 +204,16 @@
           {% endfor %}
         </tbody>
       </table>
+      
+      <div id="no-results-materials" class="hidden py-12 text-center text-slate-400 text-sm">
+        <p>No se encontraron materias primas con esos criterios</p>
+      </div>
+
     </div>
   </div>
 </div>
+
 {% block scripts %}
-  <script src="{{ url_for('static', filename='static/js/materials.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/materials.js') }}"></script>
 {% endblock %}
 {% endblock %}
