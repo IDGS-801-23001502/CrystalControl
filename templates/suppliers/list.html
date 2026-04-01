@@ -36,8 +36,11 @@
   <div class="flex items-center justify-between mb-6">
     <div class="flex items-center gap-3">
       <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
-        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <!--<svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+        </svg>-->
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       </div>
       <div>
@@ -102,7 +105,6 @@
     <table class="w-full text-sm text-left text-slate-500">
       <thead class="emerald-thead text-xs uppercase tracking-wider text-slate-500 border-b border-t border-slate-200">
         <tr>
-          <th scope="col" class="p-4">Sel.</th>
           <th scope="col" class="px-6 py-3 font-semibold">Código</th>
           <th scope="col" class="px-6 py-3 font-semibold">Nombre</th>
           <th scope="col" class="px-6 py-3 font-semibold">Teléfono</th>
@@ -117,7 +119,6 @@
             data-status="{{ sup.status }}"
             data-name="{{ sup.name | lower }}"
             data-code="{{ sup.unique_code | lower }}">
-          <td class="w-4 p-4 text-center text-slate-500">{{ loop.index }}</td>
           <th scope="row" class="px-6 py-4 font-bold text-emerald-600 whitespace-nowrap">{{ sup.unique_code }}</th>
           <td class="px-6 py-4 font-medium text-slate-800">{{ sup.name }}</td>
           <td class="px-6 py-4">{{ sup.phone }}</td>
@@ -138,8 +139,13 @@
           <td class="px-6 py-4 flex items-center justify-center gap-3">
             <a href="{{ url_for('suppliers.edit_supplier', id=sup.id) }}"
                class="emerald-link inline-flex items-center gap-1 text-xs font-medium transition-colors">Editar</a>
+            {%if sup.status == 'Activo' %}
             <a href="{{ url_for('suppliers.delete_supplier', id=sup.id) }}"
-               class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">Eliminar</a>
+               class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">Desactivar</a>
+            {%else %}
+            <a href="{{ url_for('suppliers.delete_supplier', id=sup.id) }}"
+                class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors">Activar</a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
