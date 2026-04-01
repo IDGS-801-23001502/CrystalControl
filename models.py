@@ -147,3 +147,23 @@ class RecipeStep(db.Model):
     estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
     process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
 
+class Producto(db.Model):
+    __tablename__ = 'productos'
+
+    id = db.Column('id_producto', db.Integer, primary_key=True, autoincrement=True)
+    barcode = db.Column('codigo_barras', db.Integer)
+    name = db.Column('nombre', db.String(100), nullable=False)
+    stock = db.Column('stock_disponible', db.Integer, default=0)
+    picture = db.Column('foto', db.String(255), nullable=True) # Campo solicitado para la imagen
+    status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+
+    precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
+
+class ProductoPresentacionPrecio(db.Model):
+    __tablename__ = 'producto_presentación_precio'
+
+    id = db.Column('id_presentacion_precio', db.Integer, primary_key=True)
+    id_producto = db.Column(db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    price_men = db.Column('precio_menudeo', db.Numeric(10, 2), nullable=False)
+    price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
+    presentation = db.Column('presentacion', db.String(50), nullable=False)

@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
+from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
@@ -81,3 +82,36 @@ class FormRaw_Materials(FlaskForm):
 
 
 
+class FormProduct(FlaskForm):
+    id = HiddenField('id')
+    name = StringField('Nombre del producto', [
+        validators.DataRequired(message="El nombre del producto es requerido"),
+        validators.Length(min=3, max=100)
+    ])
+    
+    barcode = IntegerField('Código de barras', [
+        validators.Optional()
+    ])
+
+    stock = IntegerField('Stock disponible', [
+        validators.DataRequired(message="El stock es requerido")
+    ], default=0)
+
+    picture = FileField('Foto del producto', [
+        validators.Optional()
+    ])
+
+    status = HiddenField('Estatus', default='Activo')
+
+    price_men = DecimalField('Precio de menudeo', [
+        validators.DataRequired(message="El precio de menudeo es requerido")
+    ], places=2)
+    
+    price_may = DecimalField('Precio de mayoreo', [
+        validators.DataRequired(message="El precio de mayoreo es requerido")
+    ], places=2)
+
+    presentation = StringField('Presentación (Ej: Botella, Caja)', [
+        validators.DataRequired(message="La presentación es requerida"),
+        validators.Length(max=50)
+    ])
