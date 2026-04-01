@@ -95,8 +95,25 @@ class Raw_Material(db.Model):
     unidad_medida = db.Column('unidad_medida',db.String(20))
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
+    suppliers = db.relationship('Raw_Material_Supplier', backref='materia_asociada', cascade="all, delete-orphan")
 
-
+class Raw_Material_Supplier(db.Model):
+    __tablename__ = 'materia_prima_proveedor'
+    id_material = db.Column('id_materia', db.Integer, 
+                            db.ForeignKey('MateriaPrima.id_materia'), 
+                            primary_key=True, nullable=False)
+    
+    id_supplier = db.Column('id_proveedor', db.Integer, 
+                            db.ForeignKey('Proveedores.id_proveedor'), 
+                            primary_key=True, nullable=False)
+    price = db.Column('precio_referencia', db.Numeric(10, 2), nullable=False)
+    lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    # (1: Kilos, 2: Litros, etc.)
+    unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
+    @property
+    def nombre_unidad(self):
+        unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
+        return unidades.get(self.unidad_medida, 'Desconocido')
 
 ##PROVEEDORES##
 
@@ -110,6 +127,8 @@ class Supplier(db.Model):
     phone = db.Column('telefono', db.String(20))
     email = db.Column('correo', db.String(100))
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+
+    materials = db.relationship('Raw_Material_Supplier', backref='proveedor_asociado', cascade="all, delete-orphan")
 
 ##RECETAS##
  
