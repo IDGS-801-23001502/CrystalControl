@@ -1,0 +1,123 @@
+{% extends "layout_employees.html" %}
+{% block title %}Materias Primas - {% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#f4faf5] text-[#9ec946] rounded-2xl flex items-center justify-center shadow-sm border border-[#9ec946]/20">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-[#243c60]">Materias Primas</h2>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <a href="{{ url_for('raw_materials.add_raw_materials') }}"
+         class="inline-flex items-center px-5 py-2.5 bg-[#9ec946] hover:opacity-90 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-[#9ec946]/30 gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Nueva Materia Prima
+      </a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="flex items-start gap-3 px-5 py-4 rounded-2xl border text-sm font-medium
+          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% elif cat == 'danger' %}bg-red-50 border-red-200 text-red-700{% else %}bg-blue-50 border-blue-200 text-blue-700{% endif %}">
+          <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {% if cat == 'success' %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            {% else %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>{% endif %}
+          </svg>
+          <span>{{ msg|safe }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="bg-white border-2 border-[#7dc6e9] rounded-[2rem] shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-[#f4faf5]">
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider">#</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider">Nombre</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Stock Min/Max</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Unidad</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Estatus</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-[#9ec946] uppercase tracking-wider text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          {% for material in raw_materials %}
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-6 py-4 text-xs text-slate-400 font-medium">{{ loop.index }}</td>
+            <td class="px-6 py-4 text-sm font-bold text-[#243c60]">{{ material.name }}</td>
+            <td class="px-6 py-4 text-sm text-[#243c60] text-center">
+                <span class="text-red-500 font-medium">{{ material.stock_min }}</span> / 
+                <span class="text-blue-500 font-medium">{{ material.stock_max }}</span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-white text-[#4882ad] rounded-lg border border-[#7dc6e9]">
+                {{ material.unidad_medida }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              {% if material.estatus == 'Activo' %}
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#f4faf5] text-[#9ec946] border border-[#9ec946]/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#9ec946]"></span> Activo
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Inactivo
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-center gap-3">
+                <a href="{{ url_for('raw_materials.edit_raw_material', id=material.id) }}"
+                   class="text-[#4882ad] hover:text-[#243c60] font-bold text-xs flex items-center gap-1 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  Editar
+                </a>
+
+                <form action="{{ url_for('raw_materials.delete_raw_material', id=material.id) }}" method="POST" class="inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit"
+                    class="{% if material.estatus == 'Activo' %}text-amber-500 hover:text-amber-600{% else %}text-[#9ec946] hover:text-[#7aaa30]{% endif %} font-bold text-xs flex items-center gap-1 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                    {% if material.estatus == 'Activo' %}Desactivar{% else %}Activar{% endif %}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-16 text-center">
+              <div class="flex flex-col items-center gap-3 text-slate-400">
+                <svg class="w-12 h-12 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <p class="text-sm font-medium">No hay materias primas registradas</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

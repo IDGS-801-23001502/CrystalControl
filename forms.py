@@ -1,33 +1,29 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField
+from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
-    id = HiddenField('id')  
-    username = StringField('Nombre de Usuario', [
-        validators.DataRequired(message="El nombre de usuario es requerido"),
+    id = HiddenField('id')
+    username = StringField('Username', [
+        validators.DataRequired(message="Username is required"),
         validators.Length(min=4, max=50)
     ])
-    nombre = StringField('Nombre', [
-        validators.DataRequired(message="El nombre es requerido"),
+    nombre = StringField('Full Name', [
+        validators.DataRequired(message="Name is required"),
         validators.Length(min=2, max=50)
     ])
-    apellidos = StringField('Apellidos', [
-        validators.DataRequired(message="El apellido es requerido"),
-        validators.Length(min=2, max=50)
-    ])
-    email = EmailField('Correo Electrónico', [
-        validators.DataRequired(message="El email es requerido"),
-        validators.Email(message="Introduce un email válido")
-    ])
-    password = PasswordField('Contraseña', [
+    password = PasswordField('Password', [
         validators.Optional(),
-        validators.Length(min=8, max=20, message="La contraseña debe tener al menos 8 caracteres")
+        validators.Length(min=8, max=50, message="Password must be at least 8 characters")
     ])
-    id_perfil = SelectField('Perfil', coerce=int, validators=[
-        validators.DataRequired(message="El perfil es requerido")
+    id_perfil = SelectField('Role / Profile', coerce=int, validators=[
+        validators.DataRequired(message="A role is required")
     ])
-    active = BooleanField('Usuario Activo', default=True)
+    estatus = SelectField('Status', choices=[
+        ('Activo', 'Active'),
+        ('Inactivo', 'Inactive')
+    ], default='Activo')
+
 
 class FormSupplier(FlaskForm):
     id = HiddenField('id')
@@ -60,3 +56,28 @@ class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para 
         ('Activo', 'Activo'),
         ('Inactivo', 'Inactivo')
     ])
+
+
+class FormRaw_Materials(FlaskForm):
+    id = HiddenField('id')
+    name = StringField('Name', [
+        validators.DataRequired(message="Name is required"),
+        validators.Length(min=2, max=100)
+    ])
+    stock_min = DecimalField('Stock_min', [
+            validators.InputRequired(message="Stock min is required")
+        ], default=0.00)
+    stock_max = DecimalField('Stock Máximo', [
+        validators.InputRequired(message="Stock max is required")
+    ], default=0.00)
+    unidad_medida = StringField('Unidad de Medida', [
+            validators.DataRequired(message="La unidad es obligatoria"),
+            validators.Length(max=20)
+        ])
+    estatus = SelectField('Status', choices=[
+        ('Activo', 'Active'),
+        ('Inactivo', 'Inactive')
+    ], default='Activo')
+
+
+

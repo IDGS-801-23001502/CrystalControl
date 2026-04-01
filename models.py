@@ -86,15 +86,19 @@ class Cliente(db.Model):
     telefono = db.Column(db.String(20))
     
 ##MATERIAS PRIMAS###
-class MateriaPrima(db.Model):
+class Raw_Material(db.Model):
     __tablename__='MateriaPrima'
     id= db.Column('id_materia', db.Integer,primary_key=True)
-    nombre = db.Column(db.String(100))
+    name = db.Column('nombre',db.String(100))
     stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
     stock_max= db.Column('stock_max',db.Numeric(10,2))
     unidad_medida = db.Column('unidad_medida',db.String(20))
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
+
+
+
+##PROVEEDORES##
 
 class Supplier(db.Model):
     __tablename__ = 'Proveedores'
@@ -106,7 +110,9 @@ class Supplier(db.Model):
     phone = db.Column('telefono', db.String(20))
     email = db.Column('correo', db.String(100))
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
-    
+
+##RECETAS##
+ 
 class Recipe(db.Model):
     __tablename__ = 'recetas'
 
