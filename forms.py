@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField
+from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
@@ -60,3 +60,35 @@ class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para 
         ('Activo', 'Activo'),
         ('Inactivo', 'Inactivo')
     ])
+
+class FormProduct(FlaskForm):
+    id = HiddenField('id')
+        
+    name = StringField('Nombre del producto', [
+        validators.DataRequired(message="El nombre del producto es requerido"),
+        validators.Length(min=3, max=100)
+    ])
+    
+    price_men = DecimalField('Precio de menudeo', [
+        validators.DataRequired(message="El precio de menudeo es requerido")
+    ], places=2)
+    
+    price_may = DecimalField('Precio de mayoreo', [
+        validators.DataRequired(message="El precio de mayoreo es requerido")
+    ], places=2)
+
+    presentation = StringField('Presentación', [
+        validators.DataRequired(message="Ingresa una presentación valida")
+    ])
+
+    stock = IntegerField('stock_disponible', default=0)
+    
+    content = StringField('Contenido neto', [
+        validators.DataRequired(message="El contenido del producto es requerido")
+    ])
+
+    picture = FileField('Foto del producto', [
+        validators.Optional()
+    ])
+
+    status = HiddenField('Estatus', default='Activo')

@@ -1,0 +1,68 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+<style>
+  .danger-badge { background-color: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.25); color: #dc2626; }
+  .danger-border { border-top: 3px solid #ef4444; }
+  .danger-btn { background-color: #dc2626; color: #fff; }
+  .danger-btn:hover { background-color: #b91c1c; }
+  .field-readonly { opacity: 0.7; pointer-events: none; background-color: #f9fafb; }
+  .cancel-btn { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover { background-color: #f3f4f6; color: #374151; }
+</style>
+
+<div class="max-w-2xl mx-auto mt-10 px-4">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-red-50 border border-red-100">
+        <svg class="w-5 h-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+        </svg>
+    </div>
+    <div>
+        <h1 class="text-xl font-semibold text-heading">Desactivar Producto</h1>
+        <p class="text-xs text-body">El producto dejará de estar disponible en el catálogo</p>
+    </div>
+    <span class="danger-badge px-2.5 py-0.5 rounded-full text-xs font-semibold border">Baja Lógica</span>
+  </div>
+
+  <div class="danger-border bg-neutral-primary-soft border border-default rounded-base shadow-xs p-8">
+    <form action="{{ url_for('products.delete_product', id=producto.id) }}" method="post">
+      {{ form.csrf_token }}
+      
+      <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-sm">
+        <strong>Atención:</strong> El producto <b>{{ producto.name }}</b> cambiará su estatus a <b>Inactivo</b>. Podrás reactivarlo más tarde desde el panel de administración.
+      </div>
+
+      <div class="grid md:grid-cols-2 md:gap-8 field-readonly mb-6">
+        <div class="relative z-0 w-full mb-8 group">
+          <input type="text" value="{{ producto.name }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
+          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Nombre del Producto</label>
+        </div>
+        <div class="relative z-0 w-full mb-8 group">
+          <input type="text" value="{{ producto.presentation }} - {{ producto.content }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
+          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Presentación / Contenido</label>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 md:gap-8 field-readonly mb-8">
+        <div class="relative z-0 w-full mb-4 group">
+          <input type="text" value="${{ producto.price_men }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
+          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Precio Menudeo</label>
+        </div>
+        <div class="relative z-0 w-full mb-4 group">
+          <input type="text" value="${{ producto.price_may }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
+          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Precio Mayoreo</label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="danger-btn px-5 py-2.5 text-sm font-medium rounded-base active:scale-95 transition-all shadow-sm">
+            Confirmar Desactivación
+        </button>
+        <a href="{{ url_for('products.list_products') }}" class="cancel-btn px-5 py-2.5 text-sm font-medium rounded-base active:scale-95 transition-all">
+            Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
