@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField
+from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
@@ -56,4 +56,28 @@ class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para 
         ('Activo', 'Activo'),
         ('Inactivo', 'Inactivo')
     ])
+
+
+class FormRaw_Materials(FlaskForm):
+    id = HiddenField('id')
+    name = StringField('Name', [
+        validators.DataRequired(message="Name is required"),
+        validators.Length(min=2, max=100)
+    ])
+    stock_min = DecimalField('Stock_min', [
+            validators.InputRequired(message="Stock min is required")
+        ], default=0.00)
+    stock_max = DecimalField('Stock Máximo', [
+        validators.InputRequired(message="Stock max is required")
+    ], default=0.00)
+    unidad_medida = StringField('Unidad de Medida', [
+            validators.DataRequired(message="La unidad es obligatoria"),
+            validators.Length(max=20)
+        ])
+    estatus = SelectField('Status', choices=[
+        ('Activo', 'Active'),
+        ('Inactivo', 'Inactive')
+    ], default='Activo')
+
+
 

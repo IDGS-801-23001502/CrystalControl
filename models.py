@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
 from flask_pymongo import PyMongo
+from sqlalchemy.dialects.mysql import TINYINT
  
 mongo= PyMongo()
 db = SQLAlchemy()
@@ -86,15 +87,19 @@ class Cliente(db.Model):
     telefono = db.Column(db.String(20))
     
 ##MATERIAS PRIMAS###
-class MateriaPrima(db.Model):
+class Raw_Material(db.Model):
     __tablename__='MateriaPrima'
     id= db.Column('id_materia', db.Integer,primary_key=True)
-    nombre = db.Column(db.String(100))
+    name = db.Column('nombre',db.String(100))
     stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
     stock_max= db.Column('stock_max',db.Numeric(10,2))
     unidad_medida = db.Column('unidad_medida',db.String(20))
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
+
+
+
+##PROVEEDORES##
 
 class Supplier(db.Model):
     __tablename__ = 'Proveedores'
@@ -106,3 +111,40 @@ class Supplier(db.Model):
     phone = db.Column('telefono', db.String(20))
     email = db.Column('correo', db.String(100))
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+
+##RECETAS##
+ 
+class Recipe(db.Model):
+    __tablename__ = 'recetas'
+
+    id = db.Column('id_receta', db.Integer, primary_key=True)
+    unique_code = db.Column('num_unico_receta', db.String(20), unique=True, nullable=False)
+    final_name = db.Column('nombre_final', db.String(100), nullable=False)
+    general_instructions = db.Column('instrucciones_generales', db.Text)
+    estimated_time = db.Column('tiempo_total_estimado_min', db.Integer)
+    expected_utility = db.Column('utilidad_esperada_porcent', db.Numeric(5, 2))
+    estimated_waste = db.Column('merma_estimada_porcent', db.Numeric(5, 2))
+    produced_quantity = db.Column('cantidad_producida', db.Integer)
+    product_id = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'))
+    status = db.Column('estatus', db.Integer, default=1)
+    
+class RecipeDetail(db.Model):
+    __tablename__ = 'receta_detalle'
+    
+    id = db.Column('id_receta_detalle', db.Integer, primary_key=True)
+    recipe_id = db.Column('id_receta', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
+    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    required_quantity =  db.Column('cantidad_necesaria', db.Numeric(10, 2), nullable=False)
+    unit_med = db.Column('unidad_medida', TINYINT) #1-Kilos 2-Litros 3-Piezas 
+
+class RecipeStep(db.Model):
+    __tablename__ = 'pasosreceta'
+   
+    id = db.Column('id_paso', db.Integer, primary_key=True)
+    recipe_id = db.Column('id_receta', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
+    step_order = db.Column('orden_paso', db.Integer, nullable=False)
+    stage_name = db.Column('nombre_etapa', db.String(50), nullable=False)
+    description = db.Column('descripcion_especifica', db.Text)
+    estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
+    process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
+

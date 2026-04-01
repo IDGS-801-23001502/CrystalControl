@@ -16,7 +16,6 @@ users_bp = Blueprint(
 
 
 def generate_random_password(length=10):
-    """RDF 1.1 – auto-generate a strong password on first access."""
     characters = string.ascii_letters + string.digits + "!@#$%^&*"
     return ''.join(secrets.choice(characters) for _ in range(length))
 
@@ -176,22 +175,6 @@ def cambiar_estatus(id):
         db.session.rollback()
         flash(f'Error al cambiar estatus: {str(e)}', 'danger')
     return redirect(url_for('users.index'))
-
-
-@users_bp.route('/eliminar/<int:id>', methods=['GET', 'POST'])
-@roles_accepted('Administrador')
-def eliminar(id):
-    usuario = User.query.get_or_404(id)
-    if request.method == 'POST':
-        try:
-            db.session.delete(usuario)
-            db.session.commit()
-            flash(f'Usuario "{usuario.username}" eliminado.', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error al eliminar: {str(e)}', 'danger')
-        return redirect(url_for('users.index'))
-    return render_template('users/eliminarUsuario.html', usuario=usuario)
 
 
 @users_bp.route('/permisos')
