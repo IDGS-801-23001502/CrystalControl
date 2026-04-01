@@ -63,12 +63,25 @@ class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para 
 
 class FormProduct(FlaskForm):
     id = HiddenField('id')
-        
     name = StringField('Nombre del producto', [
         validators.DataRequired(message="El nombre del producto es requerido"),
         validators.Length(min=3, max=100)
     ])
     
+    barcode = IntegerField('Código de barras', [
+        validators.Optional()
+    ])
+
+    stock = IntegerField('Stock disponible', [
+        validators.DataRequired(message="El stock es requerido")
+    ], default=0)
+
+    picture = FileField('Foto del producto', [
+        validators.Optional()
+    ])
+
+    status = HiddenField('Estatus', default='Activo')
+
     price_men = DecimalField('Precio de menudeo', [
         validators.DataRequired(message="El precio de menudeo es requerido")
     ], places=2)
@@ -77,18 +90,7 @@ class FormProduct(FlaskForm):
         validators.DataRequired(message="El precio de mayoreo es requerido")
     ], places=2)
 
-    presentation = StringField('Presentación', [
-        validators.DataRequired(message="Ingresa una presentación valida")
+    presentation = StringField('Presentación (Ej: Botella, Caja)', [
+        validators.DataRequired(message="La presentación es requerida"),
+        validators.Length(max=50)
     ])
-
-    stock = IntegerField('stock_disponible', default=0)
-    
-    content = StringField('Contenido neto', [
-        validators.DataRequired(message="El contenido del producto es requerido")
-    ])
-
-    picture = FileField('Foto del producto', [
-        validators.Optional()
-    ])
-
-    status = HiddenField('Estatus', default='Activo')

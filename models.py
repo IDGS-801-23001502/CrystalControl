@@ -109,12 +109,20 @@ class Supplier(db.Model):
 class Producto(db.Model):
     __tablename__ = 'productos'
 
-    id = db.Column('id_producto', db.Integer, primary_key = True)
+    id = db.Column('id_producto', db.Integer, primary_key=True, autoincrement=True)
+    barcode = db.Column('codigo_barras', db.Integer)
     name = db.Column('nombre', db.String(100), nullable=False)
-    price_men = db.Column('precio_men', db.Numeric(10, 2), nullable = False)
-    price_may = db.Column('precio_may', db.Numeric(10, 2), nullable = False)
-    presentation = db.Column('presentacion', db.String(100))
-    stock = db.Column("stock_disponible", db.Integer)
-    content = db.Column('contenido', db.String(100))
-    picture = db.Column('foto', db.String(255), nullable=True)
+    stock = db.Column('stock_disponible', db.Integer, default=0)
+    picture = db.Column('foto', db.String(255), nullable=True) # Campo solicitado para la imagen
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+
+    precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
+
+class ProductoPresentacionPrecio(db.Model):
+    __tablename__ = 'producto_presentación_precio'
+
+    id = db.Column('id_presentacion_precio', db.Integer, primary_key=True)
+    id_producto = db.Column(db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    price_men = db.Column('precio_menudeo', db.Numeric(10, 2), nullable=False)
+    price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
+    presentation = db.Column('presentacion', db.String(50), nullable=False)
