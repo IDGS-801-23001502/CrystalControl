@@ -162,18 +162,26 @@ def editar(id):
                            roles=roles, form_data={})
 
 
+@users_bp.route('/estatus/delete/<int:id>', methods=['GET'])
+@roles_accepted('Administrador')
+def confirmar_estatus(id):
+    usuario = User.query.get_or_404(id)
+    return render_template('users/delete.html', usuario=usuario)
+
 @users_bp.route('/estatus/<int:id>', methods=['POST'])
 @roles_accepted('Administrador')
 def cambiar_estatus(id):
     usuario = User.query.get_or_404(id)
     usuario.estatus = 'Inactivo' if usuario.estatus == 'Activo' else 'Activo'
+    
     try:
         db.session.commit()
-        action = 'activado' if usuario.estatus == 'Activo' else 'desactivado'
+        action = 'desactivado' if usuario.estatus == 'Inactivo' else 'activado'
         flash(f'Usuario "{usuario.username}" {action} correctamente.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error al cambiar estatus: {str(e)}', 'danger')
+        
     return redirect(url_for('users.index'))
 
 

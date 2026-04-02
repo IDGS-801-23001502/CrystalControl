@@ -68,14 +68,49 @@ class FormRaw_Materials(FlaskForm):
     stock_max = DecimalField('Stock Máximo', [
         validators.InputRequired(message="Stock max is required")
     ], default=0.00)
-    unidad_medida = StringField('Unidad de Medida', [
-            validators.DataRequired(message="La unidad es obligatoria"),
-            validators.Length(max=20)
-        ])
+    unidad_medida = SelectField('Unidad de Medida', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Galones'),
+        (4, 'Pieza')
+    ], validators=[
+        validators.DataRequired(message="La unidad de medida es obligatoria")
+    ])
     estatus = SelectField('Status', choices=[
         ('Activo', 'Active'),
         ('Inactivo', 'Inactive')
     ], default='Activo')
+
+
+class FormRaw_Materials_Supplier(FlaskForm):
+    id_material = HiddenField('ID Material', validators=[
+            validators.DataRequired()
+        ])
+    
+    id_supplier = SelectField('Proveedor', coerce=int, validators=[
+        validators.DataRequired(message="Debe seleccionar un proveedor")
+    ])
+    
+    price = DecimalField('Precio de Referencia', [
+        validators.InputRequired(message="El precio es obligatorio"),
+        validators.NumberRange(min=0, message="El precio no puede ser negativo")
+    ], places=2)
+    
+    lot = DecimalField('Cantidad / Lote', [
+        validators.InputRequired(message="La cantidad es obligatoria"),
+        validators.NumberRange(min=0, message="La cantidad debe ser mayor a 0")
+    ], places=2)
+    
+    # Basado en el diccionario que definiste en el modelo
+    unidad_medida = SelectField('Unidad de Medida', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Galones'),
+        (4, 'Pieza')
+    ], validators=[
+        validators.DataRequired(message="La unidad de medida es obligatoria")
+    ])
+
 
 class FormProduct(FlaskForm):
     id = HiddenField('id')

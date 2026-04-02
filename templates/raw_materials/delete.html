@@ -2,64 +2,82 @@
 {% block title %}Cambiar Estatus - Materia Prima{% endblock %}
 
 {% block content %}
-<div class="max-w-lg mx-auto space-y-8">
+<style>
+  /* Estilos dinámicos basados en el estado actual */
+  .danger-badge { background-color: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.25); color: #dc2626; }
+  .danger-border { border-top: 3px solid #ef4444; }
+  .danger-btn    { background-color: #dc2626; color: #fff; }
+  .danger-btn:hover { background-color: #b91c1c; }
 
-  <div class="flex items-center gap-4">
-    <a href="{{ url_for('raw_materials.index') }}"
-       class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#4882ad] hover:border-[#7dc6e9] transition-all">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+  .info-badge   { background-color: rgba(37, 99, 235, 0.10); border-color: rgba(37, 99, 235, 0.25); color: #2563eb; }
+  .info-border  { border-top: 3px solid #3b82f6; }
+  .info-btn     { background-color: #2563eb; color: #fff; }
+  .info-btn:hover { background-color: #1d4ed8; }
+
+  .field-readonly { opacity: 0.6; pointer-events: none; background-color: #f9fafb; }
+</style>
+
+<div class="max-w-2xl mx-auto mt-10 px-4">
+  
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('raw_materials.index') }}" class="group">
+        <div class="flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-400 group-hover:text-emerald-600 group-hover:border-emerald-200 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </div>
     </a>
-    <div>
-      <h2 class="text-2xl font-bold text-[#243c60]">Confirmar Cambio</h2>
-    </div>
+    <h1 class="text-xl font-semibold text-slate-800">
+      {{ 'Desactivar' if raw_material.estatus == 'Activo' else 'Reactivar' }} Materia Prima
+    </h1>
+    <span class="{{ 'danger-badge' if raw_material.estatus == 'Activo' else 'info-badge' }} px-2.5 py-0.5 rounded-full text-xs font-semibold border">
+      {{ 'Baja' if raw_material.estatus == 'Activo' else 'Alta' }}
+    </span>
   </div>
 
-  <div class="bg-white border-2 {% if raw_material.estatus == 'Activo' %}border-amber-200{% else %}border-[#9ec946]/30{% endif %} rounded-[2.5rem] p-8 shadow-sm text-center">
-    
-    <div class="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center 
-      {% if raw_material.estatus == 'Activo' %}bg-amber-50 text-amber-500{% else %}bg-[#f4faf5] text-[#9ec946]{% endif %}">
-      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-      </svg>
-    </div>
-
-    <h3 class="text-xl font-bold text-[#243c60] mb-2">
-      ¿Deseas {% if raw_material.estatus == 'Activo' %}desactivar{% else %}activar{% endif %} esta materia prima?
-    </h3>
-    
-    <p class="text-slate-500 mb-8">
-      Estás a punto de cambiar el estado de: <br>
-      <span class="font-bold text-[#4882ad]">{{ raw_material.name }}</span>
-    </p>
-
-    <form action="{{ url_for('raw_materials.delete_raw_material', id=raw_material.id) }}" method="POST" class="space-y-4">
+  <div class="{{ 'danger-border' if raw_material.estatus == 'Activo' else 'info-border' }} bg-white border border-slate-200 rounded-lg shadow-sm p-8">
+    <form action="{{ url_for('raw_materials.delete_raw_material', id=raw_material.id) }}" method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       
-      <div class="flex flex-col gap-3">
-        <button type="submit" 
-          class="w-full py-4 rounded-2xl font-bold text-white transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg
-          {% if raw_material.estatus == 'Activo' %}bg-amber-500 hover:bg-amber-600 shadow-amber-200{% else %}bg-[#9ec946] hover:bg-[#8bb43d] shadow-[#9ec946]/30{% endif %}">
-          Sí, {% if raw_material.estatus == 'Activo' %}desactivar{% else %}activar{% endif %} materia prima
+      <div class="{{ 'bg-red-50 border-red-200 text-red-700' if raw_material.estatus == 'Activo' else 'bg-blue-50 border-blue-200 text-blue-700' }} border p-4 rounded-lg mb-8 text-sm">
+        {% if raw_material.estatus == 'Activo' %}
+          <div class="flex gap-2">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <p><strong>Atención:</strong> La materia prima <b>{{ raw_material.name }}</b> se marcará como <b>Inactiva</b>. No podrá utilizarse en nuevas órdenes de producción.</p>
+          </div>
+        {% else %}
+          <div class="flex gap-2">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p><strong>Confirmación:</strong> ¿Deseas habilitar nuevamente <b>{{ raw_material.name }}</b> para su uso en el inventario activo?</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="grid md:grid-cols-2 md:gap-8 field-readonly mb-8">
+        <div class="relative z-0 w-full mb-4 group">
+          <input type="text" value="{{ raw_material.name }}" class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200" readonly>
+          <label class="absolute text-sm text-slate-500 -translate-y-6 scale-75 top-3">Nombre del Insumo</label>
+        </div>
+        <div class="relative z-0 w-full mb-4 group">
+          <input type="text" value="{{ raw_material.unidad_medida }}" class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200" readonly>
+          <label class="absolute text-sm text-slate-500 -translate-y-6 scale-75 top-3">Unidad de Medida</label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="{{ 'danger-btn' if raw_material.estatus == 'Activo' else 'info-btn' }} px-6 py-2.5 text-sm font-bold rounded-lg transition-all active:scale-95 shadow-sm">
+          {{ 'Confirmar Baja' if raw_material.estatus == 'Activo' else 'Confirmar Alta' }}
         </button>
-        
         <a href="{{ url_for('raw_materials.index') }}" 
-           class="w-full py-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition-all text-sm">
-          No, mantener cambios
+           class="px-6 py-2.5 text-sm font-bold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
+          Cancelar
         </a>
       </div>
     </form>
   </div>
 
-  <div class="px-6 py-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-3">
-    <svg class="w-5 h-5 text-[#4882ad] mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <p class="text-xs text-[#4882ad] leading-relaxed">
-      <strong>Nota:</strong> Desactivar una materia prima no la elimina de la base de datos, pero impedirá que se utilice en nuevas órdenes de producción hasta que sea activada nuevamente.
-    </p>
-  </div>
+  <p class="mt-6 text-center text-xs text-slate-400 italic">
+    * Esta acción actualiza el estatus en tiempo real pero mantiene el historial de registros.
+  </p>
 </div>
 {% endblock %}

@@ -93,10 +93,15 @@ class Raw_Material(db.Model):
     id= db.Column('id_materia', db.Integer,primary_key=True)
     name = db.Column('nombre',db.String(100))
     stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
-    stock_max= db.Column('stock_max',db.Numeric(10,2))
-    unidad_medida = db.Column('unidad_medida',db.String(20))
+    stock_max= db.Column('stock_max',db.Numeric(10,2))    
+    unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
+    @property
+    def nombre_unidad(self):
+        unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
+        return unidades.get(self.unidad_medida, 'Desconocido')
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
+    suppliers = db.relationship('Raw_Material_Supplier', backref='materia_asociada', cascade="all, delete-orphan")
 
 class Raw_Material_Supplier(db.Model):
     __tablename__ = 'materia_prima_proveedor'
@@ -127,6 +132,8 @@ class Supplier(db.Model):
     phone = db.Column('telefono', db.String(20))
     email = db.Column('correo', db.String(100))
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+
+    materials = db.relationship('Raw_Material_Supplier', backref='proveedor_asociado', cascade="all, delete-orphan")
 
 ##RECETAS##
  
@@ -163,6 +170,8 @@ class RecipeStep(db.Model):
     description = db.Column('descripcion_especifica', db.Text)
     estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
     process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
+
+##PRODUCTOS##
 
 class Producto(db.Model):
     __tablename__ = 'productos'
@@ -225,3 +234,28 @@ class PurchaseDetail(db.Model):
 
     def __repr__(self):
         return f'<PurchaseDetail ID:{self.id} Material:{self.material_id}>'
+##VENTAS##
+
+class Sales(db.Model):
+    __tablename__ = 'Ventas'
+    
+    id = db.Column('id_ventas', db.Integer, primary_key=True)
+    folio = db.Column('folio', db.String(20), unique=True, nullable=False)
+    id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    sale_date = db.Column('fecha_venta', db.DateTime, server_default=db.func.now())
+    gross_total = db.Column('total_bruto', db.Numeric(10,2))
+    profit_total = db.Column('total_utilidad', db.Numeric(10,2))
+    payment_method = db.Column('metodo_pago', db.String(50))
+    id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'), nullable=False)
+
+class SaleDetail(db.Model):
+    __tablename__ = 'detalle_venta'
+    
+    id = db.Column('id_detalle_venta', db.Integer, primary_key=True)
+    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), nullable=False)
+    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    lot = db.Column('cantidad', db.Integer)
+    unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
+    moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
+
+
