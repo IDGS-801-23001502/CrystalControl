@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
-from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField
+from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
@@ -68,14 +68,49 @@ class FormRaw_Materials(FlaskForm):
     stock_max = DecimalField('Stock Máximo', [
         validators.InputRequired(message="Stock max is required")
     ], default=0.00)
-    unidad_medida = StringField('Unidad de Medida', [
-            validators.DataRequired(message="La unidad es obligatoria"),
-            validators.Length(max=20)
-        ])
+    unidad_medida = SelectField('Unidad de Medida', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Galones'),
+        (4, 'Pieza')
+    ], validators=[
+        validators.DataRequired(message="La unidad de medida es obligatoria")
+    ])
     estatus = SelectField('Status', choices=[
         ('Activo', 'Active'),
         ('Inactivo', 'Inactive')
     ], default='Activo')
+
+
+class FormRaw_Materials_Supplier(FlaskForm):
+    id_material = HiddenField('ID Material', validators=[
+            validators.DataRequired()
+        ])
+    
+    id_supplier = SelectField('Proveedor', coerce=int, validators=[
+        validators.DataRequired(message="Debe seleccionar un proveedor")
+    ])
+    
+    price = DecimalField('Precio de Referencia', [
+        validators.InputRequired(message="El precio es obligatorio"),
+        validators.NumberRange(min=0, message="El precio no puede ser negativo")
+    ], places=2)
+    
+    lot = DecimalField('Cantidad / Lote', [
+        validators.InputRequired(message="La cantidad es obligatoria"),
+        validators.NumberRange(min=0, message="La cantidad debe ser mayor a 0")
+    ], places=2)
+    
+    # Basado en el diccionario que definiste en el modelo
+    unidad_medida = SelectField('Unidad de Medida', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Galones'),
+        (4, 'Pieza')
+    ], validators=[
+        validators.DataRequired(message="La unidad de medida es obligatoria")
+    ])
+
 
 class FormProduct(FlaskForm):
     id = HiddenField('id')
@@ -119,3 +154,83 @@ class FormProduct(FlaskForm):
         validators.DataRequired(message="La presentación es requerida"),
         validators.Length(max=50)
     ])
+
+class PurchaseItemForm(FlaskForm):
+    material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
+    quantity = DecimalField('Cantidad', validators=[validators.DataRequired()])
+    class Meta:
+        csrf = False
+
+# Este es el formulario principal
+class PurchaseRequestForm(FlaskForm):
+    items = FieldList(FormField(PurchaseItemForm), min_entries=1)
+    admin_notes = TextAreaField('Notas')
+
+class AnalysisForm(FlaskForm):
+    status = SelectField('Decisión Final', coerce=int, validators=[validators.DataRequired()])
+    analysis_notes = TextAreaField('Notas de Análisis')
+# --- SUB-FORMULARIOS PARA FILAS DINÁMICAS ---
+
+class FormRecipeDetail(FlaskForm):
+    """Formulario para una fila de material/insumo"""
+    material_id = SelectField('Material', coerce=int, validators=[
+        validators.DataRequired(message="Selecciona un material")
+    ])
+    required_quantity = DecimalField('Cantidad', [
+        validators.InputRequired(message="Requerido")
+    ], places=2)
+    unit_med = SelectField('Unidad', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Piezas')
+    ])
+
+class FormRecipeStep(FlaskForm):
+    """Formulario para una fila de pasos de la receta"""
+    step_order = IntegerField('Orden', [validators.Optional()])
+    stage_name = StringField('Etapa', [validators.Length(max=50)])
+    step_description = TextAreaField('Descripción')
+    estimated_time = IntegerField('Minutos', [validators.NumberRange(min=1)])
+    process_type = SelectField('Tipo Proceso', coerce=int, choices=[
+        (1, 'Mezclado'),
+        (2, 'Envasado'),
+        (3, 'Reposo')
+    ])
+
+# --- FORMULARIO PRINCIPAL ---
+
+class FormRecipe(FlaskForm):
+    id = HiddenField('id')
+    
+    
+    final_name = StringField('Nombre de la Receta', [
+        validators.DataRequired(message="El nombre es obligatorio"),
+        validators.Length(min=3, max=100)
+    ])
+    
+    product_id = SelectField('Producto Final', coerce=int, validators=[
+        validators.DataRequired(message="Selecciona el producto que resulta de esta receta")
+    ])
+    
+    general_instructions = TextAreaField('Instrucciones Generales')
+    
+    estimated_time = IntegerField('Tiempo Total (min)', [validators.Optional()])
+    
+    expected_utility = DecimalField('Utilidad Esperada (%)', [validators.Optional()], places=2)
+    
+    estimated_waste = DecimalField('Merma Estimada (%)', [validators.Optional()], places=2)
+    
+    produced_quantity = IntegerField('Cantidad a Producir (Lote)', [validators.Optional()])
+
+    unit_med = SelectField('Unidad de Medida del Lote', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Piezas')
+    ])
+    
+    status = HiddenField('Estatus', default=1)
+
+    # Listas dinámicas
+    # min_entries=1 asegura que al menos aparezca una fila al cargar
+    materials = FieldList(FormField(FormRecipeDetail), min_entries=1)
+    steps = FieldList(FormField(FormRecipeStep), min_entries=1)

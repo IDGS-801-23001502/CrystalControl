@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, g
 from flask_wtf.csrf import CSRFProtect
 from config import DevelopmentConfig
 from utils.decorators import exclude_roles, roles_accepted
@@ -35,6 +35,19 @@ app.register_blueprint(sales_bp, url_prefix='/panel/sales')
 app.register_blueprint(login_bp, url_prefix='/login')
 app.register_blueprint(ecommerce_bp, url_prefix="/")
 
+@app.before_request
+def load_user_permissions():
+    if not current_user.is_authenticated:
+        g.level = 0
+        return
+    blueprint_actual = request.blueprint
+    modulos_ignorados = ['login', 'ecommerce']
+    
+    if blueprint_actual and blueprint_actual not in modulos_ignorados:
+        g.level = current_user.nivel_acceso(blueprint_actual)
+    else:
+        g.level = 0
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -51,6 +64,8 @@ def panel():
         return redirect(url_for('login.login_employees'))
     if hasattr(current_user, 'id_cliente'):
         return redirect(url_for('cliente_dashboard'))
+    print(f"El nivel de usuario en suppliers es {current_user.nivel_acceso('suppliers')}")
+    print(f"La url es {request.path} y deberia de ser {url_for('panel')}")
     return render_template("index.html")
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}{% endblock %}Crystal Control</title>
+    <title>{% block title %}{% endblock %} - Crystal Control</title>
     <link
       rel="shortcut icon"
       href="{{url_for('static',filename='img/icons/logo.png')}}"
@@ -97,10 +97,13 @@
             </div>
           </li>
 
-          {# --- SECCIÓN COMPRAS --- #}
+          {# --- SECCIÓN COMPRAS --- #} {% if
+          current_user.has_role('Administrador') or
+          current_user.has_role('Compras') or
+          current_user.has_role('Almacenista') %}
           <li class="pt-2">
             <div
-              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/compras' in request.path else 'text-slate-400' }}"
+              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/purchases' in request.path else 'text-slate-400' }}"
             >
               <svg
                 class="w-4 h-4 mr-3"
@@ -126,16 +129,18 @@
               >
                 Lista Entregas
               </a>
+              {% if current_user.has_role('Administrador') or
+              current_user.has_role('Compras') %}
               <a
-                href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                href="{{url_for('purchases.index')}}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('purchases.index') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Lista Compras
               </a>
+              {% endif %}
             </div>
           </li>
-
-          {# --- SECCIÓN PRODUCCIÓN --- #}
+          {% endif %} {# --- SECCIÓN PRODUCCIÓN --- #}
           <li class="pt-2">
             <div
               class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/produccion' in request.path else 'text-slate-400' }}"
@@ -237,14 +242,13 @@
           </li>
 
           <div class="space-y-1">
-            {# Usuarios #} 
-            {% if current_user.has_role('Administrador') %}
+            {# Usuarios #} {% if current_user.has_role('Administrador') %}
             <a
               href="{{ url_for('users.index') }}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('users.index') else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('users.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('users.index') else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == url_for('users.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -258,14 +262,13 @@
               </svg>
               Usuarios/Empleados
             </a>
-            {% endif %} 
-            {# Recetas #}
+            {% endif %} {# Recetas #}
             <a
-              href="#"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              href="{{url_for('recipes.index')}}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('recipes.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('recipes.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -283,10 +286,10 @@
             {# Análisis #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -304,10 +307,10 @@
             {# Productos #}
             <a
               href="{{url_for('products.products')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -325,10 +328,10 @@
             {# Materia Prima #}
             <a
               href="{{url_for('raw_materials.index')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('raw_materials.index') else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('raw_materials.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('raw_materials.index') else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == url_for('raw_materials.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -345,11 +348,11 @@
 
             {# Proveedores #}
             <a
-              href="{{url_for('suppliers.suppliers')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('suppliers.suppliers') else 'text-slate-600 hover:bg-slate-50' }}"
+              href="{{url_for('suppliers.index')}}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('suppliers.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('suppliers.suppliers') else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('suppliers.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -440,6 +443,25 @@
 
     <main class="flex-1 flex flex-col overflow-hidden">
       <div class="flex-1 overflow-y-auto p-8">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-6 space-y-2">
+      {% for cat, msg in messages %}
+        <div class="flex items-start gap-3 px-5 py-4 rounded-2xl border text-sm font-medium animate-bounce-short
+          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% elif cat == 'danger' %}bg-red-50 border-red-200 text-red-700{% else %}bg-blue-50 border-blue-200 text-blue-700{% endif %}">
+          <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {% if cat == 'success' %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            {% else %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>{% endif %}
+          </svg>
+          <span>{{ msg|safe }}</span>
+        </div>
+      {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+
         <div class="max-w-7xl mx-auto">{% block content %}{% endblock %}</div>
       </div>
     </main>
