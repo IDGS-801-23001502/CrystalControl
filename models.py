@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
 from flask_pymongo import PyMongo
 from sqlalchemy.dialects.mysql import TINYINT
+from datetime import datetime
+
  
 mongo= PyMongo()
 db = SQLAlchemy()
@@ -120,7 +122,6 @@ class Raw_Material_Supplier(db.Model):
         return unidades.get(self.unidad_medida, 'Desconocido')
 
 ##PROVEEDORES##
-
 class Supplier(db.Model):
     __tablename__ = 'Proveedores'
     
@@ -147,9 +148,15 @@ class Recipe(db.Model):
     expected_utility = db.Column('utilidad_esperada_porcent', db.Numeric(5, 2))
     estimated_waste = db.Column('merma_estimada_porcent', db.Numeric(5, 2))
     produced_quantity = db.Column('cantidad_producida', db.Integer)
+    unit_med = db.Column('unidad_medida', TINYINT) # 1-Kilos 2-Litros 3-Piezas
     product_id = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'))
     status = db.Column('estatus', db.Integer, default=1)
-    
+    version = db.Column('receta_version_anterior', db.Integer)
+    details = db.relationship('RecipeDetail', backref='recipe')
+    steps = db.relationship('RecipeStep', backref='recipe')
+    product = db.relationship('Producto', backref='recipe')
+
+
 class RecipeDetail(db.Model):
     __tablename__ = 'receta_detalle'
     
@@ -158,6 +165,8 @@ class RecipeDetail(db.Model):
     material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
     required_quantity =  db.Column('cantidad_necesaria', db.Numeric(10, 2), nullable=False)
     unit_med = db.Column('unidad_medida', TINYINT) #1-Kilos 2-Litros 3-Piezas 
+
+    material = db.relationship('Raw_Material', backref='recipe_details')
 
 class RecipeStep(db.Model):
     __tablename__ = 'pasosreceta'
@@ -176,10 +185,11 @@ class Producto(db.Model):
     __tablename__ = 'productos'
 
     id = db.Column('id_producto', db.Integer, primary_key=True, autoincrement=True)
-    barcode = db.Column('codigo_barras', db.Integer)
+    barcode = db.Column('codigo_barras', db.String(20))
     name = db.Column('nombre', db.String(100), nullable=False)
+    category = db.Column('categoria', db.String(50), nullable=False)
     stock = db.Column('stock_disponible', db.Integer, default=0)
-    picture = db.Column('foto', db.String(255), nullable=True) # Campo solicitado para la imagen
+    picture = db.Column('foto', db.String(255), nullable=True) 
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
 
     precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
@@ -193,6 +203,46 @@ class ProductoPresentacionPrecio(db.Model):
     price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
     presentation = db.Column('presentacion', db.String(50), nullable=False)
 
+# Modelos de Compras
+class Purchase(db.Model):
+    __tablename__ = 'Compras'
+    
+    id = db.Column('id_compra', db.Integer, primary_key=True, autoincrement=True)
+    folio = db.Column('folio_compra', db.String(20), unique=True)
+    requester_id = db.Column('id_usuario_solicita', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    request_date = db.Column('fecha_solicitud', db.DateTime, default=datetime.utcnow)
+    generate_date = db.Column('fecha_generada', db.DateTime)
+    # 1: Solicitud, 2: En Análisis, 3: Comparativa, 4: Orden Generada, 5: En Tránsito, 6: Recibido, 7: Cancelado/Rechazada, 8: Entrega Incompleta
+    status = db.Column('status_general', db.Integer, default=1)
+    admin_notes = db.Column('observaciones_admin', db.Text)
+
+    # Relaciones
+    details = db.relationship('PurchaseDetail', backref='purchase', lazy=True, cascade="all, delete-orphan")
+    # Asumo que tu clase de usuarios se llama 'User'
+    requester = db.relationship('User', backref='purchase_requests')
+
+    def __repr__(self):
+        return f'<Purchase {self.folio} - Status {self.status}>'
+
+class PurchaseDetail(db.Model):
+    __tablename__ = 'Detalle_Compras'
+    id = db.Column('id_detalle_compra', db.Integer, primary_key=True, autoincrement=True)
+    purchase_id = db.Column('id_compra', db.Integer, db.ForeignKey('Compras.id_compra', ondelete='CASCADE'), nullable=False)
+    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    supplier_id = db.Column('id_proveedor_seleccionado', db.Integer, db.ForeignKey('Proveedores.id_proveedor'), nullable=True)
+    # Campo de Unidad de Medida (1: Kilos, 2: Litros, 3: Galones, 4: Piezas)
+    demand_quantity = db.Column('cantidad_solicitada', db.Numeric(10,2), nullable=False)
+    approved_quantity = db.Column('cantidad_aprobada', db.Numeric(10, 2), default=0.0)
+    unit_price = db.Column('precio_unitario_final', db.Numeric(10, 2), default=0.0)
+    delivery_days = db.Column('dias_entrega', db.Integer)
+    # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: Recibido, 5:Revibido con retraso
+    status = db.Column('status_item', db.Integer, default=1)
+
+    material = db.relationship('Raw_Material', backref='purchase_details')
+    supplier = db.relationship('Supplier', backref='purchase_details')
+
+    def __repr__(self):
+        return f'<PurchaseDetail ID:{self.id} Material:{self.material_id}>'
 ##VENTAS##
 
 class Sales(db.Model):

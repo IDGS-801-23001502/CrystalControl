@@ -16,7 +16,7 @@ suppliers_bp = Blueprint(
 
 @suppliers_bp.route('/')
 @roles_accepted('Administrador','Compras')
-def suppliers():
+def index():
     all_suppliers = Supplier.query.all()
     return render_template('/suppliers/list.html', all_suppliers=all_suppliers)
 
@@ -36,7 +36,7 @@ def add_supplier():
                 
                 db.session.add(new_supplier)
                 db.session.commit()                 
-                return redirect(url_for('suppliers.suppliers'))
+                return redirect(url_for('suppliers.index'))
                 
             except Exception as e:
                 db.session.rollback()
@@ -61,7 +61,7 @@ def edit_supplier(id):
                 form.populate_obj(supplier)
                 db.session.commit()
                 flash("Proveedor actualizado", "success")
-                return redirect(url_for('suppliers.suppliers'))
+                return redirect(url_for('suppliers.index'))
             
             except Exception as e:
                 db.session.rollback()
@@ -90,7 +90,7 @@ def delete_supplier(id):
 
             db.session.commit()
             flash(mensaje, categoria)
-            return redirect(url_for('suppliers.suppliers'))
+            return redirect(url_for('suppliers.index'))
         
         except Exception as e:
             db.session.rollback()

@@ -1,0 +1,101 @@
+{% extends "layout_employees.html" %}
+{% block title %} Analizar Solicitud {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn:hover  { background-color: #047857; }
+  
+  .info-card { background-color: #f8fafc; border: 1px border-slate-200; border-radius: 0.75rem; }
+  .status-badge-solicitud { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+</style>
+
+<div class="max-w-5xl mx-auto mt-10 px-4 mb-20">
+
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-4">
+      <div class="emerald-icon-bg flex items-center justify-center w-12 h-12 rounded-2xl border">
+        <svg class="emerald-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-2xl font-bold text-slate-800">Analizar Folio: {{ purchase.folio }}</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold status-badge-solicitud">Solicitud Pendiente</span>
+        </div>
+        <p class="text-sm text-slate-500">Solicitado por <strong>{{ purchase.requester.username }}</strong> el {{ purchase.request_date.strftime('%d/%m/%Y') }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-8">
+    
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+          <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Materiales Solicitados</h3>
+        </div>
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-400 uppercase bg-slate-50">
+            <tr>
+              <th class="px-6 py-3">Insumo</th>
+              <th class="px-6 py-3 text-center">Cantidad</th>
+              <th class="px-6 py-3">Unidad</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for detail in purchase.details %}
+            <tr>
+              <td class="px-6 py-4 font-medium text-slate-800">{{ detail.material.name }}</td>
+              <td class="px-6 py-4 text-center font-bold text-emerald-600">{{ detail.demand_quantity }}</td>
+              <td class="px-6 py-4 text-slate-500">{{ detail.unit.name if detail.unit else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if purchase.admin_notes %}
+      <div class="info-card p-6">
+        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Comentarios del Solicitante:</h4>
+        <p class="text-slate-700 italic">"{{ purchase.admin_notes }}"</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="lg:col-span-1">
+      <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-md p-6 sticky top-6">
+        <h3 class="font-bold text-slate-800 mb-6">Dictamen de Análisis</h3>
+        
+        <form action="{{ url_for('purchases.analyze_demand', id=purchase.id) }}" method="post">
+          {{ form.csrf_token }}
+
+          <div class="mb-6">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Decisión Final</label>
+            {{ form.status(class="block w-full rounded-lg border-slate-200 text-sm focus:ring-emerald-500") }}
+          </div>
+
+          <div class="mb-8">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Observaciones del Analista</label>
+            {{ form.analysis_notes(class="block w-full rounded-lg border-slate-200 text-sm focus:ring-emerald-500", rows="4", placeholder="Ej: Se aprueba parcialmente por falta de presupuesto...") }}
+          </div>
+
+          <button type="submit" class="emerald-btn w-full py-3 rounded-lg font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            Guardar Dictamen
+          </button>
+          
+          <a href="{{ url_for('purchases.index') }}" class="block text-center mt-4 text-sm text-slate-400 hover:text-slate-600 transition-colors">
+            Posponer revisión
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

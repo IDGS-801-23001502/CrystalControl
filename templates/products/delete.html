@@ -18,13 +18,13 @@
         </svg>
     </div>
     <div>
-        <h1 class="text-xl font-semibold text-heading">Desactivar Producto</h1>
-        <p class="text-xs text-body">El producto dejará de estar disponible en el catálogo</p>
+        <h1 class="text-xl font-semibold text-slate-800">Desactivar Producto</h1>
+        <p class="text-xs text-slate-500">El producto dejará de estar disponible en el catálogo</p>
     </div>
     <span class="danger-badge px-2.5 py-0.5 rounded-full text-xs font-semibold border">Baja Lógica</span>
   </div>
 
-  <div class="danger-border bg-neutral-primary-soft border border-default rounded-base shadow-xs p-8">
+  <div class="danger-border bg-white border border-slate-200 rounded-lg shadow-sm p-8">
     <form action="{{ url_for('products.delete_product', id=producto.id) }}" method="post">
       {{ form.csrf_token }}
       
@@ -32,33 +32,36 @@
         <strong>Atención:</strong> El producto <b>{{ producto.name }}</b> cambiará su estatus a <b>Inactivo</b>. Podrás reactivarlo más tarde desde el panel de administración.
       </div>
 
+      {# Obtenemos la información de la tabla de precios vinculada #}
+      {% set info = producto.precios[0] if producto.precios else None %}
+
       <div class="grid md:grid-cols-2 md:gap-8 field-readonly mb-6">
         <div class="relative z-0 w-full mb-8 group">
-          <input type="text" value="{{ producto.name }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
-          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Nombre del Producto</label>
+          <input type="text" value="{{ producto.name }}" class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300" readonly>
+          <label class="absolute text-sm text-slate-500 -translate-y-6 scale-75 top-3">Nombre del Producto</label>
         </div>
         <div class="relative z-0 w-full mb-8 group">
-          <input type="text" value="{{ producto.presentation }} - {{ producto.content }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
-          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Presentación / Contenido</label>
+          <input type="text" value="{{ info.presentation if info else 'Sin presentación' }}" class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300" readonly>
+          <label class="absolute text-sm text-slate-500 -translate-y-6 scale-75 top-3">Presentación</label>
         </div>
       </div>
 
       <div class="grid md:grid-cols-2 md:gap-8 field-readonly mb-8">
         <div class="relative z-0 w-full mb-4 group">
-          <input type="text" value="${{ producto.price_men }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
-          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Precio Menudeo</label>
+          <input type="text" value="${{ info.price_men if info else '0.00' }}" class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300" readonly>
+          <label class="absolute text-sm text-slate-500 -translate-y-6 scale-75 top-3">Precio Menudeo</label>
         </div>
         <div class="relative z-0 w-full mb-4 group">
-          <input type="text" value="${{ producto.price_may }}" class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium" readonly>
-          <label class="absolute text-sm text-body -translate-y-6 scale-75 top-3">Precio Mayoreo</label>
+          <input type="text" value="${{ info.price_may if info else '0.00' }}" class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300" readonly>
+          <label class="absolute text-sm text-slate-500 -translate-y-6 scale-75 top-3">Precio Mayoreo</label>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
-        <button type="submit" class="danger-btn px-5 py-2.5 text-sm font-medium rounded-base active:scale-95 transition-all shadow-sm">
+        <button type="submit" class="danger-btn px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all shadow-sm focus:outline-none">
             Confirmar Desactivación
         </button>
-        <a href="{{ url_for('products.list_products') }}" class="cancel-btn px-5 py-2.5 text-sm font-medium rounded-base active:scale-95 transition-all">
+        <a href="{{ url_for('products.products') }}" class="cancel-btn px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all focus:outline-none">
             Cancelar
         </a>
       </div>

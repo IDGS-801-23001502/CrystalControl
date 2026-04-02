@@ -1,0 +1,54 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+
+<div class="flex items-center justify-center min-h-[60vh] px-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        
+        <div class="p-6 text-center {{ 'bg-red-50' if recipe.status == 1 else 'bg-emerald-50' }}">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full {{ 'bg-red-100' if recipe.status == 1 else 'bg-emerald-100' }} mb-4">
+                {% if recipe.status == 1 %}
+                    <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                {% else %}
+                    <svg class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                {% endif %}
+            </div>
+            <h2 class="text-xl font-bold text-slate-800">
+                {{ '¿Desactivar Receta?' if recipe.status == 1 else '¿Reactivar Receta?' }}
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">
+                {{ recipe.unique_code }} - {{ recipe.final_name }}
+            </p>
+        </div>
+
+        <div class="p-6">
+            <p class="text-slate-600 text-center text-sm leading-relaxed">
+                {% if recipe.status == 1 %}
+                    Al desactivar esta receta, ya no aparecerá en las órdenes de producción activas hasta que sea habilitada nuevamente.
+                {% else %}
+                    Esta receta volverá a estar disponible para el proceso de producción y gestión de inventarios.
+                {% endif %}
+            </p>
+
+            <form method="POST" class="mt-8 flex flex-col gap-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <button type="submit" 
+                    class="w-full py-3 px-4 rounded-xl text-white font-semibold shadow-lg transition-all active:scale-95
+                    {{ 'bg-red-500 hover:bg-red-600 shadow-red-200' if recipe.status == 1 else 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200' }}">
+                    Confirmar {{ 'Desactivación' if recipe.status == 1 else 'Activación' }}
+                </button>
+
+                <a href="{{ url_for('recipes.index') }}" 
+                   class="w-full py-3 px-4 rounded-xl bg-slate-100 text-slate-600 font-semibold text-center hover:bg-slate-200 transition-all">
+                    Cancelar y volver
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
