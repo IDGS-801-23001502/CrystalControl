@@ -11,11 +11,8 @@
   .emerald-thead      { background-color: rgba(16, 185, 129, 0.05); }
   .emerald-row:hover  { background-color: rgba(16, 185, 129, 0.05); }
   .emerald-link       { color: #059669; }
-  
-  /* Estilo para la miniatura del producto */
   .product-thumb      { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
   
-  /* Filtros */
   .filter-pill {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 14px; border-radius: 999px; font-size: 0.75rem;
@@ -27,7 +24,6 @@
   .filter-pill.active-all      { background-color: #1e293b; color: #fff; border-color: #1e293b; }
   .filter-pill.active-active   { background-color: rgba(16,185,129,0.12); color: #047857; border-color: rgba(16,185,129,0.35); }
   .filter-pill.active-inactive { background-color: rgba(239,68,68,0.10); color: #dc2626; border-color: rgba(239,68,68,0.30); }
-
   .pill-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .dot-active   { background-color: #10b981; }
   .dot-inactive { background-color: #ef4444; }
@@ -73,22 +69,16 @@
 
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-400 font-medium me-1">Estatus:</span>
-
         <button class="filter-pill active-all" data-filter="all">
-          <span class="pill-dot dot-all"></span>
-          Todos
+          <span class="pill-dot dot-all"></span> Todos
           <span id="count-all" class="ml-1 bg-slate-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
         </button>
-
         <button class="filter-pill" data-filter="Activo">
-          <span class="pill-dot dot-active"></span>
-          Activos
+          <span class="pill-dot dot-active"></span> Activos
           <span id="count-active" class="ml-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
         </button>
-
         <button class="filter-pill" data-filter="Inactivo">
-          <span class="pill-dot dot-inactive"></span>
-          Inactivos
+          <span class="pill-dot dot-inactive"></span> Inactivos
           <span id="count-inactive" class="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
         </button>
       </div>
@@ -99,7 +89,7 @@
         <tr>
           <th scope="col" class="px-6 py-3 font-semibold">Foto</th>
           <th scope="col" class="px-6 py-3 font-semibold">Producto</th>
-          <th scope="col" class="px-6 py-3 font-semibold">Stock</th>
+          <th scope="col" class="px-6 py-3 font-semibold text-center">Stock</th>
           <th scope="col" class="px-6 py-3 font-semibold">Presentación</th>
           <th scope="col" class="px-6 py-3 font-semibold">Precio Men.</th>
           <th scope="col" class="px-6 py-3 font-semibold">Precio May.</th>
@@ -123,12 +113,26 @@
 
           <th scope="row" class="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">
             {{ prod.name }}
-            <p class="text-[10px] font-normal text-slate-400 italic">Stock{{ prod.stock }}</p>
+            <p class="text-[10px] font-normal text-slate-400 italic">Código: {{ prod.barcode or 'N/A' }}</p>
           </th>
           
-          <td class="px-6 py-4">{{ prod.presentation }} ({{ prod.content }})</td>
-          <td class="px-6 py-4 font-semibold text-emerald-600">${{ prod.price_men }}</td>
-          <td class="px-6 py-4 text-slate-600">${{ prod.price_may }}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="font-medium {{ 'text-slate-700' if prod.stock > 0 else 'text-red-500' }}">
+              {{ prod.stock }}
+            </span>
+          </td>
+
+          {# Accedemos a la tabla de precios mediante la relación 'precios' #}
+          {% set info = prod.precios[0] if prod.precios else None %}
+          <td class="px-6 py-4 text-slate-600">
+            {{ info.presentation if info else 'Sin datos' }}
+          </td>
+          <td class="px-6 py-4 font-semibold text-emerald-600">
+            {{ '$' ~ info.price_men if info else '-' }}
+          </td>
+          <td class="px-6 py-4 text-slate-600">
+            {{ '$' ~ info.price_may if info else '-' }}
+          </td>
           
           <td class="px-6 py-4 text-center">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {{ 'bg-emerald-50 text-emerald-700 border-emerald-200' if prod.status == 'Activo' else 'bg-red-50 text-red-600 border-red-200' }} border">
@@ -140,7 +144,7 @@
           <td class="px-6 py-4 flex items-center justify-center gap-3">
             <a href="{{ url_for('products.edit_product', id=prod.id) }}" 
                class="emerald-link inline-flex items-center gap-1 text-xs font-medium transition-colors">Editar</a>
-            <a href="{{ url_for('products.delete_product', id=prod.id) }}" 
+            <a href="{{ url_for('products.delete_product', id=prod.id) }}"
                class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">Eliminar</a>
           </td>
         </tr>

@@ -63,17 +63,18 @@ class EditFormSupplier(FormSupplier): #Se hereda el formulario de proveedr para 
 
 class FormProduct(FlaskForm):
     id = HiddenField('id')
+    
     name = StringField('Nombre del producto', [
         validators.DataRequired(message="El nombre del producto es requerido"),
         validators.Length(min=3, max=100)
     ])
     
-    barcode = IntegerField('Código de barras', [
+    barcode = StringField('Código de barras', [
         validators.Optional()
     ])
 
     stock = IntegerField('Stock disponible', [
-        validators.DataRequired(message="El stock es requerido")
+        validators.Optional()
     ], default=0)
 
     picture = FileField('Foto del producto', [
