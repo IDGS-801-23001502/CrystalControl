@@ -177,10 +177,11 @@ class Producto(db.Model):
     __tablename__ = 'productos'
 
     id = db.Column('id_producto', db.Integer, primary_key=True, autoincrement=True)
-    barcode = db.Column('codigo_barras', db.Integer)
+    barcode = db.Column('codigo_barras', db.String(20))
     name = db.Column('nombre', db.String(100), nullable=False)
+    category = db.Column('categoria', db.String(50), nullable=False)
     stock = db.Column('stock_disponible', db.Integer, default=0)
-    picture = db.Column('foto', db.String(255), nullable=True) # Campo solicitado para la imagen
+    picture = db.Column('foto', db.String(255), nullable=True) 
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
 
     precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
