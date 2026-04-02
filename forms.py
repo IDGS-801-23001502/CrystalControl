@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
+from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, TextAreaField, FieldList, FormField
 from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField
 from wtforms import validators
 
@@ -110,3 +110,69 @@ class FormProduct(FlaskForm):
         validators.DataRequired(message="La presentación es requerida"),
         validators.Length(max=50)
     ])
+
+# --- SUB-FORMULARIOS PARA FILAS DINÁMICAS ---
+
+class FormRecipeDetail(FlaskForm):
+    """Formulario para una fila de material/insumo"""
+    material_id = SelectField('Material', coerce=int, validators=[
+        validators.DataRequired(message="Selecciona un material")
+    ])
+    required_quantity = DecimalField('Cantidad', [
+        validators.InputRequired(message="Requerido")
+    ], places=2)
+    unit_med = SelectField('Unidad', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Piezas')
+    ])
+
+class FormRecipeStep(FlaskForm):
+    """Formulario para una fila de pasos de la receta"""
+    step_order = IntegerField('Orden', [validators.Optional()])
+    stage_name = StringField('Etapa', [validators.Length(max=50)])
+    step_description = TextAreaField('Descripción')
+    estimated_time = IntegerField('Minutos', [validators.NumberRange(min=1)])
+    process_type = SelectField('Tipo Proceso', coerce=int, choices=[
+        (1, 'Mezclado'),
+        (2, 'Envasado'),
+        (3, 'Reposo')
+    ])
+
+# --- FORMULARIO PRINCIPAL ---
+
+class FormRecipe(FlaskForm):
+    id = HiddenField('id')
+    
+    
+    final_name = StringField('Nombre de la Receta', [
+        validators.DataRequired(message="El nombre es obligatorio"),
+        validators.Length(min=3, max=100)
+    ])
+    
+    product_id = SelectField('Producto Final', coerce=int, validators=[
+        validators.DataRequired(message="Selecciona el producto que resulta de esta receta")
+    ])
+    
+    general_instructions = TextAreaField('Instrucciones Generales')
+    
+    estimated_time = IntegerField('Tiempo Total (min)', [validators.Optional()])
+    
+    expected_utility = DecimalField('Utilidad Esperada (%)', [validators.Optional()], places=2)
+    
+    estimated_waste = DecimalField('Merma Estimada (%)', [validators.Optional()], places=2)
+    
+    produced_quantity = IntegerField('Cantidad a Producir (Lote)', [validators.Optional()])
+
+    unit_med = SelectField('Unidad de Medida del Lote', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Piezas')
+    ])
+    
+    status = HiddenField('Estatus', default=1)
+
+    # Listas dinámicas
+    # min_entries=1 asegura que al menos aparezca una fila al cargar
+    materials = FieldList(FormField(FormRecipeDetail), min_entries=1)
+    steps = FieldList(FormField(FormRecipeStep), min_entries=1)

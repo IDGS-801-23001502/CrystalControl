@@ -97,6 +97,22 @@ class Raw_Material(db.Model):
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
 
 
+## TABLA INTERMEDIA: PRECIOS POR PROVEEDOR ##
+
+class MaterialSupplier(db.Model):
+    __tablename__ = 'materia_prima_proveedor'
+    
+    id_materia = db.Column(db.Integer, db.ForeignKey('MateriaPrima.id_materia'), primary_key=True)
+    id_proveedor = db.Column(db.Integer, db.ForeignKey('Proveedores.id_proveedor'), primary_key=True)    
+    reference_price = db.Column('precio_referencia', db.Numeric(10, 2), nullable=False)
+    quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    unit_med = db.Column('unidad_medida', TINYINT) # 1-Kilos, 2-Litros, 3-Piezas
+
+    # Relaciones para acceder fácil a los nombres si se necesita
+    materia = db.relationship('Raw_Material', backref='proveedores_precios')
+    proveedor = db.relationship('Supplier', backref='materias_precios')
+
+
 
 ##PROVEEDORES##
 
@@ -124,9 +140,15 @@ class Recipe(db.Model):
     expected_utility = db.Column('utilidad_esperada_porcent', db.Numeric(5, 2))
     estimated_waste = db.Column('merma_estimada_porcent', db.Numeric(5, 2))
     produced_quantity = db.Column('cantidad_producida', db.Integer)
+    unit_med = db.Column('unidad_medida', TINYINT) # 1-Kilos 2-Litros 3-Piezas
     product_id = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'))
     status = db.Column('estatus', db.Integer, default=1)
-    
+    version = db.Column('receta_version_anterior', db.Integer)
+    details = db.relationship('RecipeDetail', backref='recipe')
+    steps = db.relationship('RecipeStep', backref='recipe')
+    product = db.relationship('Producto', backref='recipe')
+
+
 class RecipeDetail(db.Model):
     __tablename__ = 'receta_detalle'
     
@@ -135,6 +157,8 @@ class RecipeDetail(db.Model):
     material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
     required_quantity =  db.Column('cantidad_necesaria', db.Numeric(10, 2), nullable=False)
     unit_med = db.Column('unidad_medida', TINYINT) #1-Kilos 2-Litros 3-Piezas 
+
+    material = db.relationship('Raw_Material', backref='recipe_details')
 
 class RecipeStep(db.Model):
     __tablename__ = 'pasosreceta'

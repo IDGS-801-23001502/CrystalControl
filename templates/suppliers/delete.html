@@ -53,7 +53,7 @@
         <button type="submit" class="{{ 'danger-btn' if supplier.status == 'Activo' else 'info-btn' }} px-5 py-2.5 text-sm font-medium rounded-lg transition-colors shadow-sm">
           {{ 'Confirmar Baja' if supplier.status == 'Activo' else 'Confirmar Alta' }}
         </button>
-        <a href="{{ url_for('suppliers.suppliers') }}" class="px-5 py-2.5 text-sm font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
+        <a href="{{ url_for('suppliers.index') }}" class="px-5 py-2.5 text-sm font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
           Cancelar
         </a>
       </div>
