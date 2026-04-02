@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
 from flask_pymongo import PyMongo
 from sqlalchemy.dialects.mysql import TINYINT
+from datetime import datetime
+
  
 mongo= PyMongo()
 db = SQLAlchemy()
@@ -96,10 +98,25 @@ class Raw_Material(db.Model):
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
 
-
+class Raw_Material_Supplier(db.Model):
+    __tablename__ = 'materia_prima_proveedor'
+    id_material = db.Column('id_materia', db.Integer, 
+                            db.ForeignKey('MateriaPrima.id_materia'), 
+                            primary_key=True, nullable=False)
+    
+    id_supplier = db.Column('id_proveedor', db.Integer, 
+                            db.ForeignKey('Proveedores.id_proveedor'), 
+                            primary_key=True, nullable=False)
+    price = db.Column('precio_referencia', db.Numeric(10, 2), nullable=False)
+    lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    # (1: Kilos, 2: Litros, etc.)
+    unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
+    @property
+    def nombre_unidad(self):
+        unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
+        return unidades.get(self.unidad_medida, 'Desconocido')
 
 ##PROVEEDORES##
-
 class Supplier(db.Model):
     __tablename__ = 'Proveedores'
     
@@ -167,3 +184,44 @@ class ProductoPresentacionPrecio(db.Model):
     price_men = db.Column('precio_menudeo', db.Numeric(10, 2), nullable=False)
     price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
     presentation = db.Column('presentacion', db.String(50), nullable=False)
+
+# Modelos de Compras
+class Purchase(db.Model):
+    __tablename__ = 'Compras'
+    
+    id = db.Column('id_compra', db.Integer, primary_key=True, autoincrement=True)
+    folio = db.Column('folio_compra', db.String(20), unique=True)
+    requester_id = db.Column('id_usuario_solicita', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    request_date = db.Column('fecha_solicitud', db.DateTime, default=datetime.utcnow)
+    generate_date = db.Column('fecha_generada', db.DateTime)
+    # 1: Solicitud, 2: En Análisis, 3: Comparativa, 4: Orden Generada, 5: En Tránsito, 6: Recibido, 7: Cancelado/Rechazada, 8: Entrega Incompleta
+    status = db.Column('status_general', db.Integer, default=1)
+    admin_notes = db.Column('observaciones_admin', db.Text)
+
+    # Relaciones
+    details = db.relationship('PurchaseDetail', backref='purchase', lazy=True, cascade="all, delete-orphan")
+    # Asumo que tu clase de usuarios se llama 'User'
+    requester = db.relationship('User', backref='purchase_requests')
+
+    def __repr__(self):
+        return f'<Purchase {self.folio} - Status {self.status}>'
+
+class PurchaseDetail(db.Model):
+    __tablename__ = 'Detalle_Compras'
+    id = db.Column('id_detalle_compra', db.Integer, primary_key=True, autoincrement=True)
+    purchase_id = db.Column('id_compra', db.Integer, db.ForeignKey('Compras.id_compra', ondelete='CASCADE'), nullable=False)
+    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    supplier_id = db.Column('id_proveedor_seleccionado', db.Integer, db.ForeignKey('Proveedores.id_proveedor'), nullable=True)
+    # Campo de Unidad de Medida (1: Kilos, 2: Litros, 3: Galones, 4: Piezas)
+    demand_quantity = db.Column('cantidad_solicitada', db.Numeric(10,2), nullable=False)
+    approved_quantity = db.Column('cantidad_aprobada', db.Numeric(10, 2), default=0.0)
+    unit_price = db.Column('precio_unitario_final', db.Numeric(10, 2), default=0.0)
+    delivery_days = db.Column('dias_entrega', db.Integer)
+    # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: Recibido, 5:Revibido con retraso
+    status = db.Column('status_item', db.Integer, default=1)
+
+    material = db.relationship('Raw_Material', backref='purchase_details')
+    supplier = db.relationship('Supplier', backref='purchase_details')
+
+    def __repr__(self):
+        return f'<PurchaseDetail ID:{self.id} Material:{self.material_id}>'

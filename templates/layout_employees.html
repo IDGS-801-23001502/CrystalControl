@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}{% endblock %}Crystal Control</title>
+    <title>{% block title %}{% endblock %} - Crystal Control</title>
     <link
       rel="shortcut icon"
       href="{{url_for('static',filename='img/icons/logo.png')}}"
@@ -97,10 +97,13 @@
             </div>
           </li>
 
-          {# --- SECCIÓN COMPRAS --- #}
+          {# --- SECCIÓN COMPRAS --- #} {% if
+          current_user.has_role('Administrador') or
+          current_user.has_role('Compras') or
+          current_user.has_role('Almacenista') %}
           <li class="pt-2">
             <div
-              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/compras' in request.path else 'text-slate-400' }}"
+              class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/purchases' in request.path else 'text-slate-400' }}"
             >
               <svg
                 class="w-4 h-4 mr-3"
@@ -126,16 +129,18 @@
               >
                 Lista Entregas
               </a>
+              {% if current_user.has_role('Administrador') or
+              current_user.has_role('Compras') %}
               <a
-                href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                href="{{url_for('purchases.index')}}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('purchases.index') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Lista Compras
               </a>
+              {% endif %}
             </div>
           </li>
-
-          {# --- SECCIÓN PRODUCCIÓN --- #}
+          {% endif %} {# --- SECCIÓN PRODUCCIÓN --- #}
           <li class="pt-2">
             <div
               class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/produccion' in request.path else 'text-slate-400' }}"
@@ -237,14 +242,13 @@
           </li>
 
           <div class="space-y-1">
-            {# Usuarios #} 
-            {% if current_user.has_role('Administrador') %}
+            {# Usuarios #} {% if current_user.has_role('Administrador') %}
             <a
               href="{{ url_for('users.index') }}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('users.index') else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('users.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('users.index') else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == url_for('users.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -258,14 +262,13 @@
               </svg>
               Usuarios/Empleados
             </a>
-            {% endif %} 
-            {# Recetas #}
+            {% endif %} {# Recetas #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -283,10 +286,10 @@
             {# Análisis #}
             <a
               href="#"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -304,10 +307,10 @@
             {# Productos #}
             <a
               href="{{url_for('products.products')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == '#' else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -325,10 +328,10 @@
             {# Materia Prima #}
             <a
               href="{{url_for('raw_materials.index')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('raw_materials.index') else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('raw_materials.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('raw_materials.index') else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == url_for('raw_materials.index') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -346,10 +349,10 @@
             {# Proveedores #}
             <a
               href="{{url_for('suppliers.suppliers')}}"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('suppliers.suppliers') else 'text-slate-600 hover:bg-slate-50' }}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('suppliers.suppliers') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.endpoint == url_for('suppliers.suppliers') else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == url_for('suppliers.suppliers') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

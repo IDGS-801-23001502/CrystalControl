@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
-from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField
+from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
@@ -110,3 +110,18 @@ class FormProduct(FlaskForm):
         validators.DataRequired(message="La presentación es requerida"),
         validators.Length(max=50)
     ])
+
+class PurchaseItemForm(FlaskForm):
+    material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
+    quantity = DecimalField('Cantidad', validators=[validators.DataRequired()])
+    class Meta:
+        csrf = False
+
+# Este es el formulario principal
+class PurchaseRequestForm(FlaskForm):
+    items = FieldList(FormField(PurchaseItemForm), min_entries=1)
+    admin_notes = TextAreaField('Notas')
+
+class AnalysisForm(FlaskForm):
+    status = SelectField('Decisión Final', coerce=int, validators=[validators.DataRequired()])
+    analysis_notes = TextAreaField('Notas de Análisis')
