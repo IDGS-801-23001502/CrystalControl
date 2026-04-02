@@ -170,6 +170,8 @@ class RecipeStep(db.Model):
     estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
     process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
 
+##PRODUCTOS##
+
 class Producto(db.Model):
     __tablename__ = 'productos'
 
@@ -190,3 +192,29 @@ class ProductoPresentacionPrecio(db.Model):
     price_men = db.Column('precio_menudeo', db.Numeric(10, 2), nullable=False)
     price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
     presentation = db.Column('presentacion', db.String(50), nullable=False)
+
+##VENTAS##
+
+class Sales(db.Model):
+    __tablename__ = 'Ventas'
+    
+    id = db.Column('id_ventas', db.Integer, primary_key=True)
+    folio = db.Column('folio', db.String(20), unique=True, nullable=False)
+    id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    sale_date = db.Column('fecha_venta', db.DateTime, server_default=db.func.now())
+    gross_total = db.Column('total_bruto', db.Numeric(10,2))
+    profit_total = db.Column('total_utilidad', db.Numeric(10,2))
+    payment_method = db.Column('metodo_pago', db.String(50))
+    id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'), nullable=False)
+
+class SaleDetail(db.Model):
+    __tablename__ = 'detalle_venta'
+    
+    id = db.Column('id_detalle_venta', db.Integer, primary_key=True)
+    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), nullable=False)
+    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    lot = db.Column('cantidad', db.Integer)
+    unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
+    moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
+
+
