@@ -11,7 +11,6 @@ def object_to_dict(obj):
     # Usamos el inspector de SQLAlchemy para obtener solo las columnas de la tabla
     return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
 
-
 def register_log_auto(accion, modulo, obj_puro_original=None, obj_puro_nuevo=None):
     """
     accion: 'Consulta' 'Busqueda' 'Creación', 'Actualización', 'Eliminación'

@@ -110,6 +110,8 @@ def create_admin():
         for m_name in modulos_nombres:
             asignar_permiso('Administrador', m_name, 4)
         
+        #Permisos Extra aqui
+        
         db.session.commit()
         print("Configuración de módulos y permisos completada.")
 
