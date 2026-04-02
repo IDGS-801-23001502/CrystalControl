@@ -69,8 +69,16 @@ class FormProduct(FlaskForm):
         validators.Length(min=3, max=100)
     ])
     
+    category = SelectField('Categoria', choices=[
+        ('Cuidado del Hogar', 'Cuidado del Hogar'),
+        ('Lavanderia', 'Lavanderia'),
+        ('Cocina', 'Cocina'),
+        ('Cuidado Personal', 'Cuidado Personal')
+    ])
+
     barcode = StringField('Código de barras', [
-        validators.Optional()
+        validators.Optional(),
+        validators.Disabled()  
     ])
 
     stock = IntegerField('Stock disponible', [

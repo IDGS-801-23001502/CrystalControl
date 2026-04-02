@@ -35,7 +35,7 @@ def add_product():
             #Creamos la instancia de la tabla principal
             new_product = Producto(
                 name=form.name.data,
-                barcode=form.barcode.data,
+                category=form.category.data,
                 stock=form.stock.data,
                 status='Activo'
             )
@@ -55,6 +55,12 @@ def add_product():
             #Guardamos primero el producto para generar el ID
             db.session.add(new_product)
             db.session.flush() # Flush envía a la base de datos sin cerrar la transacción
+
+            #Generación automatica del código de barras
+            id_str = str(new_product.id).zfill(3)
+            codigo_generado = f"C750{id_str}"
+
+            new_product.barcode = codigo_generado
 
             #Creamos la instancia de la tabla de precios vinculada al ID del producto
             new_pricing = ProductoPresentacionPrecio(
@@ -99,6 +105,7 @@ def edit_product(id):
             # Actualizar datos tabla Producto
             producto.status = form.status.data
             producto.name = form.name.data
+            producto.category = form.category.data
             producto.barcode = form.barcode.data
             producto.stock = form.stock.data
             
