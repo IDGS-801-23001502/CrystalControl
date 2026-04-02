@@ -71,10 +71,14 @@ class FormRaw_Materials(FlaskForm):
     stock_max = DecimalField('Stock Máximo', [
         validators.InputRequired(message="Stock max is required")
     ], default=0.00)
-    unidad_medida = StringField('Unidad de Medida', [
-            validators.DataRequired(message="La unidad es obligatoria"),
-            validators.Length(max=20)
-        ])
+    unidad_medida = SelectField('Unidad de Medida', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Galones'),
+        (4, 'Pieza')
+    ], validators=[
+        validators.DataRequired(message="La unidad de medida es obligatoria")
+    ])
     estatus = SelectField('Status', choices=[
         ('Activo', 'Active'),
         ('Inactivo', 'Inactive')

@@ -19,52 +19,65 @@ def index():
     return render_template('/raw_materials/list.html', raw_materials=raw_materials)
 
 
-@raw_materials_bp.route('/add_raw_materials', methods=['GET','POST'])
-@roles_accepted('Administrador','Compras')
+@raw_materials_bp.route('/add_raw_materials', methods=['GET', 'POST'])
+@roles_accepted('Administrador', 'Compras')
 def add_raw_materials():
+    # Instanciamos el formulario con los datos del request si es POST
     formRaw = FormRaw_Materials(request.form)
 
-    if request.method == 'POST':
-        if formRaw.validate():
-            try:
-                new_raw_material = Raw_Material()
-                formRaw.populate_obj(new_raw_material)
-                
-                if not new_raw_material.id:
-                    new_raw_material.id = None
-                
-                db.session.add(new_raw_material)
-                db.session.commit()
-                flash("Materia prima registrada exitosamente", "success")
-                return redirect(url_for('raw_materials.index'))             
-            except Exception as e:
-                db.session.rollback()
-                flash(f"Error al registrar: {str(e)}", "danger")
+    if request.method == 'POST' and formRaw.validate():
+        try:
+            # Creamos la instancia del modelo
+            new_raw_material = Raw_Material()
+            
+            # populate_obj transfiere automáticamente los datos del form al modelo
+            # incluyendo el entero de unidad_medida y los Decimal de los stocks
+            formRaw.populate_obj(new_raw_material)
+            
+            # Forzamos que el ID sea manejado por la DB si viene vacío del HiddenField
+            if not formRaw.id.data:
+                new_raw_material.id = None
+
+            db.session.add(new_raw_material)
+            db.session.commit()
+            
+            flash("Materia prima registrada exitosamente", "success")
+            return redirect(url_for('raw_materials.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error al registrar en la base de datos: {str(e)}", "danger")
 
     return render_template('raw_materials/add.html', formRaw=formRaw)
 
 
-@raw_materials_bp.route('/edit_raw_material/<int:id>', methods=['GET','POST'])
-@roles_accepted('Administrador','Compras')
+@raw_materials_bp.route('/edit_raw_material/<int:id>', methods=['GET', 'POST'])
+@roles_accepted('Administrador', 'Compras')
 def edit_raw_material(id):
+    # Obtenemos el objeto existente o lanzamos 404
     raw_material = Raw_Material.query.get_or_404(id)
     
     if request.method == 'GET':
+        # Al cargar por GET, pasamos el objeto para que el form se llene solo
         formRaw = FormRaw_Materials(obj=raw_material)
     else:
+        # Al procesar el POST, validamos los nuevos datos
         formRaw = FormRaw_Materials(request.form)
         if formRaw.validate():
             try:
+                # Actualizamos los campos del objeto existente con los del form
                 formRaw.populate_obj(raw_material)
+                
                 db.session.commit()
                 flash("Materia prima actualizada correctamente", "success")
                 return redirect(url_for('raw_materials.index'))
             
             except Exception as e:
                 db.session.rollback()
-                flash(f"Error al actualizar: {str(e)}", "danger")
+                flash(f"Error al actualizar los cambios: {str(e)}", "danger")
 
     return render_template('raw_materials/edit.html', formRaw=formRaw, raw_material=raw_material)
+
 
 
 @raw_materials_bp.route('/delete_raw_material/<int:id>', methods=['GET', 'POST'])

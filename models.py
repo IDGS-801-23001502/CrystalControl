@@ -91,8 +91,12 @@ class Raw_Material(db.Model):
     id= db.Column('id_materia', db.Integer,primary_key=True)
     name = db.Column('nombre',db.String(100))
     stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
-    stock_max= db.Column('stock_max',db.Numeric(10,2))
-    unidad_medida = db.Column('unidad_medida',db.String(20))
+    stock_max= db.Column('stock_max',db.Numeric(10,2))    
+    unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
+    @property
+    def nombre_unidad(self):
+        unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
+        return unidades.get(self.unidad_medida, 'Desconocido')
     
     estatus = db.Column(db.Enum('Activo', 'Inactivo'), default='Activo')
     suppliers = db.relationship('Raw_Material_Supplier', backref='materia_asociada', cascade="all, delete-orphan")

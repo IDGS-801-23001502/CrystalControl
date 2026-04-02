@@ -125,8 +125,10 @@
             <span class="text-emerald-600 font-semibold">{{ material.stock_max }}</span>
           </td>
           <td class="px-6 py-4 text-center">
+            {% set unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'} %}
             <span class="px-2.5 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold uppercase text-slate-600">
-              {{ material.unidad_medida }}
+              {# Usamos .get() para que si el ID no existe, no rompa la página #}
+              {{ unidades.get(material.unidad_medida|int, 'N/A') }}
             </span>
           </td>
           <td class="px-6 py-4 text-center">
