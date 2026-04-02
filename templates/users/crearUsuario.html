@@ -1,95 +1,121 @@
 {% extends "layout_employees.html" %}
-{% block title %}New User - {% endblock %}
+{% block title %}Nuevo Usuario - {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto space-y-8">
+<style>
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
+  .emerald-badge       { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top  { border-top: 3px solid #10b981; }
+  .emerald-btn         { background-color: #059669; color: #fff; }
+  .emerald-btn:hover   { background-color: #047857; }
+  .cancel-btn          { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover    { background-color: #f3f4f6; color: #374151; }
+</style>
 
-  <div class="flex items-center gap-4">
-    <a href="{{ url_for('users.index') }}"
-       class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#4882ad] hover:border-[#7dc6e9] transition-all">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+<div class="max-w-2xl mx-auto mt-10 px-4">
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('users.index') }}" class="group">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border group-hover:border-emerald-400 transition-all">
+        <svg class="emerald-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </div>
     </a>
     <div>
-      <h2 class="text-2xl font-bold text-[#243c60]">Nuevo Usuario</h2>
+      <h1 class="text-xl font-semibold text-slate-800 leading-tight">Nuevo Usuario</h1>
+      <p class="text-xs text-slate-500">Gestión de accesos al sistema</p>
     </div>
+    <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
+      Acceso
+    </span>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for cat, msg in messages %}
-        <div class="px-5 py-4 rounded-2xl border text-sm font-medium
-          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
+        <div class="mb-4 px-5 py-3 rounded-xl border text-sm font-medium
+          {% if cat == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
           {{ msg|safe }}
         </div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
-  <div class="bg-white border-2 border-[#7dc6e9] rounded-[2.5rem] p-8 shadow-sm">
-    <form action="{{ url_for('users.crear') }}" method="POST" class="space-y-6">
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+    <form action="{{ url_for('users.crear') }}" method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-      <div class="space-y-2">
-        <label class="text-sm font-bold text-[#243c60] ml-1">Nombre de USUARIO <span class="text-red-400">*</span></label>
-        <input type="text" name="username" value="{{ form_data.get('username', '') }}" required minlength="4" maxlength="50"
-          class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none"
-          placeholder="">
-        <p class="text-[10px] text-slate-400 ml-2">Mínimo 4 caracteres, debe ser unico</p>
+      <div class="relative z-0 w-full mb-8 group">
+        <input type="text" name="username" id="username" value="{{ form_data.get('username', '') }}" required minlength="4" maxlength="50"
+          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer" placeholder=" ">
+        <label for="username" class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Nombre de Usuario (Único)
+        </label>
+        <p class="text-[10px] text-slate-400 mt-1.5">Mínimo 4 caracteres.</p>
       </div>
 
-      <div class="space-y-2">
-        <label class="text-sm font-bold text-[#243c60] ml-1">Nombre completo <span class="text-red-400">*</span></label>
-        <input type="text" name="nombre" value="{{ form_data.get('nombre', '') }}" required minlength="2" maxlength="50"
-          class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none"
-          placeholder="">
+      <div class="relative z-0 w-full mb-8 group">
+        <input type="text" name="nombre" id="nombre" value="{{ form_data.get('nombre', '') }}" required minlength="2" maxlength="50"
+          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer" placeholder=" ">
+        <label for="nombre" class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Nombre Completo
+        </label>
       </div>
 
-      <div class="space-y-2">
-        <label class="text-sm font-bold text-[#243c60] ml-1">Role / Perfil <span class="text-red-400">*</span></label>
-        <select name="id_perfil" required
-          class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none appearance-none">
-          <option value="">Selecciona un rol</option>
+      <div class="relative z-0 w-full mb-8 group">
+        <select name="id_perfil" id="id_perfil" required
+          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer">
+          <option value="" class="text-slate-400">Selecciona un rol</option>
           {% for role in roles %}
           <option value="{{ role.id }}" {% if form_data.get('id_perfil')|string == role.id|string %}selected{% endif %}>
             {{ role.name }}{% if role.description %} – {{ role.description }}{% endif %}
           </option>
           {% endfor %}
         </select>
+        <label for="id_perfil" class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600">
+          Rol / Perfil del Usuario
+        </label>
       </div>
 
-      <div class="space-y-2">
-        <label class="text-sm font-bold text-[#243c60] ml-1">Contraseña </label>
+      <div class="relative z-0 w-full mb-10 group">
         <div class="relative">
           <input type="password" name="password" id="passwordInput" minlength="8" maxlength="50"
-            class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none pr-14"
-            placeholder="Dejar en BLANCO para autogenerar">
+            class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer" placeholder=" ">
+          <label for="passwordInput" class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Contraseña
+          </label>
           <button type="button" onclick="togglePass()"
-            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#4882ad]">
+            class="absolute right-0 top-2 text-slate-400 hover:text-emerald-600 transition-colors">
             <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
             </svg>
           </button>
         </div>
-        <div class="flex items-start gap-2 mt-2 px-2">
-          <svg class="w-4 h-4 text-[#9ec946] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex items-center gap-1.5 mt-2 text-[10px] text-slate-500">
+          <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
+          <span>Dejar en blanco para autogenerar.</span>
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-4 pt-2">
+      <div class="flex items-center gap-3">
+        <button type="submit"
+          class="emerald-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-bold rounded-lg active:scale-95 transition-all shadow-sm focus:outline-none">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2 10a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Crear Usuario
+        </button>
         <a href="{{ url_for('users.index') }}"
-           class="px-8 py-3 text-sm font-bold text-[#4882ad] hover:text-[#243c60] transition-colors">
+          class="cancel-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-bold rounded-lg active:scale-95 transition-all focus:outline-none">
           Cancelar
         </a>
-        <button type="submit"
-          class="px-10 py-3.5 bg-[#9ec946] hover:bg-[#8bb43d] text-white text-sm font-bold rounded-full shadow-lg shadow-[#9ec946]/30 transition-all transform hover:scale-105 active:scale-95">
-          Crear usuario
-        </button>
       </div>
+
     </form>
   </div>
 </div>
@@ -98,7 +124,14 @@
 <script>
 function togglePass() {
   const inp = document.getElementById('passwordInput');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.classList.add('text-emerald-600');
+  } else {
+    inp.type = 'password';
+    icon.classList.remove('text-emerald-600');
+  }
 }
 </script>
 {% endblock %}

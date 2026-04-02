@@ -2,111 +2,138 @@
 {% block title %}Asociar Proveedores - {{ raw_material.name }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-8">
+<style>
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
+  .emerald-badge       { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top  { border-top: 3px solid #10b981; }
+  .emerald-btn         { background-color: #059669; color: #fff; }
+  .emerald-btn:hover   { background-color: #047857; }
+  .emerald-thead       { background-color: rgba(16, 185, 129, 0.05); }
+</style>
+
+<div class="max-w-4xl mx-auto mt-10 px-4 space-y-10">
 
   <div class="flex items-center gap-4">
-    <a href="{{ url_for('raw_materials.index') }}"
-       class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#4882ad] hover:border-[#7dc6e9] transition-all">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+    <a href="{{ url_for('raw_materials.index') }}" class="group">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border group-hover:border-emerald-400 transition-all">
+        <svg class="emerald-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </div>
     </a>
     <div>
-      <h2 class="text-2xl font-bold text-[#243c60]">Gestionar Proveedores</h2>
-      <p class="text-sm text-[#4882ad] font-medium">Materia Prima: <span class="text-[#9ec946]">{{ raw_material.name }}</span></p>
+      <h1 class="text-xl font-semibold text-slate-800 leading-tight">Gestionar Proveedores</h1>
+      <p class="text-xs text-slate-500">Materia Prima: <span class="font-bold text-emerald-600 uppercase">{{ raw_material.name }}</span></p>
     </div>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for cat, msg in messages %}
-        <div class="px-5 py-4 rounded-2xl border text-sm font-medium
-          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
+        <div class="px-5 py-3 rounded-xl border text-sm font-medium
+          {% if cat == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
           {{ msg|safe }}
         </div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
-  <div class="bg-white border-2 border-[#7dc6e9] rounded-[2.5rem] p-8 shadow-sm">
-    <h3 class="text-lg font-bold text-[#243c60] mb-6 flex items-center gap-2">
-        <svg class="w-5 h-5 text-[#9ec946]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+    <div class="flex items-center gap-2 mb-8 text-emerald-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        Asociar Nuevo Proveedor
-    </h3>
+        <h3 class="text-sm font-bold uppercase tracking-wider">Asociar Nuevo Proveedor</h3>
+    </div>
     
-    <form action="{{ url_for('raw_materials.suppliers_material', id=raw_material.id) }}" method="POST" class="space-y-6">
+    <form action="{{ url_for('raw_materials.suppliers_material', id=raw_material.id) }}" method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {{ form.id_material }}
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Seleccionar Proveedor <span class="text-red-400">*</span></label>
-          {{ form.id_supplier(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none appearance-none") }}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+        <div class="relative z-0 w-full group">
+          {{ form.id_supplier(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">
+            Seleccionar Proveedor <span class="text-red-500">*</span>
+          </label>
         </div>
 
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Unidad de Medida <span class="text-red-400">*</span></label>
-          {{ form.unidad_medida(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none appearance-none") }}
+        <div class="relative z-0 w-full group">
+          {{ form.unidad_medida(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">
+            Unidad de Medida <span class="text-red-500">*</span>
+          </label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.price(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Precio de Referencia ($) <span class="text-red-500">*</span>
+          </label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.lot(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Cantidad / Lote <span class="text-red-500">*</span>
+          </label>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Precio de Referencia <span class="text-red-400">*</span></label>
-          {{ form.price(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="0.00") }}
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Cantidad / Lote <span class="text-red-400">*</span></label>
-          {{ form.lot(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="Ej. 100.00") }}
-        </div>
-      </div>
-
-      <div class="flex items-center justify-end gap-4 pt-4">
+      <div class="flex justify-end mt-10">
         <button type="submit"
-          class="px-10 py-3.5 bg-[#9ec946] hover:bg-[#8bb43d] text-white text-sm font-bold rounded-full shadow-lg shadow-[#9ec946]/30 transition-all transform hover:scale-105 active:scale-95">
-          Asociar Proveedor
+          class="emerald-btn flex items-center gap-2 px-8 py-3 text-sm font-bold rounded-lg shadow-sm transition-all transform active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Vincular Proveedor
         </button>
       </div>
     </form>
   </div>
 
-  <div class="bg-white border-2 border-[#9ec946]/30 rounded-[2.5rem] overflow-hidden shadow-sm">
-    <div class="p-6 border-b border-slate-100 bg-[#f4faf5]/50">
-        <h3 class="text-lg font-bold text-[#243c60]">Proveedores Vinculados</h3>
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Proveedores Vinculados
+        </h3>
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50">
-                    <th class="px-6 py-4 text-[11px] font-bold text-[#4882ad] uppercase tracking-wider">Proveedor</th>
-                    <th class="px-6 py-4 text-[11px] font-bold text-[#4882ad] uppercase tracking-wider text-center">Precio</th>
-                    <th class="px-6 py-4 text-[11px] font-bold text-[#4882ad] uppercase tracking-wider text-center">Lote</th>
-                    <th class="px-6 py-4 text-[11px] font-bold text-[#4882ad] uppercase tracking-wider text-center">Unidad</th>
-                    <th class="px-6 py-4 text-[11px] font-bold text-[#4882ad] uppercase tracking-wider text-center">Acciones</th>
+        <table class="w-full text-left">
+            <thead class="emerald-thead border-b border-slate-200 text-[11px] uppercase text-slate-500 font-bold">
+                <tr>
+                    <th class="px-6 py-4">Proveedor</th>
+                    <th class="px-6 py-4 text-center">Precio Unit.</th>
+                    <th class="px-6 py-4 text-center">Lote Sugerido</th>
+                    <th class="px-6 py-4 text-center">Unidad</th>
+                    <th class="px-6 py-4 text-center">Estatus</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="divide-y divide-slate-100">
                 {% for item in current_suppliers %}
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="px-6 py-4 text-sm font-bold text-[#243c60]">{{ item.proveedor_asociado.name }}</td>
-                    <td class="px-6 py-4 text-sm text-center text-[#9ec946] font-bold">$ {{ item.price }}</td>
-                    <td class="px-6 py-4 text-sm text-center text-slate-600">{{ item.lot }}</td>
+                <tr class="hover:bg-emerald-50/30 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-semibold text-slate-800">{{ item.proveedor_asociado.name }}</div>
+                    </td>
                     <td class="px-6 py-4 text-center">
-                        <span class="px-3 py-1 text-[10px] font-bold bg-white text-[#4882ad] rounded-lg border border-[#7dc6e9]">
+                        <span class="text-sm font-bold text-emerald-600">${{ item.price }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm text-slate-600">{{ item.lot }}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="emerald-badge px-2.5 py-0.5 rounded text-[10px] font-bold border uppercase">
                             {{ item.nombre_unidad }}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <span class="text-slate-300 text-xs">Registrado</span>
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 italic">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Activo
+                        </span>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="px-6 py-10 text-center text-slate-400 text-sm">
-                        No hay proveedores asociados a esta materia prima.
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 text-sm italic">
+                        No hay proveedores asociados a esta materia prima actualmente.
                     </td>
                 </tr>
                 {% endfor %}

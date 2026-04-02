@@ -835,8 +835,8 @@
   .top-1 {
     top: calc(var(--spacing) * 1);
   }
-  .top-1\/2 {
-    top: calc(1 / 2 * 100%);
+  .top-2 {
+    top: calc(var(--spacing) * 2);
   }
   .top-3 {
     top: calc(var(--spacing) * 3);
@@ -960,6 +960,9 @@
   }
   .mt-1 {
     margin-top: calc(var(--spacing) * 1);
+  }
+  .mt-1\.5 {
+    margin-top: calc(var(--spacing) * 1.5);
   }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
@@ -1347,9 +1350,6 @@
   }
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
-  }
-  .ml-2 {
-    margin-left: calc(var(--spacing) * 2);
   }
   .ml-3 {
     margin-left: calc(var(--spacing) * 3);
@@ -1774,10 +1774,6 @@
     --tw-translate-x: 100%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
-  .-translate-y-1\/2 {
-    --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
   .-translate-y-6 {
     --tw-translate-y: calc(var(--spacing) * -6);
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -2158,17 +2154,11 @@
   .border-\[\#7dc6e9\]\/20 {
     border-color: color-mix(in oklab, #7dc6e9 20%, transparent);
   }
-  .border-\[\#9ec946\] {
-    border-color: #9ec946;
-  }
   .border-\[\#9ec946\]\/20 {
     border-color: color-mix(in oklab, #9ec946 20%, transparent);
   }
   .border-\[\#9ec946\]\/30 {
     border-color: color-mix(in oklab, #9ec946 30%, transparent);
-  }
-  .border-\[\#243c60\] {
-    border-color: #243c60;
   }
   .border-amber-200 {
     border-color: var(--color-amber-200);
@@ -2425,9 +2415,6 @@
   }
   .bg-slate-200 {
     background-color: var(--color-slate-200);
-  }
-  .bg-slate-300 {
-    background-color: var(--color-slate-300);
   }
   .bg-slate-600 {
     background-color: var(--color-slate-600);
@@ -2734,17 +2721,11 @@
       color: heading !important;
     }
   }
-  .pr-3 {
-    padding-right: calc(var(--spacing) * 3);
-  }
   .pr-4 {
     padding-right: calc(var(--spacing) * 4);
   }
   .pr-6 {
     padding-right: calc(var(--spacing) * 6);
-  }
-  .pr-14 {
-    padding-right: calc(var(--spacing) * 14);
   }
   .pb-2 {
     padding-bottom: calc(var(--spacing) * 2);
@@ -2758,17 +2739,11 @@
   .pb-20 {
     padding-bottom: calc(var(--spacing) * 20);
   }
-  .pl-3 {
-    padding-left: calc(var(--spacing) * 3);
-  }
   .pl-4 {
     padding-left: calc(var(--spacing) * 4);
   }
   .pl-5 {
     padding-left: calc(var(--spacing) * 5);
-  }
-  .pl-10 {
-    padding-left: calc(var(--spacing) * 10);
   }
   .pl-12 {
     padding-left: calc(var(--spacing) * 12);
@@ -3005,9 +2980,6 @@
   .text-amber-500 {
     color: var(--color-amber-500);
   }
-  .text-blue-500 {
-    color: var(--color-blue-500);
-  }
   .text-blue-600 {
     color: var(--color-blue-600);
   }
@@ -3127,16 +3099,6 @@
   }
   .underline-offset-4 {
     text-underline-offset: 4px;
-  }
-  .placeholder-\[\#4882ad\]\/40 {
-    &::placeholder {
-      color: color-mix(in oklab, #4882ad 40%, transparent);
-    }
-  }
-  .placeholder-\[\#4882ad\]\/50 {
-    &::placeholder {
-      color: color-mix(in oklab, #4882ad 50%, transparent);
-    }
   }
   .placeholder-gray-400 {
     &::placeholder {
@@ -3380,6 +3342,13 @@
       }
     }
   }
+  .group-hover\:border-emerald-400 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        border-color: var(--color-emerald-400);
+      }
+    }
+  }
   .group-hover\:bg-\[\#7dc6e9\] {
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
@@ -3449,6 +3418,11 @@
       --tw-scale-y: 75%;
       --tw-scale-z: 75%;
       scale: var(--tw-scale-x) var(--tw-scale-y);
+    }
+  }
+  .peer-focus\:text-emerald-600 {
+    &:is(:where(.peer):focus ~ *) {
+      color: var(--color-emerald-600);
     }
   }
   .peer-focus\:text-fg-brand {
@@ -3571,13 +3545,6 @@
       }
     }
   }
-  .hover\:bg-\[\#7dc6e9\]\/10 {
-    &:hover {
-      @media (hover: hover) {
-        background-color: color-mix(in oklab, #7dc6e9 10%, transparent);
-      }
-    }
-  }
   .hover\:bg-\[\#8bb33d\] {
     &:hover {
       @media (hover: hover) {
@@ -3603,13 +3570,6 @@
     &:hover {
       @media (hover: hover) {
         background-color: #243c60;
-      }
-    }
-  }
-  .hover\:bg-\[\#f4faf5\] {
-    &:hover {
-      @media (hover: hover) {
-        background-color: #f4faf5;
       }
     }
   }
@@ -3731,16 +3691,6 @@
       }
     }
   }
-  .hover\:bg-slate-50\/80 {
-    &:hover {
-      @media (hover: hover) {
-        background-color: color-mix(in srgb, oklch(98.4% 0.003 247.858) 80%, transparent);
-        @supports (color: color-mix(in lab, red, red)) {
-          background-color: color-mix(in oklab, var(--color-slate-50) 80%, transparent);
-        }
-      }
-    }
-  }
   .hover\:bg-slate-100 {
     &:hover {
       @media (hover: hover) {
@@ -3762,13 +3712,6 @@
         @supports (color: color-mix(in lab, red, red)) {
           background-color: color-mix(in oklab, var(--color-white) 20%, transparent);
         }
-      }
-    }
-  }
-  .hover\:text-\[\#7aaa30\] {
-    &:hover {
-      @media (hover: hover) {
-        color: #7aaa30;
       }
     }
   }
@@ -3797,13 +3740,6 @@
     &:hover {
       @media (hover: hover) {
         color: #4882ad;
-      }
-    }
-  }
-  .hover\:text-amber-600 {
-    &:hover {
-      @media (hover: hover) {
-        color: var(--color-amber-600);
       }
     }
   }
@@ -3863,6 +3799,13 @@
       }
     }
   }
+  .hover\:text-slate-600 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-slate-600);
+      }
+    }
+  }
   .hover\:text-white {
     &:hover {
       @media (hover: hover) {
@@ -3874,13 +3817,6 @@
     &:hover {
       @media (hover: hover) {
         text-decoration-line: underline;
-      }
-    }
-  }
-  .hover\:opacity-90 {
-    &:hover {
-      @media (hover: hover) {
-        opacity: 90%;
       }
     }
   }
@@ -3945,6 +3881,16 @@
       border-color: var(--color-brand);
     }
   }
+  .focus\:border-emerald-500 {
+    &:focus {
+      border-color: var(--color-emerald-500);
+    }
+  }
+  .focus\:border-emerald-600 {
+    &:focus {
+      border-color: var(--color-emerald-600);
+    }
+  }
   .focus\:bg-white {
     &:focus {
       background-color: var(--color-white);
@@ -3996,6 +3942,11 @@
   .focus\:ring-brand-medium {
     &:focus {
       --tw-ring-color: var(--color-brand-medium);
+    }
+  }
+  .focus\:ring-emerald-500 {
+    &:focus {
+      --tw-ring-color: var(--color-emerald-500);
     }
   }
   .focus\:ring-neutral-tertiary {
@@ -4139,9 +4090,9 @@
       width: calc(var(--spacing) * 64);
     }
   }
-  .md\:w-80 {
+  .md\:w-72 {
     @media (width >= 48rem) {
-      width: calc(var(--spacing) * 80);
+      width: calc(var(--spacing) * 72);
     }
   }
   .md\:w-auto {

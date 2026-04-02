@@ -2,80 +2,115 @@
 {% block title %}Nueva Materia Prima - {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto space-y-8">
+<style>
+        .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+        .emerald-icon        { color: #059669; }
+        .emerald-badge       { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+        .emerald-border-top  { border-top: 3px solid #10b981; }
+        .emerald-btn         { background-color: #059669; color: #fff; }
+        .emerald-btn:hover   { background-color: #047857; }
+        .cancel-btn          { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+        .cancel-btn:hover    { background-color: #f3f4f6; color: #374151; }
+        
+        /* Estilo para los inputs flotantes */
+        .floating-input:focus ~ label,
+        .floating-input:not(:placeholder-shown) ~ label {
+          transform: translateY(-1.5rem) scale(0.75);
+          color: #059669;
+        }
+</style>
 
-  <div class="flex items-center gap-4">
-    <a href="{{ url_for('raw_materials.index') }}"
-       class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#4882ad] hover:border-[#7dc6e9] transition-all">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+<div class="max-w-2xl mx-auto mt-10 px-4">
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{{ url_for('raw_materials.index') }}" class="group">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border group-hover:border-emerald-400 transition-all">
+        <svg class="emerald-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </div>
     </a>
     <div>
-      <h2 class="text-2xl font-bold text-[#243c60]">Nueva Materia Prima</h2>
+      <h1 class="text-xl font-semibold text-slate-800 leading-tight">Nueva Materia Prima</h1>
+      <p class="text-xs text-slate-500">Registro de insumos para el inventario</p>
     </div>
+    <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
+      Nuevo
+    </span>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for cat, msg in messages %}
-        <div class="px-5 py-4 rounded-2xl border text-sm font-medium
-          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
+        <div class="mb-4 px-5 py-3 rounded-xl border text-sm font-medium
+          {% if cat == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
           {{ msg|safe }}
         </div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
-  <div class="bg-white border-2 border-[#7dc6e9] rounded-[2.5rem] p-8 shadow-sm">
-    <form action="{{ url_for('raw_materials.add_raw_materials') }}" method="POST" class="space-y-6">
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+    <form action="{{ url_for('raw_materials.add_raw_materials') }}" method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {{ formRaw.id }}
 
-      <div class="space-y-2">
-        <label class="text-sm font-bold text-[#243c60] ml-1">Nombre de la Materia Prima <span class="text-red-400">*</span></label>
-        {{ formRaw.name(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="Ej. Carbonato de Sodio") }}
+      <div class="relative z-0 w-full mb-8 group">
+        {{ formRaw.name(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+        <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Nombre de la Materia Prima
+        </label>
         {% if formRaw.name.errors %}
           {% for error in formRaw.name.errors %}
-            <p class="text-[10px] text-red-500 ml-2">{{ error }}</p>
+            <p class="text-[10px] text-red-500 mt-1">{{ error }}</p>
           {% endfor %}
         {% endif %}
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Stock Mínimo <span class="text-red-400">*</span></label>
-          {{ formRaw.stock_min(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none") }}
+      <div class="grid md:grid-cols-2 md:gap-8">
+        <div class="relative z-0 w-full mb-8 group">
+          {{ formRaw.stock_min(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Stock Mínimo
+          </label>
         </div>
-
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Stock Máximo <span class="text-red-400">*</span></label>
-          {{ formRaw.stock_max(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none") }}
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Unidad de Medida <span class="text-red-400">*</span></label>
-          {{ formRaw.unidad_medida(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] placeholder-[#4882ad]/40 focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none", placeholder="Kg, L, Ml ...") }}
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-sm font-bold text-[#243c60] ml-1">Estatus <span class="text-red-400">*</span></label>
-          {{ formRaw.estatus(class="w-full px-5 py-3.5 bg-[#f4faf5] border-2 border-transparent rounded-[1.5rem] text-[#243c60] focus:border-[#7dc6e9] focus:bg-white focus:ring-0 transition-all outline-none appearance-none") }}
+        <div class="relative z-0 w-full mb-8 group">
+          {{ formRaw.stock_max(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Stock Máximo
+          </label>
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-4 pt-4">
-        <a href="{{ url_for('raw_materials.index') }}"
-           class="px-8 py-3 text-sm font-bold text-[#4882ad] hover:text-[#243c60] transition-colors">
-          Cancelar
-        </a>
+      <div class="grid md:grid-cols-2 md:gap-8">
+        <div class="relative z-0 w-full mb-10 group">
+          {{ formRaw.unidad_medida(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Unidad de Medida (Kg, L, etc.)
+          </label>
+        </div>
+        <div class="relative z-0 w-full mb-10 group">
+          {{ formRaw.estatus(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600">
+            Estatus inicial
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
         <button type="submit"
-          class="px-10 py-3.5 bg-[#9ec946] hover:bg-[#8bb43d] text-white text-sm font-bold rounded-full shadow-lg shadow-[#9ec946]/30 transition-all transform hover:scale-105 active:scale-95">
+          class="emerald-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-bold rounded-lg active:scale-95 transition-all shadow-sm focus:outline-none">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
           Guardar Materia Prima
         </button>
+        <a href="{{ url_for('raw_materials.index') }}"
+          class="cancel-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-bold rounded-lg active:scale-95 transition-all focus:outline-none">
+          Cancelar
+        </a>
       </div>
+
     </form>
   </div>
 </div>
