@@ -27,6 +27,7 @@
   <div class="danger-border bg-white border border-slate-200 rounded-lg shadow-sm p-8">
     <form action="{{ url_for('products.delete_product', id=producto.id) }}" method="post">
       {{ form.csrf_token }}
+      {{ form.id }}
       
       <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-sm">
         <strong>Atención:</strong> El producto <b>{{ producto.name }}</b> cambiará su estatus a <b>Inactivo</b>. Podrás reactivarlo más tarde desde el panel de administración.

@@ -137,7 +137,8 @@ def edit_product(id):
 @roles_accepted('Administrador')
 def delete_product(id):
     producto = Producto.query.get_or_404(id)
-    
+    form = FormProduct()
+
     if request.method == 'POST':
         try:
             producto.status = 'Inactivo' 
