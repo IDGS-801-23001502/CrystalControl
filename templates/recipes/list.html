@@ -1,0 +1,240 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
+  .emerald-btn         { background-color: #059669; color: #fff; }
+  .emerald-btn:hover   { background-color: #047857; }
+  .emerald-border-top  { border-top: 3px solid #10b981; }
+  .emerald-thead       { background-color: rgba(16, 185, 129, 0.05); }
+  .emerald-row:hover   { background-color: rgba(16, 185, 129, 0.05); }
+
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 999px; font-size: 0.75rem;
+    font-weight: 600; border: 1.5px solid transparent;
+    cursor: pointer; transition: all 0.15s ease;
+    background-color: #f1f5f9; color: #64748b; border-color: #e2e8f0;
+  }
+  .filter-pill.active-all      { background-color: #1e293b; color: #fff; border-color: #1e293b; }
+  .filter-pill.active-active   { background-color: rgba(16,185,129,0.12); color: #047857; border-color: rgba(16,185,129,0.35); }
+  .filter-pill.active-inactive { background-color: rgba(239,68,68,0.10); color: #dc2626; border-color: rgba(239,68,68,0.30); }
+  .filter-pill.active-version  { background-color: rgba(59,130,246,0.10); color: #1d4ed8; border-color: rgba(59,130,246,0.30); }
+  
+  .pill-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot-active   { background-color: #10b981; }
+  .dot-inactive { background-color: #ef4444; }
+  .dot-version  { background-color: #3b82f6; }
+  .dot-all      { background: linear-gradient(135deg, #10b981 33%, #3b82f6 33% 66%, #ef4444 66%); }
+</style>
+
+<div class="py-20 relative overflow-x-auto sm:rounded-lg">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Recetas</h1>
+        <p class="text-xs text-slate-500">Gestión de fórmulas y trazabilidad de versiones</p>
+      </div>
+    </div>
+
+    <a href="{{ url_for('recipes.add_recipe') }}"
+      class="emerald-btn inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg shadow-sm active:scale-95 transition-all">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Nueva Receta
+    </a>
+  </div>
+
+  <div class="emerald-border-top relative overflow-x-auto bg-white shadow-sm rounded-lg border border-slate-200">
+    <div class="p-4 flex flex-wrap items-center gap-4">
+      
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+          </svg>
+        </div>
+        <input type="text" id="recipe-search"
+          class="block w-full max-w-72 ps-9 pe-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+          placeholder="Buscar código o nombre...">
+      </div>
+
+      <div class="h-6 w-px bg-slate-200"></div>
+
+      <div class="flex items-center gap-2">
+        <button class="filter-pill active-all" data-filter="all">
+          <span class="pill-dot dot-all"></span> Todos
+        </button>
+        <button class="filter-pill" data-filter="1">
+          <span class="pill-dot dot-active"></span> Activas
+        </button>
+        <button class="filter-pill" data-filter="0">
+          <span class="pill-dot dot-inactive"></span> Inactivas
+        </button>
+        <button class="filter-pill" data-filter="2">
+          <span class="pill-dot dot-version"></span> Versionadas
+        </button>
+      </div>
+    </div>
+
+    <table class="w-full text-sm text-left text-slate-500">
+      <thead class="emerald-thead text-xs uppercase tracking-wider text-slate-500 border-b border-t border-slate-200">
+        <tr>
+          <th class="px-6 py-3 font-semibold">Código</th>
+          <th class="px-6 py-3 font-semibold">Nombre Final</th>
+          <th class="px-6 py-3 font-semibold text-center">Cant. Lote</th>
+          <th class="px-6 py-3 font-semibold">Estatus</th>
+          <th class="px-6 py-3 font-semibold text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="recipes-tbody">
+        {% for recipe in all_recipes %}
+        <tr class="recipe-row emerald-row bg-white border-b border-slate-100 transition-colors"
+            data-status="{{ recipe.status }}"
+            data-name="{{ recipe.final_name | lower }}"
+            data-code="{{ recipe.unique_code | lower }}"
+            {# Extraemos todo lo que esté antes del '-V' si es que existe #}
+            data-base-code="{{ recipe.unique_code.split('-V')[0] | lower }}">
+          
+          <th scope="row" class="px-6 py-4 font-bold text-emerald-600 whitespace-nowrap">
+            {{ recipe.unique_code }}
+          </th>
+          <td class="px-6 py-4 font-medium text-slate-800">{{ recipe.final_name }}</td>
+          <td class="px-6 py-4 text-center">
+            {{ recipe.produced_quantity }} 
+            {% if recipe.unit_med == 1 %} Kg {% elif recipe.unit_med == 2 %} L {% else %} Pz {% endif %}
+          </td>
+          <td class="px-6 py-4">
+            {% if recipe.status == 1 %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Activa
+              </span>
+            {% elif recipe.status == 2 %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Versionada
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Desactivada
+              </span>
+            {% endif %}
+          </td>
+
+
+          <td class="px-6 py-4 flex items-center justify-center gap-4">
+  
+  {% if recipe.status in [1, 2] %}
+    <a href="{{ url_for('recipes.view_recipe', id=recipe.id) }}" 
+       class="text-slate-400 hover:text-emerald-600 transition-colors" 
+       title="Ver Ficha Técnica">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    </a>
+  {% endif %}
+
+  {% if recipe.status == 1 %}
+    <a href="{{ url_for('recipes.edit_recipe', id=recipe.id) }}" 
+       class="text-xs font-medium text-emerald-600 hover:underline">Nueva Versión</a>
+    
+    <a href="{{ url_for('recipes.delete_recipe', id=recipe.id) }}" 
+       class="text-xs font-medium text-red-500 hover:underline">Desactivar</a>
+
+  {% elif recipe.status == 0 %}
+    <a href="{{ url_for('recipes.delete_recipe', id=recipe.id) }}" 
+       class="text-xs font-medium text-blue-600 hover:underline">Reactivar</a>
+
+  {% else %}
+    <span class="text-[10px] text-slate-400 italic">  </span>
+  {% endif %}
+
+</td>
+
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div id="no-results" class="hidden py-12 text-center text-slate-400 text-sm italic">
+      No se encontraron recetas con estos filtros.
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const rows = document.querySelectorAll('.recipe-row');
+  const pills = document.querySelectorAll('.filter-pill');
+  const searchInput = document.getElementById('recipe-search');
+  const noResults = document.getElementById('no-results');
+
+  let currentFilter = 'all';
+
+  function applyFilters() {
+    const search = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        // 1. Coincidencia de Filtro por Status
+        const matchFilter = (currentFilter === 'all') || (row.dataset.status === currentFilter);
+        
+        // 2. Lógica de Búsqueda Inteligente
+        let matchSearch = false;
+        if (!search) {
+            matchSearch = true;
+        } else {
+            const nameMatch = row.dataset.name.includes(search);
+            const fullCodeMatch = row.dataset.code.includes(search);
+            const baseCodeMatch = row.dataset.baseCode.includes(search);
+
+            // Esto permite que si buscas "23", encuentre "REC-0023" 
+            // y también "REC-0023-V1" porque el baseCode es igual
+            matchSearch = nameMatch || fullCodeMatch || baseCodeMatch;
+        }
+
+        if (matchFilter && matchSearch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    noResults.classList.toggle('hidden', visibleCount > 0);
+}
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      currentFilter = pill.dataset.filter;
+      
+      // Manejo de clases activas
+      pills.forEach(p => {
+        p.classList.remove('active-all', 'active-active', 'active-inactive', 'active-version');
+      });
+      
+      if (currentFilter === 'all') pill.classList.add('active-all');
+      else if (currentFilter === '1') pill.classList.add('active-active');
+      else if (currentFilter === '0') pill.classList.add('active-inactive');
+      else if (currentFilter === '2') pill.classList.add('active-version');
+
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', applyFilters);
+
+  // Seleccionar "Activas" por defecto al iniciar
+  document.querySelector('[data-filter="1"]').click();
+</script>
+{% endblock %}
