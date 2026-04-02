@@ -198,21 +198,21 @@ class ProductoPresentacionPrecio(db.Model):
 class Sales(db.Model):
     __tablename__ = 'Ventas'
     
-    id = db.Column('id_ventas', db.Integer, primary_key=True)
-    folio = db.Column('folio', db.String(20), unique=True, nullable=False)
-    id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    id = db.Column('id_ventas', db.Integer, primary_key=True, nullable=False)
+    folio = db.Column('folio', db.String(20), unique=True)
+    id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
     sale_date = db.Column('fecha_venta', db.DateTime, server_default=db.func.now())
     gross_total = db.Column('total_bruto', db.Numeric(10,2))
     profit_total = db.Column('total_utilidad', db.Numeric(10,2))
     payment_method = db.Column('metodo_pago', db.String(50))
-    id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'), nullable=False)
+    id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'))
 
 class SaleDetail(db.Model):
     __tablename__ = 'detalle_venta'
     
-    id = db.Column('id_detalle_venta', db.Integer, primary_key=True)
-    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), nullable=False)
-    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    id = db.Column('id_detalle_venta', db.Integer, primary_key=True, nullable=False)
+    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), primary_key=True)
+    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), primary_key=True)
     lot = db.Column('cantidad', db.Integer)
     unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
     moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
