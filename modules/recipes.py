@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from models import db, Recipe, RecipeDetail, RecipeStep, Producto, Raw_Material, MaterialSupplier, ProductoPresentacionPrecio
+from models import db, Recipe, RecipeDetail, RecipeStep, Producto, Raw_Material, Raw_Material_Supplier, ProductoPresentacionPrecio
 from forms import FormRecipe, FormRecipeDetail, FormRecipeStep
 from datetime import datetime
 
@@ -46,7 +46,7 @@ def add_recipe():
             # --- 1. COSTOS ---
             total_production_cost = 0
             for mat in form.materials.data:
-                best_price = MaterialSupplier.query.filter_by(id_materia=mat['material_id']).order_by(MaterialSupplier.reference_price.asc()).first()
+                best_price = Raw_Material_Supplier.query.filter_by(id_materia=mat['material_id']).order_by(Raw_Material_Supplier.price.asc()).first()
                 if best_price:
                     cost_unit = (float(mat['required_quantity']) / float(best_price.quantity)) * float(best_price.reference_price)
                     total_production_cost += cost_unit
@@ -174,7 +174,7 @@ def edit_recipe(id):
             # Costo
             total_cost = 0
             for mat in form.materials.data:
-                best_p = MaterialSupplier.query.filter_by(id_materia=mat['material_id']).order_by(MaterialSupplier.reference_price.asc()).first()
+                best_p = Raw_Material_Supplier.query.filter_by(id_materia=mat['material_id']).order_by(Raw_Material_Supplier.price.asc()).first()
                 if best_p:
                     cost_unit = (float(mat['required_quantity']) / float(best_p.quantity)) * float(best_p.reference_price)
                     total_cost += cost_unit
