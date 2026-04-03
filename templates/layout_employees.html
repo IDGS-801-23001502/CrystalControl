@@ -124,8 +124,8 @@
               class="ml-9 border-l-2 border-slate-100 flex flex-col gap-1 py-1"
             >
               <a
-                href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                href="{{url_for('purchases.scheduled_deliveries')}}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('purchases.scheduled_deliveries') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Lista Entregas
               </a>
