@@ -95,6 +95,8 @@ class Raw_Material(db.Model):
     stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
     stock_max= db.Column('stock_max',db.Numeric(10,2))    
     unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
+    real_stock = db.Column('stock_real', db.Numeric(10,2), default='0.00')
+    available_stock = db.Column('stock_disponible', db.Numeric(10,2), default='0.00') 
     @property
     def nombre_unidad(self):
         unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
@@ -268,3 +270,28 @@ class SaleDetail(db.Model):
     moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
 
 
+## MOVIMIENTOS INVENTARIO MATERIA PRIMA ##
+
+class RawMaterialMovement(db.Model):
+    __tablename__ = 'movimientosinventariomp'
+
+    id = db.Column('id_movimiento_mp', db.Integer, primary_key=True, autoincrement=True)
+    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    # 1: Entrada, 2: Salida
+    movement_type = db.Column('tipo_movimiento', db.Integer, nullable=False)
+    # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto, 5:Devolucion(solo si metemos devoluciones)
+    reason = db.Column('motivo', db.Integer, nullable=False)
+    quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    pending_quantity = db.Column('cantidad_pendiente', db.Numeric(10, 2), default=0.00)
+    # 1: Aplicado (Afecta Real), 2: Pendiente/Apartado 
+    status = db.Column('status_movimiento', db.Integer, default=1)
+    expiration_date = db.Column('fecha_caducidad', db.Date, nullable=True)
+    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    timestamp = db.Column('timestamp', db.DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    material = db.relationship('Raw_Material', backref='inventory_movements')
+    user = db.relationship('User', backref='inventory_actions')
+
+    def __repr__(self):
+        return f'<RawMaterialMovement ID:{self.id} Material:{self.material_id} Type:{self.movement_type}>'
