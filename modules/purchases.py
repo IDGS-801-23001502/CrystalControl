@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, g, redirect, url_for, flash
+from flask import Blueprint, render_template, request, g, redirect, url_for, flash, make_response
 from flask_login import current_user
 from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier
 from utils.decorators import roles_accepted
@@ -226,7 +226,6 @@ def manage_generated_order(id):
         purchase=purchase, 
         total_order=total_order
     )
-
 
 @purchases_bp.route("/view/<int:id>")
 @roles_accepted('Administrador', 'Almacenista', 'Compras')

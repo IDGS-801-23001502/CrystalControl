@@ -36,6 +36,10 @@
       <div class="flex-1 overflow-y-auto py-6">
         <ul class="space-y-1 px-3">
           {# --- SECCIÓN INVENTARIO --- #}
+          {% if
+          current_user.has_role('Administrador') or
+          current_user.has_role('Compras') or
+          current_user.has_role('Almacenista') %}
           <li class="pt-2">
             <div
               class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/inventario' in request.path else 'text-slate-400' }}"
@@ -68,12 +72,6 @@
                 href="#"
                 class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
-                Solicitud Abastecimiento MP
-              </a>
-              <a
-                href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
-              >
                 Reporte Solicitudes MP
               </a>
               <a
@@ -96,8 +94,10 @@
               </a>
             </div>
           </li>
+          {% endif %}
 
-          {# --- SECCIÓN COMPRAS --- #} {% if
+          {# --- SECCIÓN COMPRAS --- #} 
+          {% if
           current_user.has_role('Administrador') or
           current_user.has_role('Compras') or
           current_user.has_role('Almacenista') %}
@@ -138,9 +138,20 @@
                 Lista Compras
               </a>
               {% endif %}
+              {% if current_user.has_role('Administrador') or
+              current_user.has_role('Almacenista') %}
+              <a
+                href="{{url_for('purchases.demand')}}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('purchases.demand') else 'text-slate-400 hover:text-emerald-600' }}"
+              >
+                Solicitud Abastecimiento MP
+              </a>
+              {% endif %}
             </div>
           </li>
-          {% endif %} {# --- SECCIÓN PRODUCCIÓN --- #}
+          {% endif %} 
+          {# --- SECCIÓN PRODUCCIÓN --- #}
+          {% if current_user.has_role('Administrador') or current_user.has_role('Produccion') %}
           <li class="pt-2">
             <div
               class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/produccion' in request.path else 'text-slate-400' }}"
@@ -183,8 +194,10 @@
               </a>
             </div>
           </li>
+          {% endif %}
 
           {# --- SECCIÓN VENTAS --- #}
+          {% if current_user.has_role('Administrador') or current_user.has_role('Vendedor') %}
           <li class="pt-2">
             <div
               class="flex items-center p-3 text-[11px] font-black uppercase tracking-tighter {{ 'text-emerald-600' if '/ventas' in request.path else 'text-slate-400' }}"
@@ -211,6 +224,12 @@
                 href="#"
                 class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px] bg-emerald-50/50 rounded-r-lg' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
+                Lista de Ventas
+              </a>
+              <a
+                href="#"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px] bg-emerald-50/50 rounded-r-lg' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+              >
                 Punto de Venta POS
               </a>
               <a
@@ -233,6 +252,7 @@
               </a>
             </div>
           </li>
+          {% endif %}
 
           <hr class="border-slate-100 my-4 mx-4" />
           <li
@@ -242,7 +262,8 @@
           </li>
 
           <div class="space-y-1">
-            {# Usuarios #} {% if current_user.has_role('Administrador') %}
+            {# Usuarios #} 
+            {% if current_user.has_role('Administrador') %}
             <a
               href="{{ url_for('users.index') }}"
               class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('users.index') else 'text-slate-600 hover:bg-slate-50' }}"
@@ -262,7 +283,9 @@
               </svg>
               Usuarios/Empleados
             </a>
-            {% endif %} {# Recetas #}
+            {% endif %} 
+            {# Recetas #}
+            {% if current_user.has_role('Administrador') or current_user.has_role('Produccion') %}
             <a
               href="{{url_for('recipes.index')}}"
               class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('recipes.index') else 'text-slate-600 hover:bg-slate-50' }}"
@@ -282,9 +305,11 @@
               </svg>
               Recetas
             </a>
+            {% endif %}
 
             {# Análisis #}
-            <a
+            {% if current_user.has_role('Administrador') or current_user.has_role('Gerente') %}
+              <a
               href="#"
               class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
             >
@@ -303,8 +328,10 @@
               </svg>
               Análisis
             </a>
+            {% endif %}
 
             {# Productos #}
+            {% if current_user.has_role('Administrador') or current_user.has_role('Almacenista') %}
             <a
               href="{{url_for('products.products')}}"
               class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
@@ -324,9 +351,10 @@
               </svg>
               Productos
             </a>
-
+            {% endif %}
             {# Materia Prima #}
-            <a
+            {% if current_user.has_role('Administrador') or current_user.has_role('Almacenista') or current_user.has_role('Compras') %}
+              <a
               href="{{url_for('raw_materials.index')}}"
               class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('raw_materials.index') else 'text-slate-600 hover:bg-slate-50' }}"
             >
@@ -345,8 +373,10 @@
               </svg>
               Materia Prima
             </a>
+            {% endif %}
 
             {# Proveedores #}
+            {% if current_user.has_role('Administrador') or current_user.has_role('Almacenista') or current_user.has_role('Compras') %}
             <a
               href="{{url_for('suppliers.index')}}"
               class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.endpoint == url_for('suppliers.index') else 'text-slate-600 hover:bg-slate-50' }}"
@@ -366,6 +396,7 @@
               </svg>
               Proveedores
             </a>
+            {% endif %}
           </div>
         </ul>
       </div>
@@ -443,25 +474,40 @@
 
     <main class="flex-1 flex flex-col overflow-hidden">
       <div class="flex-1 overflow-y-auto p-8">
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="mb-6 space-y-2">
-      {% for cat, msg in messages %}
-        <div class="flex items-start gap-3 px-5 py-4 rounded-2xl border text-sm font-medium animate-bounce-short
-          {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% elif cat == 'danger' %}bg-red-50 border-red-200 text-red-700{% else %}bg-blue-50 border-blue-200 text-blue-700{% endif %}">
-          <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {% if cat == 'success' %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            {% else %}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>{% endif %}
-          </svg>
-          <span>{{ msg|safe }}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <div class="mb-6 space-y-2">
+          {% for cat, msg in messages %}
+          <div
+            class="flex items-start gap-3 px-5 py-4 rounded-2xl border text-sm font-medium animate-bounce-short {% if cat == 'success' %}bg-[#f4faf5] border-[#9ec946]/30 text-[#4a6e1e]{% elif cat == 'danger' %}bg-red-50 border-red-200 text-red-700{% else %}bg-blue-50 border-blue-200 text-blue-700{% endif %}"
+          >
+            <svg
+              class="w-5 h-5 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {% if cat == 'success' %}
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+              {% else %}
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+              {% endif %}
+            </svg>
+            <span>{{ msg|safe }}</span>
+          </div>
+          {% endfor %}
         </div>
-      {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-
+        {% endif %} {% endwith %}
         <div class="max-w-7xl mx-auto">{% block content %}{% endblock %}</div>
       </div>
     </main>

@@ -10,7 +10,6 @@
         <img
           src="{{ url_for('static', filename='img/productos/' + (producto.picture if producto.picture else 'default.png')) }}"
           alt="{{ producto.name }}"
-          id="product-image"
           class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
         />
       </div>
@@ -22,7 +21,7 @@
         </div>
         <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
           <div class="w-2 h-2 rounded-full bg-[#7dc6e9]"></div>
-          <span class="text-[10px] font-black text-[#243c60] uppercase">ISO 9001:2015</span>
+          <span class="text-[10px] font-black text-[#243c60] uppercase">Certificación ISO</span>
         </div>
       </div>
     </div>
@@ -39,7 +38,7 @@
       </h1>
 
       <div class="flex items-center gap-4 mb-8">
-        <span class="text-3xl font-black text-[#243c60] transition-all duration-300" id="price-display">
+        <span class="text-3xl font-black text-[#243c60]" id="price-display">
           {% if producto.precios %}
             ${{ "{:,.2f}".format(producto.precios[0].price_men) }}
           {% else %}
@@ -48,18 +47,27 @@
           <small class="text-xs text-slate-400 font-bold uppercase italic ml-1">MXN</small>
         </span>
         
-        {% if producto.stock > 0 %}
-          <span class="bg-[#9ec946]/20 text-[#243c60] text-[10px] font-black px-3 py-1 rounded-lg uppercase">En Stock</span>
+        {% if producto.stock > 10 %}
+          <span class="bg-[#9ec946]/20 text-[#243c60] text-[10px] font-black px-3 py-1 rounded-lg uppercase border border-[#9ec946]/30">
+            Disponible
+          </span>
+        {% elif producto.stock > 0 %}
+          <span class="bg-orange-100 text-orange-700 text-[10px] font-black px-3 py-1 rounded-lg uppercase border border-orange-200 animate-pulse">
+            Stock Bajo ({{ producto.stock }})
+          </span>
         {% else %}
-          <span class="bg-red-100 text-red-600 text-[10px] font-black px-3 py-1 rounded-lg uppercase">Agotado</span>
+          <span class="bg-red-100 text-red-600 text-[10px] font-black px-3 py-1 rounded-lg uppercase border border-red-200">
+            Agotado
+          </span>
         {% endif %}
       </div>
 
       <p class="text-slate-500 text-sm leading-relaxed mb-10 font-medium">
-        Insumo químico de alta pureza desarrollado por CrystalControl para aplicaciones en {{ producto.category.lower() }}. Garantiza eficiencia técnica y seguridad en procesos industriales críticos.
+        Solución química especializada para procesos de {{ producto.category.lower() }}. 
+        Producto verificado bajo los estándares de CrystalControl para asegurar la máxima pureza.
       </p>
 
-      <form action="#" method="POST" class="space-y-8">
+      <form action="{{ url_for('e-commerce.catalog') }}" method="POST" class="space-y-8">
         <input type="hidden" name="producto_id" value="{{ producto.id }}">
         
         <div class="flex flex-col sm:flex-row items-end gap-6">
@@ -73,7 +81,7 @@
           </div>
 
           <div class="flex-grow w-full">
-            <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Presentación Disponible</label>
+            <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Presentación</label>
             <select 
                 id="presentation-selector" 
                 name="presentacion" 
@@ -83,17 +91,15 @@
                 <option value="{{ p.id }}" data-price="{{ p.price_men }}">
                   {{ p.presentation }}
                 </option>
-              {% else %}
-                <option disabled>No hay presentaciones</option>
               {% endfor %}
             </select>
           </div>
         </div>
 
         <div class="flex gap-4">
-          <button type="submit" class="flex-grow bg-[#9ec946] text-[#243c60] py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3">
+          <button type="submit" {% if producto.stock <= 0 %}disabled{% endif %} class="flex-grow bg-[#9ec946] text-[#243c60] py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Añadir al Carrito
+            {{ 'Añadir al Carrito' if producto.stock > 0 else 'Sin Existencias' }}
           </button>
           <button type="button" class="w-16 bg-[#243c60] text-white rounded-2xl flex items-center justify-center hover:bg-[#7dc6e9] transition-colors shadow-xl shadow-[#243c60]/10">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -103,16 +109,12 @@
 
       <div class="mt-12 grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
         <div>
-          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Código de Barras</span>
+          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">SKU</span>
           <span class="text-xs font-bold text-[#243c60]">{{ producto.barcode }}</span>
-        </div>
-        <div>
-          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Stock Total</span>
-          <span class="text-xs font-bold text-[#243c60]">{{ producto.stock }} unidades</span>
         </div>
         <div class="flex items-center gap-2 col-span-2 mt-2">
           <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-          <span class="text-[9px] font-black text-red-500 uppercase italic">Uso profesional: Requiere Equipo de Protección Personal (EPP)</span>
+          <span class="text-[9px] font-black text-red-500 uppercase italic">Uso Industrial: Requiere Protección Personal</span>
         </div>
       </div>
     </div>
@@ -126,22 +128,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (selector && priceDisplay) {
         selector.addEventListener('change', function() {
-            // Obtenemos la opción seleccionada
             const selectedOption = this.options[this.selectedIndex];
-            // Extraemos el precio del atributo data-price
             const price = parseFloat(selectedOption.getAttribute('data-price'));
 
             if (!isNaN(price)) {
-                // Formateamos a moneda MXN
                 const formatted = new Intl.NumberFormat('es-MX', {
                     style: 'currency',
                     currency: 'MXN'
                 }).format(price);
 
-                // Aplicamos el cambio con una pequeña transición de opacidad
                 priceDisplay.style.opacity = '0';
                 setTimeout(() => {
-                    // Actualizamos el contenido manteniendo el <small> para el MXN
                     priceDisplay.innerHTML = `${formatted} <small class="text-xs text-slate-400 font-bold uppercase italic ml-1">MXN</small>`;
                     priceDisplay.style.opacity = '1';
                 }, 150);
