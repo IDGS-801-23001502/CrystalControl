@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, g, redirect, url_for, flash, make_response
 from flask_login import current_user
-from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier
+from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier, RawMaterialMovement
 from utils.decorators import roles_accepted
 from forms import PurchaseRequestForm, AnalysisForm
-from datetime import date
+from datetime import date, datetime
+
 import copy
+from decimal import Decimal
 
 module = 'purchases'
 
@@ -256,3 +258,72 @@ def receive_purchase_view(id):
         return redirect(url_for('purchases.scheduled_deliveries'))
         
     return render_template("purchases/receive.html", purchase=purchase)
+
+
+
+@purchases_bp.route("/receive/confirm/<int:id>", methods=['POST'])
+@roles_accepted('Administrador', 'Almacenista')
+def confirm_reception(id):
+    purchase = Purchase.query.get_or_404(id)
+    
+    try:
+        for detail in purchase.details:
+            # 1. SALTAR si ya está cerrado (Status 4)
+            if detail.status == 4:
+                continue
+
+            # 2. CAPTURAR datos del formulario
+            qty_received_str = request.form.get(f'receive_qty_{detail.id}', '0')
+            qty_received = Decimal(qty_received_str) if qty_received_str else Decimal('0')
+            status_input = request.form.get(f'status_{detail.id}') 
+
+            # --- EL FILTRO CRÍTICO ---
+            # Si la cantidad es 0 y NO es un reporte de 'dañado', 
+            # ignoramos este registro completamente. No guardamos NADA en la DB.
+            if qty_received <= 0 and status_input != 'dañado':
+                continue
+            # -------------------------
+
+            # 3. Lógica de cálculo 
+            total_a_comprar = Decimal(str(detail.approved_quantity))
+            
+            if status_input == 'completo':
+                pendiente_para_db = Decimal('0.00')
+                detail.status = 4 
+            elif status_input == 'dañado':
+                pendiente_para_db = total_a_comprar 
+                qty_received = Decimal('0.00')
+            else: # CASO PARCIAL
+                pendiente_para_db = total_a_comprar - qty_received
+                detail.status = 5  # <--- AQUÍ: Marcamos como PARCIAL / PENDIENTE
+
+            # 4. INSERTAR en movimientosinventariomp
+            # Solo llegamos aquí si pasó el filtro de arriba
+            new_move = RawMaterialMovement(
+                material_id=detail.material_id,
+                movement_type=1,
+                reason=4,
+                quantity=qty_received,
+                pending_quantity=max(Decimal('0.00'), pendiente_para_db),
+                status=1 if status_input == 'completo' else 2,
+                user_id=current_user.id,
+                timestamp=datetime.utcnow()
+            )
+            db.session.add(new_move)
+
+            # 6. Actualizar stock del material
+            if status_input != 'dañado' and qty_received > 0:
+                detail.material.real_stock += qty_received
+                detail.material.available_stock += qty_received
+
+        # 7. Estatus de la compra: 6=Recibido completo, 8=Incompleto
+        purchase.status = 6 if all(d.status == 4 for d in purchase.details) else 8
+
+        db.session.commit()
+        flash(f"Movimiento registrado. Folio: {purchase.folio}", "success")
+        return redirect(url_for('purchases.scheduled_deliveries'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error: {str(e)}", "danger")
+        return redirect(url_for('purchases.receive_purchase_view', id=id))
