@@ -1,200 +1,153 @@
-{% extends "layout_clients.html" %} {% block title %}Detalle de Producto{%
-endblock %} {% block content %}
-<div
-  class="bg-white rounded-[3rem] shadow-2xl shadow-[#243c60]/5 border border-slate-100 overflow-hidden"
->
+{% extends "layout_clients.html" %} 
+{% block title %}{{ producto.name }}{% endblock %} 
+
+{% block content %}
+<div class="bg-white rounded-[3rem] shadow-2xl shadow-[#243c60]/5 border border-slate-100 overflow-hidden">
   <div class="flex flex-col lg:flex-row">
-    <div
-      class="lg:w-1/2 p-12 bg-[#f4faf5]/50 flex flex-col items-center border-r border-slate-50"
-    >
-      <div
-        class="w-full max-w-sm aspect-square bg-white rounded-[2.5rem] shadow-inner flex items-center justify-center p-10 mb-8"
-      >
+    
+    <div class="lg:w-1/2 p-12 bg-[#f4faf5]/50 flex flex-col items-center border-r border-slate-50">
+      <div class="w-full max-w-sm aspect-square bg-white rounded-[2.5rem] shadow-inner flex items-center justify-center p-10 mb-8">
         <img
-          src="https://via.placeholder.com/400"
-          alt="Producto"
-          class="w-full h-full object-contain"
+          src="{{ url_for('static', filename='img/productos/' + (producto.picture if producto.picture else 'default.png')) }}"
+          alt="{{ producto.name }}"
+          id="product-image"
+          class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
         />
       </div>
 
       <div class="flex gap-4">
-        <div
-          class="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm"
-        >
+        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
           <div class="w-2 h-2 rounded-full bg-[#9ec946]"></div>
-          <span class="text-[10px] font-black text-[#243c60] uppercase"
-            >Grado Industrial</span
-          >
+          <span class="text-[10px] font-black text-[#243c60] uppercase">Grado Industrial</span>
         </div>
-        <div
-          class="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm"
-        >
+        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
           <div class="w-2 h-2 rounded-full bg-[#7dc6e9]"></div>
-          <span class="text-[10px] font-black text-[#243c60] uppercase"
-            >ISO 9001</span
-          >
+          <span class="text-[10px] font-black text-[#243c60] uppercase">ISO 9001:2015</span>
         </div>
       </div>
     </div>
 
     <div class="lg:w-1/2 p-12 lg:p-16">
-      <nav
-        class="flex mb-6 text-[10px] font-black uppercase tracking-widest text-[#7dc6e9]"
-      >
-        <a href="#" class="hover:text-[#243c60]">Catálogo</a>
+      <nav class="flex mb-6 text-[10px] font-black uppercase tracking-widest text-[#7dc6e9]">
+        <a href="{{ url_for('e-commerce.catalog') }}" class="hover:text-[#243c60]">Catálogo</a>
         <span class="mx-2 text-slate-300">/</span>
-        <span class="text-[#243c60]">Químicos Base</span>
+        <span class="text-[#243c60]">{{ producto.category }}</span>
       </nav>
 
       <h1 class="text-4xl font-black text-[#243c60] leading-tight mb-4">
-        Cloro Activo Concentrado al 13%
+        {{ producto.name }}
       </h1>
 
       <div class="flex items-center gap-4 mb-8">
-        <span class="text-3xl font-black text-[#243c60]"
-          >$2,450.00
-          <small class="text-xs text-slate-400 font-bold uppercase italic"
-            >MXN / Porrón 20L</small
-          ></span
-        >
-        <span
-          class="bg-[#9ec946]/20 text-[#243c60] text-[10px] font-black px-3 py-1 rounded-lg uppercase"
-          >En Stock</span
-        >
+        <span class="text-3xl font-black text-[#243c60] transition-all duration-300" id="price-display">
+          {% if producto.precios %}
+            ${{ "{:,.2f}".format(producto.precios[0].price_men) }}
+          {% else %}
+            $ --.--
+          {% endif %}
+          <small class="text-xs text-slate-400 font-bold uppercase italic ml-1">MXN</small>
+        </span>
+        
+        {% if producto.stock > 0 %}
+          <span class="bg-[#9ec946]/20 text-[#243c60] text-[10px] font-black px-3 py-1 rounded-lg uppercase">En Stock</span>
+        {% else %}
+          <span class="bg-red-100 text-red-600 text-[10px] font-black px-3 py-1 rounded-lg uppercase">Agotado</span>
+        {% endif %}
       </div>
 
       <p class="text-slate-500 text-sm leading-relaxed mb-10 font-medium">
-        Solución química de alta pureza diseñada para procesos de desinfección
-        crítica en plantas procesadoras de alimentos y tratamiento de aguas
-        industriales. Su alta concentración permite diluciones eficientes
-        reduciendo costos operativos.
+        Insumo químico de alta pureza desarrollado por CrystalControl para aplicaciones en {{ producto.category.lower() }}. Garantiza eficiencia técnica y seguridad en procesos industriales críticos.
       </p>
 
       <form action="#" method="POST" class="space-y-8">
-        <div class="flex items-center gap-6">
-          <div class="w-32">
-            <label
-              class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1"
-              >Cantidad</label
-            >
-            <div
-              class="flex items-center bg-[#f4faf5] rounded-2xl p-1 border border-slate-100"
-            >
-              <button
-                type="button"
-                class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all"
-              >
-                -
-              </button>
-              <input
-                type="number"
-                value="1"
-                class="w-10 bg-transparent text-center font-black text-sm outline-none border-none"
-              />
-              <button
-                type="button"
-                class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all"
-              >
-                +
-              </button>
+        <input type="hidden" name="producto_id" value="{{ producto.id }}">
+        
+        <div class="flex flex-col sm:flex-row items-end gap-6">
+          <div class="w-full sm:w-32">
+            <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Cantidad</label>
+            <div class="flex items-center bg-[#f4faf5] rounded-2xl p-1 border border-slate-100">
+              <button type="button" onclick="this.nextElementSibling.stepDown()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">-</button>
+              <input type="number" name="cantidad" value="1" min="1" max="{{ producto.stock }}" class="w-full bg-transparent text-center font-black text-sm outline-none border-none" />
+              <button type="button" onclick="this.previousElementSibling.stepUp()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">+</button>
             </div>
           </div>
 
-          <div class="flex-grow">
-            <label
-              class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1"
-              >Presentación</label
+          <div class="flex-grow w-full">
+            <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Presentación Disponible</label>
+            <select 
+                id="presentation-selector" 
+                name="presentacion" 
+                class="w-full bg-[#f4faf5] border border-slate-100 rounded-2xl py-3 px-4 font-bold text-sm text-[#243c60] outline-none focus:ring-2 focus:ring-[#7dc6e9] cursor-pointer"
             >
-            <select
-              class="w-full bg-[#f4faf5] border border-slate-100 rounded-2xl py-3 px-4 font-bold text-sm text-[#243c60] outline-none focus:ring-2 focus:ring-[#7dc6e9]"
-            >
-              <option>Porrón 20 Litros</option>
-              <option>Tambor 200 Litros</option>
+              {% for p in producto.precios %}
+                <option value="{{ p.id }}" data-price="{{ p.price_men }}">
+                  {{ p.presentation }}
+                </option>
+              {% else %}
+                <option disabled>No hay presentaciones</option>
+              {% endfor %}
             </select>
           </div>
         </div>
 
         <div class="flex gap-4">
-          <button
-            type="submit"
-            class="flex-grow bg-[#9ec946] text-[#243c60] py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
+          <button type="submit" class="flex-grow bg-[#9ec946] text-[#243c60] py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Añadir al Carrito
           </button>
-          <button
-            type="button"
-            class="w-16 bg-[#243c60] text-white rounded-2xl flex items-center justify-center hover:bg-[#7dc6e9] transition-colors shadow-xl shadow-[#243c60]/10"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
+          <button type="button" class="w-16 bg-[#243c60] text-white rounded-2xl flex items-center justify-center hover:bg-[#7dc6e9] transition-colors shadow-xl shadow-[#243c60]/10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </div>
       </form>
 
       <div class="mt-12 grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
         <div>
-          <span
-            class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
-            >Fórmula</span
-          >
-          <span class="text-xs font-bold text-[#243c60]">NaOCl</span>
+          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Código de Barras</span>
+          <span class="text-xs font-bold text-[#243c60]">{{ producto.barcode }}</span>
         </div>
         <div>
-          <span
-            class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
-            >Densidad</span
-          >
-          <span class="text-xs font-bold text-[#243c60]">1.21 g/cm³</span>
+          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Stock Total</span>
+          <span class="text-xs font-bold text-[#243c60]">{{ producto.stock }} unidades</span>
         </div>
-        <div>
-          <span
-            class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
-            >pH Solución</span
-          >
-          <span class="text-xs font-bold text-[#243c60]">11.5 - 13.0</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <svg
-            class="w-4 h-4 text-red-500"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clip-rule="evenodd"
-            ></path>
-          </svg>
-          <span class="text-[9px] font-black text-red-500 uppercase italic"
-            >Requiere EPP</span
-          >
+        <div class="flex items-center gap-2 col-span-2 mt-2">
+          <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+          <span class="text-[9px] font-black text-red-500 uppercase italic">Uso profesional: Requiere Equipo de Protección Personal (EPP)</span>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selector = document.getElementById('presentation-selector');
+    const priceDisplay = document.getElementById('price-display');
+
+    if (selector && priceDisplay) {
+        selector.addEventListener('change', function() {
+            // Obtenemos la opción seleccionada
+            const selectedOption = this.options[this.selectedIndex];
+            // Extraemos el precio del atributo data-price
+            const price = parseFloat(selectedOption.getAttribute('data-price'));
+
+            if (!isNaN(price)) {
+                // Formateamos a moneda MXN
+                const formatted = new Intl.NumberFormat('es-MX', {
+                    style: 'currency',
+                    currency: 'MXN'
+                }).format(price);
+
+                // Aplicamos el cambio con una pequeña transición de opacidad
+                priceDisplay.style.opacity = '0';
+                setTimeout(() => {
+                    // Actualizamos el contenido manteniendo el <small> para el MXN
+                    priceDisplay.innerHTML = `${formatted} <small class="text-xs text-slate-400 font-bold uppercase italic ml-1">MXN</small>`;
+                    priceDisplay.style.opacity = '1';
+                }, 150);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

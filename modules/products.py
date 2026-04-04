@@ -150,3 +150,24 @@ def delete_product(id):
             return redirect(url_for('products.products'))
 
     return render_template('products/delete.html', producto=producto, form=form)
+
+from flask import jsonify, request
+
+@products_bp.route('/search-suggestions')
+def search_suggestions():
+    query = request.args.get('q', '').strip()
+    if len(query) < 2:
+        return jsonify([])
+
+    # Buscamos coincidencias
+    productos = Producto.query.filter(Producto.name.ilike(f'%{query}%')).limit(5).all()
+    
+    results = []
+    for p in productos:
+        results.append({
+            'nombre': p.name,
+            'tipo': 'Producto',
+            'url': url_for('e-commerce.catalog', q=p.name) 
+        })
+        
+    return jsonify(results)

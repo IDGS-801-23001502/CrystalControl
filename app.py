@@ -64,8 +64,6 @@ def panel():
         return redirect(url_for('login.login_employees'))
     if hasattr(current_user, 'id_cliente'):
         return redirect(url_for('cliente_dashboard'))
-    print(f"El nivel de usuario en suppliers es {current_user.nivel_acceso('suppliers')}")
-    print(f"La url es {request.path} y deberia de ser {url_for('panel')}")
     return render_template("index.html")
 
 if __name__ == '__main__':
