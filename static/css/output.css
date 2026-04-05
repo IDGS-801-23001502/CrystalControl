@@ -1055,6 +1055,9 @@
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
   }
+  .mt-3 {
+    margin-top: calc(var(--spacing) * 3);
+  }
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
   }
@@ -1796,6 +1799,9 @@
   .w-80 {
     width: calc(var(--spacing) * 80);
   }
+  .w-100 {
+    width: calc(var(--spacing) * 100);
+  }
   .w-\[52px\] {
     width: 52px;
   }
@@ -2416,6 +2422,9 @@
   }
   .border-brand {
     border-color: var(--color-brand);
+  }
+  .border-dark {
+    border-color: var(--color-dark);
   }
   .border-default {
     border-color: var(--color-default);
@@ -3148,6 +3157,9 @@
   .text-center {
     text-align: center;
   }
+  .text-end {
+    text-align: end;
+  }
   .text-left {
     text-align: left;
   }
@@ -3458,6 +3470,9 @@
   }
   .text-heading {
     color: var(--color-heading);
+  }
+  .text-light {
+    color: var(--color-light);
   }
   .text-muted {
     color: var(--color-muted);

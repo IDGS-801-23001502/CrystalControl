@@ -4,6 +4,7 @@ from forms import FormRaw_Materials, FormRaw_Materials_Supplier, FormBulkInvento
 from utils.decorators import roles_accepted
 from flask_security import current_user
 from decimal import Decimal
+from datetime import datetime
 
 module = 'raw_materials'
 
@@ -242,3 +243,99 @@ def add_bulk_movement():
             flash(f"Error de sistema: {str(e)}", "danger")
 
     return render_template('inventory/material_movement.html', form=form)
+
+
+#FUNCION QUE USARA NOE PARA APARTAR MATERIA PRIMA
+
+def registrar_apartado_material(material_id, cantidad):
+    
+    # 1. Obtener la materia prima
+    material = Raw_Material.query.get(material_id)
+    if not material:
+        return False, f"ID {material_id} no encontrado.", None
+
+    try:
+        cantidad_dec = Decimal(str(cantidad))
+
+        # 2. Validación de disponibilidad 
+        if cantidad_dec > material.available_stock:
+            return False, f"Stock insuficiente para {material.name} (Disponible: {material.available_stock})", None
+
+        # 3. Crear el registro de movimiento
+        nuevo_movimiento = RawMaterialMovement(
+            material_id=material.id,
+            movement_type=2, # Salida
+            reason=2,        # Consumo
+            quantity=cantidad_dec,
+            pending_quantity=cantidad_dec, # Se mantiene para rastrear el consumo real después
+            status=2,       #Pendiente/Apartado
+            user_id=current_user.id
+        )
+
+        # 4. Actualizar Stock Disponible solo se resta del disponible para "bloquear"esa cantidad
+        material.available_stock -= cantidad_dec
+
+        db.session.add(nuevo_movimiento)
+        
+        db.session.flush() 
+        
+        return True, "Apartado preparado.", nuevo_movimiento
+
+    except Exception as e:
+        return False, f"Error en {material.name}: {str(e)}", None
+    
+
+
+    #RUTA MUY GENERAL PARA SALIDA POR CONSUMO
+@raw_materials_bp.route('/confirm_consumption', methods=['POST'])
+@roles_accepted('Administrador', 'Produccion', 'Almacenista')
+def confirm_consumption():
+    # Quiero pensar que en el formulario vendrán los IDs de los movimientos que estaban en estatus 2 (Apartados)
+    movement_ids = request.form.getlist('movement_ids[]')
+    
+    if not movement_ids:
+        flash("No se seleccionaron materiales para consumir.", "warning")
+        return redirect(url_for('raw_materials.pending_requests')) # O vista de pendientes
+
+    try:
+        for m_id in movement_ids:
+            # 1. Buscar el movimiento de apartado
+            movement = RawMaterialMovement.query.get(m_id)
+            
+            # 2. Solo procesar si existe y está como 'Apartado' (Status 2)
+            if not movement or movement.status != 2:
+                continue
+
+            # 3. CAPTURAR la cantidad que realmente se consumió 
+            # (Por si pidieron 10kg pero solo usaron 8kg hoy)
+            consumed_qty = Decimal(request.form.get(f'consume_qty_{m_id}', '0'))
+            
+            if consumed_qty <= 0:
+                continue
+
+            # 4. ACTUALIZACIÓN CRÍTICA: Restar del STOCK REAL
+            # El disponible ya se restó cuando se hizo el apartado.
+            material = movement.material
+            material.real_stock -= consumed_qty
+            
+            # 5. Actualizar el movimiento
+            # Si consumió todo lo apartado:
+            if consumed_qty >= movement.pending_quantity:
+                movement.status = 1  # Completado
+                movement.pending_quantity = 0
+            else:
+                # Si fue un consumo parcial de lo apartado:
+                movement.pending_quantity -= consumed_qty
+                # El status se queda en 2 porque aún "debe" material el almacén
+            
+            # 6. Registrar la fecha real de salida
+            movement.timestamp = datetime.utcnow()
+
+        db.session.commit()
+        flash("Consumo de materia prima registrado en Stock Real.", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al procesar consumo: {str(e)}", "danger")
+
+    return redirect(url_for('raw_materials.inventory_status'))
