@@ -2,8 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
 from flask_pymongo import PyMongo
 from sqlalchemy.dialects.mysql import TINYINT
-from datetime import datetime
-
+from datetime import datetime, timedelta
  
 mongo= PyMongo()
 db = SQLAlchemy()
@@ -328,6 +327,22 @@ class CashBox(db.Model):
         return values.get(self.status)    
 
 
+### EVENTO PARA LAS VENTAS A CANCELAR POR ANTIGUEDAD ###
+
+def verificar_cancelaciones():
+    limite = datetime.now() - timedelta(days=3)
+    # Buscamos ventas que:
+    # 1. Tengan fecha anterior al límite
+    # 2. No estén ya canceladas (6) ni entregadas (5)
+    ventas_a_cancelar = Sales.query.filter(
+        Sales.sale_date < limite,
+        Sales.status.notin_([3, 4, 5, 6])
+    ).update({Sales.status: 6}, synchronize_session=False)
+    
+    db.session.commit()
+    print(f"Se cancelaron {ventas_a_cancelar} ventas por antigüedad.")
+
+
 ## MOVIMIENTOS INVENTARIO MATERIA PRIMA ##
 
 class RawMaterialMovement(db.Model):
@@ -353,3 +368,4 @@ class RawMaterialMovement(db.Model):
 
     def __repr__(self):
         return f'<RawMaterialMovement ID:{self.id} Material:{self.material_id} Type:{self.movement_type}>'
+    
