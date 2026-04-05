@@ -269,6 +269,7 @@ class SaleDetail(db.Model):
     unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
     moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
 
+## PRODUCCIÓN ##
 
 ## MOVIMIENTOS INVENTARIO MATERIA PRIMA ##
 
@@ -295,3 +296,97 @@ class RawMaterialMovement(db.Model):
 
     def __repr__(self):
         return f'<RawMaterialMovement ID:{self.id} Material:{self.material_id} Type:{self.movement_type}>'
+class ProductionOrder(db.Model):
+    __tablename__ = 'ordenesproduccion'
+
+    id = db.Column('id_orden_produccion', db.Integer, primary_key=True)
+    folio = db.Column('folio_orden', db.String(20), unique=True, nullable=False)
+    recipe_id = db.Column('id_receta_ref', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
+    requested_quantity = db.Column('cantidad_solicitada', db.Numeric(10, 2), nullable=False)
+    unit_med = db.Column('unidad_medida', db.Integer, nullable=False) # 1: kg, 2: lt, 3: pieza
+    operator_id = db.Column('id_operador', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    real_waste = db.Column('merma_real', db.Numeric(10, 2), default=0.00)
+    
+    scheduled_date = db.Column('fecha_programada', db.DateTime)
+    start_date = db.Column('fecha_inicio', db.DateTime)
+    end_date = db.Column('fecha_cierre', db.DateTime)
+    
+    # 1: Esperando Validacion, 2: Pendiente, 3: En Proceso, 4: Completado, 5: Cancelado
+    status = db.Column('status', db.Integer, default=2)
+
+    # Relaciones
+    recipe = db.relationship('Recipe', backref='production_orders')
+    operator = db.relationship('User', backref='orders_assigned')
+    inputs = db.relationship('ProductionOrderInput', backref='order', cascade="all, delete-orphan")
+
+class ProductionOrderInput(db.Model):
+    __tablename__ = 'ordenesproduccion_insumos'
+
+    id = db.Column('id_op_insumo', db.Integer, primary_key=True)
+    order_id = db.Column('id_orden_produccion', db.Integer, db.ForeignKey('ordenesproduccion.id_orden_produccion', ondelete='CASCADE'))
+    material_id = db.Column('id_materia_prima', db.Integer, db.ForeignKey('MateriaPrima.id_materia'))
+    material_name = db.Column('nombre_materia', db.String(100)) # Snapshot del nombre
+    supplier_lot = db.Column('lote_proveedor', db.String(50)) # Para Trazabilidad RDF 6.3
+    used_quantity = db.Column('cantidad_utilizada', db.Numeric(10, 2))
+    moment_cost = db.Column('costo_insumo_momento', db.Numeric(10, 2))
+
+    material = db.relationship('Raw_Material', backref='production_inputs')
+
+class ProductionLot(db.Model):
+    __tablename__ = 'lotesproduccion'
+
+    id = db.Column('id_lote', db.Integer, primary_key=True)
+    lot_code = db.Column('codigo_lote', db.String(50), unique=True, nullable=False)
+    product_id = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    product_name = db.Column('nombre_producto', db.String(100))
+    order_folio_ref = db.Column('folio_orden_ref', db.String(20))
+    produced_quantity = db.Column('cantidad_producida', db.Numeric(10, 2))
+    unit_med = db.Column('unidad_medida', db.String(20))
+    unit_cost = db.Column('costo_unitario_produccion', db.Numeric(10, 2))
+    
+    manufacture_date = db.Column('fecha_fabricacion', db.DateTime, default=datetime.utcnow)
+    expiry_date = db.Column('fecha_caducidad_estimada', db.DateTime)
+    warehouse_location = db.Column('ubicacion_almacen', db.String(50))
+    current_stock = db.Column('stock_actual', db.Numeric(10, 2))
+    
+    # 1: Disponible, 2: Cuarentena, 3: Agotado, 4: Retirado
+    status = db.Column('status', db.Integer, default=2)
+
+    product = db.relationship('Producto', backref='production_lots')
+    quality_controls = db.relationship('ProductionLotQuality', backref='lot', cascade="all, delete-orphan")
+
+class ProductionLotQuality(db.Model):
+    __tablename__ = 'lotesproduccion_calidad'
+
+    id = db.Column('id_control', db.Integer, primary_key=True)
+    lot_id = db.Column('id_lote', db.Integer, db.ForeignKey('lotesproduccion.id_lote', ondelete='CASCADE'))
+    parameter = db.Column('parametro', db.String(50))
+    obtained_value = db.Column('valor_obtenido', db.String(50))
+    is_approved = db.Column('aprobado', db.Boolean, default=False)
+
+## INVENTARIOS (MOVIMIENTOS) ##
+
+class InventoryMovementMP(db.Model):
+    __tablename__ = 'movimientosinventariomp'
+
+    id = db.Column('id_movimiento_mp', db.Integer, primary_key=True)
+    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    type = db.Column('tipo_movimiento', db.Integer, nullable=False) # 1: Entrada, 2: Salida
+    reason = db.Column('motivo', db.Integer, nullable=False) # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto
+    quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=False)
+    expiry_date = db.Column('fecha_caducidad', db.Date)
+    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+class InventoryMovementPT(db.Model):
+    __tablename__ = 'movimientosinventariopt'
+
+    id = db.Column('id_movimiento_pt', db.Integer, primary_key=True)
+    product_id = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    type = db.Column('tipo_movimiento', db.Integer, nullable=False) # 1: Entrada, 2: Salida
+    reason = db.Column('motivo', db.Integer, nullable=False) # 1: Merma, 2: Venta, 3: Ajuste, 4: Produccion
+    quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=False)
+    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)

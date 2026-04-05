@@ -175,19 +175,19 @@
               class="ml-9 border-l-2 border-slate-100 flex flex-col gap-1 py-1"
             >
               <a
-                href="#"
+                href="{{url_for('production.production')}}"
                 class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Procesos
               </a>
               <a
-                href="#"
+                href="{{url_for('production.add_order')}}"
                 class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Solicitud Producción
               </a>
               <a
-                href="#"
+                href="{{url_for('production.quality_pending')}}"
                 class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Validación

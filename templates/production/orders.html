@@ -1,0 +1,100 @@
+{% extends "layout_employees.html" %}
+{% block title %} Órdenes de Producción {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn:hover  { background-color: #047857; }
+</style>
+
+<div class="max-w-6xl mx-auto mt-10 px-4 mb-20">
+
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h18" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Órdenes de Producción</h1>
+        <p class="text-xs text-slate-500">Gestión y seguimiento del proceso de fabricación</p>
+      </div>
+    </div>
+   </div>
+
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-slate-500">
+        <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
+          <tr>
+            <th class="px-6 py-4 font-semibold">Folio</th>
+            <th class="px-6 py-4 font-semibold">Producto / Receta</th>
+            <th class="px-6 py-4 font-semibold">Cantidad</th>
+            <th class="px-6 py-4 font-semibold">Fecha Prog.</th>
+            <th class="px-6 py-4 font-semibold text-center">Estatus</th>
+            <th class="px-6 py-4 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for order in orders %}
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4 font-medium text-slate-700">
+              {{ order.folio }}
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-slate-600">{{ order.recipe.final_name }}</div>
+              <div class="text-[10px] text-slate-400 uppercase tracking-wider">Receta ID: {{ order.recipe_id }}</div>
+            </td>
+            <td class="px-6 py-4 text-slate-600">
+              {{ order.requested_quantity }} 
+              <span class="text-xs text-slate-400">
+                {% if order.unit_med == 1 %}Kg{% elif order.unit_med == 2 %}L{% else %}Pz{% endif %}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-slate-500">
+              {{ order.scheduled_date.strftime('%d/%m/%Y %H:%M') }}
+            </td>
+            <td class="px-6 py-4 text-center">
+              {% if order.status == 2 %}
+                <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Pendiente</span>
+              {% elif order.status == 3 %}
+                <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">En Proceso</span>
+              {% elif order.status == 4 %}
+                <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Completado</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex justify-end gap-2">
+                {% if order.status == 2 %}
+                <a href="{{ url_for('production.start_order', id=order.id) }}" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Iniciar Producción">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+                </a>
+                {% endif %}
+
+                {% if order.status == 3 %}
+                <a href="{{ url_for('production.close_order', id=order.id) }}" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Cerrar y Generar Lote">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-10 text-center text-slate-400">
+              No hay órdenes de producción programadas.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
