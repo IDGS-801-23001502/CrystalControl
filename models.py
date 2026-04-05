@@ -95,6 +95,8 @@ class Raw_Material(db.Model):
     stock_min= db.Column('stock_min',db.Numeric(10,2), default='0.00')
     stock_max= db.Column('stock_max',db.Numeric(10,2))    
     unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
+    real_stock = db.Column('stock_real', db.Numeric(10,2), default='0.00')
+    available_stock = db.Column('stock_disponible', db.Numeric(10,2), default='0.00') 
     @property
     def nombre_unidad(self):
         unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
@@ -248,18 +250,27 @@ class PurchaseDetail(db.Model):
 class Sales(db.Model):
     __tablename__ = 'Ventas'
     
-    id = db.Column('id_ventas', db.Integer, primary_key=True, nullable=False)
+    id = db.Column('id_venta', db.Integer, primary_key=True, autoincrement=True, nullable=False)
     folio = db.Column('folio', db.String(20), unique=True)
     id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
     sale_date = db.Column('fecha_venta', db.DateTime, server_default=db.func.now())
-    gross_total = db.Column('total_bruto', db.Numeric(10,2))
-    profit_total = db.Column('total_utilidad', db.Numeric(10,2))
-    payment_method = db.Column('metodo_pago', db.String(50))
+    estimated_delivery_date = db.Column('fecha_entrega_estimada', db.String(5))
+    gross_total = db.Column('total_bruto', db.Numeric(10, 2))
+    profit_total = db.Column('total_utilidad', db.Numeric(10, 2))
+    shipping_address = db.Column('direccion_envio', db.String(50))
     id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'))
+    id_break = db.Column('id_corte', db.Integer, db.ForeignKey('Cortes_caja.id_corte'))
+    tracking = db.Column('rastreo', db.String(50))
+
+    status = db.Column('status', db.Integer) 
+
+    @property
+    def value_status(self):
+        values = {1: 'Solicitada', 2: 'Esperando pago', 3: 'Pagada', 4: 'En camino', 5:'Entregada', 6:'Cancelada'}
+        return values.get(self.status)
 
 class SaleDetail(db.Model):
     __tablename__ = 'detalle_venta'
-    
     id = db.Column('id_detalle_venta', db.Integer, primary_key=True, nullable=False)
     id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), primary_key=True)
     id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), primary_key=True)
@@ -267,4 +278,78 @@ class SaleDetail(db.Model):
     unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
     moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
 
+class SalePayment(db.Model):
+    __tablename__ = 'ventas_pagos'
+    
+    id = db.Column('id_pago', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_venta'), nullable=False)
+    payment_method = db.Column('metodo_pago', db.Integer, nullable=False)
+    paid_amount = db.Column('monto_pagado', db.Numeric(10, 2), nullable=False)
+    payment_reference = db.Column('referencia_pago', db.String(100), nullable=True)
+    payment_date = db.Column('fecha_pago', db.DateTime, server_default=db.func.now())
 
+    @property
+    def methods(self):
+        values = {1: 'Efectivo', 2: 'Tarjeta Debito', 3: 'Tarjeta Credito', 4: 'Transferencia', 5:'Clip/Terminal', 6:'Credito tienda'}
+        return values.get(self.payment_method)
+    
+class CashRegisters(db.Model):
+    __tablename__ = 'cortes_cajas'
+    
+    id = db.Column('id_corte', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    id_cash_box = db.Column('id_caja', db.Integer, db.ForeignKey('Cajas.id_caja'), nullable=False)
+    
+    open_date = db.Column('fecha_apertura', db.DateTime, server_default=db.func.now())
+    close_date = db.Column('fecha_cierre', db.DateTime, nullable=True)
+
+    open_amount = db.Column('monto_apertura', db.Numeric(10, 2), nullable=False)
+    expected_close_amount = db.Column('monto_cierre_esperado', db.Numeric(10, 2), nullable=True)
+    real_close_amount = db.Column('monto_cierre_real', db.Numeric(10, 2), nullable=True)
+    difference = db.Column('diferencia', db.Numeric(10, 2), nullable=True)
+    
+    status = db.Column('estatus', db.Integer, default=1)
+
+    @property
+    def value_status(self):
+        values = {1: 'Abierta', 2: 'Cerrada'}
+        return values.get(self.status)
+
+class CashBox(db.Model):
+    __tablename__ = 'Cajas'
+    
+    id = db.Column('id_caja', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    name = db.Column('nombre_caja', db.String(50))
+    id_user_cashier = db.Column('id_usuario_cajero', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
+    status = db.Column('status', db.Integer, default=1) 
+
+    @property
+    def value_status(self):
+        values = {1: 'Activa', 2: 'Inactiva'}
+        return values.get(self.status)    
+
+
+## MOVIMIENTOS INVENTARIO MATERIA PRIMA ##
+
+class RawMaterialMovement(db.Model):
+    __tablename__ = 'movimientosinventariomp'
+
+    id = db.Column('id_movimiento_mp', db.Integer, primary_key=True, autoincrement=True)
+    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    # 1: Entrada, 2: Salida
+    movement_type = db.Column('tipo_movimiento', db.Integer, nullable=False)
+    # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto, 5:Devolucion(solo si metemos devoluciones)
+    reason = db.Column('motivo', db.Integer, nullable=False)
+    quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    pending_quantity = db.Column('cantidad_pendiente', db.Numeric(10, 2), default=0.00)
+    # 1: Aplicado (Afecta Real), 2: Pendiente/Apartado 
+    status = db.Column('status_movimiento', db.Integer, default=1)
+    expiration_date = db.Column('fecha_caducidad', db.Date, nullable=True)
+    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    timestamp = db.Column('timestamp', db.DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    material = db.relationship('Raw_Material', backref='inventory_movements')
+    user = db.relationship('User', backref='inventory_actions')
+
+    def __repr__(self):
+        return f'<RawMaterialMovement ID:{self.id} Material:{self.material_id} Type:{self.movement_type}>'

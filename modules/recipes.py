@@ -46,9 +46,9 @@ def add_recipe():
             # --- 1. COSTOS ---
             total_production_cost = 0
             for mat in form.materials.data:
-                best_price = Raw_Material_Supplier.query.filter_by(id_materia=mat['material_id']).order_by(Raw_Material_Supplier.price.asc()).first()
+                best_price = Raw_Material_Supplier.query.filter_by(id_material=mat['material_id']).order_by(Raw_Material_Supplier.price.asc()).first()
                 if best_price:
-                    cost_unit = (float(mat['required_quantity']) / float(best_price.quantity)) * float(best_price.reference_price)
+                    cost_unit = (float(mat['required_quantity']) / float(best_price.lot)) * float(best_price.price)
                     total_production_cost += cost_unit
 
             # --- 2. MERMA CON LÓGICA DE UNIDAD Y ESCALA ---
@@ -174,9 +174,9 @@ def edit_recipe(id):
             # Costo
             total_cost = 0
             for mat in form.materials.data:
-                best_p = Raw_Material_Supplier.query.filter_by(id_materia=mat['material_id']).order_by(Raw_Material_Supplier.price.asc()).first()
+                best_p = Raw_Material_Supplier.query.filter_by(id_material=mat['material_id']).order_by(Raw_Material_Supplier.price.asc()).first()
                 if best_p:
-                    cost_unit = (float(mat['required_quantity']) / float(best_p.quantity)) * float(best_p.reference_price)
+                    cost_unit = (float(mat['required_quantity']) / float(best_p.lot)) * float(best_p.price)
                     total_cost += cost_unit
 
             # Merma y Factor de Escala

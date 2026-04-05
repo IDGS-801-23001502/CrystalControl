@@ -234,3 +234,28 @@ class FormRecipe(FlaskForm):
     # min_entries=1 asegura que al menos aparezca una fila al cargar
     materials = FieldList(FormField(FormRecipeDetail), min_entries=1)
     steps = FieldList(FormField(FormRecipeStep), min_entries=1)
+
+
+class FormInventoryMovementItem(FlaskForm):
+    material_id = SelectField('Materia Prima', coerce=int, validators=[
+        validators.DataRequired(message="Seleccione material")
+    ])
+    movement_type = SelectField('Tipo', coerce=int, choices=[
+        (1, 'Entrada'),
+        (2, 'Salida')
+    ], validators=[validators.DataRequired()])
+    reason = SelectField('Motivo', coerce=int, choices=[
+        (3, 'Ajuste'),
+        (1, 'Merma')
+    ], validators=[validators.DataRequired()])
+    quantity = DecimalField('Cantidad', [
+        validators.InputRequired(message="Requerido"),
+        validators.NumberRange(min=0.01)
+    ], places=2)
+
+    class Meta:
+        csrf = False # se deshabilita CSRF interno para las filas de la lista
+
+class FormBulkInventoryMovement(FlaskForm):
+    # Lista dinámica de movimientos
+    movements = FieldList(FormField(FormInventoryMovementItem), min_entries=1)

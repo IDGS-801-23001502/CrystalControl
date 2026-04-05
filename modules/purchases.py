@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, g, redirect, url_for, flash
+from flask import Blueprint, render_template, request, g, redirect, url_for, flash, make_response
 from flask_login import current_user
 from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier
 from utils.decorators import roles_accepted
@@ -200,7 +200,6 @@ def manage_generated_order(id):
             purchase.status = 5
             
             # También actualizamos el estatus de los ítems individuales a 4 (Recibiendo/En camino) 
-            # si es que llevas ese control en PurchaseDetail
             for detail in purchase.details:
                 detail.status = 4 
                 
@@ -228,8 +227,8 @@ def manage_generated_order(id):
         total_order=total_order
     )
 
-
 @purchases_bp.route("/view/<int:id>")
+@roles_accepted('Administrador', 'Almacenista', 'Compras')
 def view_purchase_detail(id):
     purchase = Purchase.query.get_or_404(id)
     total_orden = float(sum((d.unit_price or 0) * (d.approved_quantity or d.demand_quantity) for d in purchase.details))
@@ -238,3 +237,22 @@ def view_purchase_detail(id):
                            purchase=purchase, 
                            total_orden=total_orden,
                            total_con_iva=total_con_iva)
+
+@purchases_bp.route("/scheduled-deliveries")
+@roles_accepted('Administrador', 'Almacenista', 'Compras')
+def scheduled_deliveries():
+    # Filtramos por estatus 4 (Orden Generada), 5 (En Tránsito) o 8 (Entrega Incompleta)
+    scheduled = Purchase.query.filter(Purchase.status.in_([4, 5,8])).order_by(Purchase.generate_date.desc()).all()
+    return render_template("purchases/scheduled.html", purchases=scheduled)
+
+@purchases_bp.route("/receive/<int:id>", methods=['GET'])
+@roles_accepted('Administrador', 'Almacenista')
+def receive_purchase_view(id):
+    purchase = Purchase.query.get_or_404(id)
+    
+    # Solo se puede recibir si está en orden generada (4), tránsito (5) o incompleta (8)
+    if purchase.status not in [4, 5, 8]:
+        flash("Esta orden no está en un estado válido para recepción.", "warning")
+        return redirect(url_for('purchases.scheduled_deliveries'))
+        
+    return render_template("purchases/receive.html", purchase=purchase)

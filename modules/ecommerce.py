@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, request
+from models import Producto, db
 
 modulo = 'e-commerce'
 
@@ -11,12 +12,43 @@ ecommerce_bp = Blueprint(
 
 @ecommerce_bp.route("catalog")
 def catalog():
-    return render_template("ecommerce/catalog.html")
+    # 1. Obtener todas las categorías únicas para el sidebar
+    categorias_unicas = db.session.query(Producto.category).distinct().all()
+    lista_categorias = [c[0] for c in categorias_unicas if c[0]]
 
-@ecommerce_bp.route("producto_details")
+    # 2. Obtener parámetros de filtro de la URL
+    search_query = request.args.get('q', '')
+    cat_seleccionadas = request.args.getlist('cat') # Recibe los checkboxes marcados
+
+    # 3. Construir la consulta principal
+    query = Producto.query.filter_by(status='Activo')
+
+    if search_query:
+        query = query.filter(Producto.name.ilike(f'%{search_query}%'))
+
+    if cat_seleccionadas:
+        query = query.filter(Producto.category.in_(cat_seleccionadas))
+
+    productos = query.all()
+
+    return render_template("ecommerce/catalog.html", 
+                           productos=productos, 
+                           categorias=lista_categorias, # Enviamos las categorías reales
+                           search_query=search_query,
+                           cat_seleccionadas=cat_seleccionadas)
+
+# Debe ser exactamente así, sin <id> ni nada extra
+@ecommerce_bp.route("/producto_details") 
 def product_detail():
-    id = request.args.get("id")
-    return render_template("ecommerce/details_product.html")
+    producto_id = request.args.get("id")
+    print(f"Buscando producto con ID: {producto_id}")
+    
+    if not producto_id:
+        return "Falta el ID del producto", 400
+
+    producto = Producto.query.get_or_404(producto_id)
+    
+    return render_template("ecommerce/details_product.html", producto=producto)
 
 @ecommerce_bp.route("/pedidos")
 def pedidos():

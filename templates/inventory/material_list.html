@@ -1,0 +1,358 @@
+{% extends "layout_employees.html" %}
+{% block title %}Estado de Inventario{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --green:  #10b981;
+    --orange: #f97316;
+    --red:    #ef4444;
+    --green-bg:  #d1fae5;
+    --orange-bg: #ffedd5;
+    --red-bg:    #fee2e2;
+    --green-text:  #065f46;
+    --orange-text: #7c2d12;
+    --red-text:    #7f1d1d;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface-2);
+  }
+
+  /* ── Page wrapper ── */
+  .inv-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  /* ── Header ── */
+  .inv-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .inv-header-left { display: flex; align-items: center; gap: 1rem; }
+
+  .inv-icon-wrap {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .inv-icon-wrap svg { width: 26px; height: 26px; color: #059669; }
+
+  .inv-title   { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); line-height: 1.2; }
+  .inv-subtitle{ font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px; }
+
+  .btn-new-movement {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: #fff;
+    font-weight: 700; font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 12px;
+    border: none; cursor: pointer; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(16,185,129,.35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-new-movement:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,.4); }
+  .btn-new-movement:active { transform: scale(.97); }
+  .btn-new-movement svg { width: 18px; height: 18px; }
+
+  /* ── Grid ── */
+  .inv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ── Card ── */
+  .inv-card {
+    background: var(--surface);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    transition: transform .2s, box-shadow .2s;
+    position: relative; overflow: hidden;
+  }
+  .inv-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 18px 18px 0 0;
+  }
+  .inv-card.status-ok     ::before,
+  .inv-card.status-ok     { }
+  .inv-card.status-ok::before     { background: var(--green); }
+  .inv-card.status-warning::before{ background: var(--orange); }
+  .inv-card.status-critical::before{ background: var(--red); }
+  .inv-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(15,23,42,.08); }
+
+  /* ── Card top row ── */
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+
+  .card-name {
+    font-size: 1rem; font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .badge-unit {
+    font-size: 0.625rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 6px;
+    background: #f1f5f9; color: #475569;
+    white-space: nowrap; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Stock display ── */
+  .stock-display { display: flex; align-items: baseline; gap: 6px; }
+  .stock-number {
+    font-size: 2.25rem; font-weight: 800;
+    color: var(--text-primary); line-height: 1;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -.03em;
+  }
+  .stock-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+  /* ── Progress bar section ── */
+  .progress-section { display: flex; flex-direction: column; gap: 6px; }
+
+  .progress-labels {
+    display: flex; justify-content: space-between;
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .07em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lbl-min  { color: var(--red); }
+  .lbl-mid  { color: var(--text-muted); }
+  .lbl-max  { color: var(--green); }
+
+  /* Track */
+  .progress-track {
+    width: 100%; height: 10px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Threshold markers on the track */
+  .progress-track::before,
+  .progress-track::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0;
+    width: 2px; background: rgba(0,0,0,.12); z-index: 1;
+    border-radius: 1px;
+  }
+  .progress-track::before  { left: 20%; }  /* crítico mark */
+  .progress-track::after   { left: 50%; }  /* 1/2 mark */
+
+  .progress-fill {
+    height: 100%; border-radius: 999px;
+    transition: width 1s cubic-bezier(.4,0,.2,1), background-color .6s ease;
+  }
+  .fill-green  { background: linear-gradient(90deg, #34d399, #10b981); }
+  .fill-orange { background: linear-gradient(90deg, #fb923c, #f97316); }
+  .fill-red    { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+  /* ── Percentage pill ── */
+  .pct-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.6875rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pct-green  { background: var(--green-bg);  color: var(--green-text); }
+  .pct-orange { background: var(--orange-bg); color: var(--orange-text); }
+  .pct-red    { background: var(--red-bg);    color: var(--red-text); }
+
+  /* ── Footer row ── */
+  .card-footer {
+    display: flex; align-items: center;
+    border-top: 1px solid #f1f5f9;
+    padding-top: .875rem;
+    gap: 0;
+  }
+  .footer-cell { flex: 1; text-align: center; }
+  .footer-cell + .footer-cell { border-left: 1px solid #f1f5f9; }
+
+  .footer-label { font-size: 0.625rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); font-weight: 600; }
+  .footer-value { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+  .status-badge {
+    font-size: 0.625rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .1em;
+    padding: 3px 10px; border-radius: 999px;
+    display: inline-block; margin-top: 2px;
+  }
+  .status-badge.ok       { background: var(--green-bg);  color: var(--green-text); }
+  .status-badge.warning  { background: var(--orange-bg); color: var(--orange-text); }
+  .status-badge.critical { background: var(--red-bg);    color: var(--red-text); }
+  .status-badge.over     { background: #dbeafe;          color: #1e3a5f; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    grid-column: 1 / -1;
+    padding: 5rem 2rem; text-align: center;
+    background: var(--surface); border-radius: 20px;
+    border: 2px dashed var(--border);
+  }
+  .empty-state p { color: var(--text-muted); font-size: .9375rem; }
+</style>
+
+<div class="inv-page">
+
+  <!-- Header -->
+  <div class="inv-header">
+    <div class="inv-header-left">
+      <div class="inv-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="inv-title">Control de Inventario</h1>
+        <p class="inv-subtitle">Monitoreo de existencias y disponibilidad en tiempo real</p>
+      </div>
+    </div>
+
+    <a href="{{ url_for('raw_materials.add_bulk_movement') }}" class="btn-new-movement">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+      </svg>
+      Nuevo Movimiento
+    </a>
+  </div>
+
+  <!-- Grid -->
+  <div class="inv-grid">
+    {% for material in raw_materials %}
+      {% set disponible = material.available_stock | float %}
+      {% set min        = material.stock_min | float %}
+      {% set max        = material.stock_max | float %}
+      {% set rango      = max - min %}
+
+      {# ── Porcentaje dentro del rango [min, max] para la barra ── #}
+      {% if rango > 0 %}
+        {% set porc_barra = ((disponible - min) / rango * 100) %}
+      {% else %}
+        {% set porc_barra = 0 %}
+      {% endif %}
+      {% if porc_barra > 100 %}{% set porc_barra = 100 %}{% endif %}
+      {% if porc_barra < 0   %}{% set porc_barra = 0   %}{% endif %}
+
+      {# ── Porcentaje sobre el máximo absoluto (para mostrar al usuario) ── #}
+      {% set porc_display = (disponible / max * 100) | round(1) if max > 0 else 0 %}
+      {% if porc_display > 100 %}{% set porc_display = 100 %}{% endif %}
+
+      {# ── Colores basados en la posición dentro del rango ──
+           >= 50% → verde  (ÓPTIMO)
+           20-49% → naranja (BAJO)
+           <  20% → rojo   (CRÍTICO)
+      #}
+      {% if porc_barra >= 50 %}
+        {% set fill_class   = "fill-green" %}
+        {% set pct_class    = "pct-green" %}
+        {% set card_status  = "status-ok" %}
+      {% elif porc_barra >= 20 %}
+        {% set fill_class   = "fill-orange" %}
+        {% set pct_class    = "pct-orange" %}
+        {% set card_status  = "status-warning" %}
+      {% else %}
+        {% set fill_class   = "fill-red" %}
+        {% set pct_class    = "pct-red" %}
+        {% set card_status  = "status-critical" %}
+      {% endif %}
+
+      {# ── Etiqueta de estado ── #}
+      {% if disponible >= max %}
+        {% set estado_label = "SOBRECUPO" %}
+        {% set estado_class = "over" %}
+      {% elif porc_barra < 20 %}
+        {% set estado_label = "CRÍTICO" %}
+        {% set estado_class = "critical" %}
+      {% elif porc_barra < 50 %}
+        {% set estado_label = "BAJO" %}
+        {% set estado_class = "warning" %}
+      {% else %}
+        {% set estado_label = "ÓPTIMO" %}
+        {% set estado_class = "ok" %}
+      {% endif %}
+
+      <div class="inv-card {{ card_status }}">
+
+        <!-- Name + unit badge -->
+        <div class="card-top">
+          <span class="card-name" title="{{ material.name }}">{{ material.name }}</span>
+          <span class="badge-unit">{{ material.unidad_medida }}</span>
+        </div>
+
+        <!-- Available stock number -->
+        <div class="stock-display">
+          <span class="stock-number">{{ "{:,.2f}".format(disponible) }}</span>
+          <span class="stock-label">disponibles</span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-section">
+          <div class="progress-labels">
+            <span class="lbl-min">Min {{ "{:,.0f}".format(min) }}</span>
+            <span class="lbl-mid">
+              <span class="pct-pill {{ pct_class }}">{{ porc_barra | round(0) | int }}%</span>
+            </span>
+            <span class="lbl-max">Max {{ "{:,.0f}".format(max) }}</span>
+          </div>
+
+          <div class="progress-track">
+            <div class="progress-fill {{ fill_class }}" style="width: {{ porc_barra }}%;"></div>
+          </div>
+        </div>
+
+        <!-- Footer stats -->
+        <div class="card-footer">
+          <div class="footer-cell">
+            <div class="footer-label">Stock Real</div>
+            <div class="footer-value">{{ "{:,.2f}".format(material.real_stock | float) }}</div>
+          </div>
+          <div class="footer-cell">
+            <div class="footer-label">Estado</div>
+            <span class="status-badge {{ estado_class }}">{{ estado_label }}</span>
+          </div>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="empty-state">
+        <p>No hay materias primas activas para mostrar.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

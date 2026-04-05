@@ -26,8 +26,9 @@ def index():
     q = request.args.get('q', '').strip()
     status_filter = request.args.get('status', 'all')
 
-    query = User.query
-
+    query = User.query.join(User.roles)
+    query = query.filter(Role.name != 'Cliente')
+    
     if q:
         like = f'%{q}%'
         query = query.filter(
@@ -39,6 +40,7 @@ def index():
         query = query.filter_by(estatus='Activo')
     elif status_filter == 'inactive':
         query = query.filter_by(estatus='Inactivo')
+
 
     usuarios = query.order_by(User.id).all()
     roles = Role.query.all()
@@ -55,7 +57,8 @@ def index():
 @users_bp.route('/crear', methods=['GET', 'POST'])
 @roles_accepted('Administrador')
 def crear():
-    roles = Role.query.all()
+    # Importante: Usa filter() en lugar de filter_by()
+    roles = Role.query.filter(Role.name != 'Cliente').all()
 
     if request.method == 'POST':
         username  = request.form.get('username', '').strip()

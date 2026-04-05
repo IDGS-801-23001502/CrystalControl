@@ -1,0 +1,89 @@
+{% extends "layout_employees.html" %}
+{% block title %} Recepción de Mercancía - {{ purchase.folio }} {% endblock %}
+{% block content %}
+
+<div class="max-w-6xl mx-auto mt-10 px-4 mb-20">
+    <form action="#" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-800">Registrar Entrada de Almacén</h1>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Orden: {{ purchase.folio }}</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Fecha de Arribo</label>
+                    <input type="date" name="arrival_date" class="text-sm font-bold text-slate-700 border-b border-slate-200 outline-none focus:border-emerald-500" value="{{ hoy_str }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-4">Insumo / Proveedor</th>
+                        <th class="px-6 py-4 text-center">Pendiente</th>
+                        <th class="px-6 py-4 text-center text-emerald-600">Recibir Ahora</th>
+                        <th class="px-6 py-4">Estado de Partida</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for d in purchase.details %}
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-bold">
+                                    {{ loop.index }}
+                                </div>
+                                <div>
+                                    <span class="font-bold text-slate-800 block">{{ d.material.name }}</span>
+                                    <span class="text-[10px] text-slate-400 font-medium uppercase">{{ d.supplier.name }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="font-mono font-bold text-slate-500 text-sm">
+                                {{ "{:,.2f}".format(d.approved_quantity) }} {{ d.material.unidad_medida }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="flex justify-center">
+                                <input type="number" step="0.01" 
+                                       name="receive_qty_{{ d.id }}" 
+                                       placeholder="0.00"
+                                       class="w-32 py-2 px-3 text-right font-mono font-black text-emerald-700 bg-emerald-50 border-b-2 border-emerald-200 rounded-lg focus:border-emerald-500 outline-none transition-all"
+                                       max="{{ d.approved_quantity }}">
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <select name="status_{{ d.id }}" class="text-[10px] font-bold uppercase bg-transparent border border-slate-200 rounded px-2 py-1 outline-none">
+                                <option value="completo">Completo</option>
+                                <option value="parcial" selected>Parcial / Pendiente</option>
+                                <option value="daniado">Dañado / Rechazado</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-8 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-lg border border-amber-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-tight">Nota: Las cantidades recibidas sumarán al inventario actual.</span>
+            </div>
+            
+            <div class="flex gap-4">
+                <a href="{{ url_for('purchases.scheduled_deliveries') }}" class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all">Cancelar</a>
+                <button type="submit" class="px-10 py-2.5 bg-slate-800 text-white text-sm font-black rounded-xl hover:bg-slate-900 shadow-lg active:scale-95 transition-all uppercase tracking-widest">
+                    Confirmar Recepción
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

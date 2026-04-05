@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
-from models import db, Raw_Material, Raw_Material_Supplier, Supplier
-from forms import FormRaw_Materials, FormRaw_Materials_Supplier
+from models import db, Raw_Material, Raw_Material_Supplier, Supplier, RawMaterialMovement
+from forms import FormRaw_Materials, FormRaw_Materials_Supplier, FormBulkInventoryMovement
 from utils.decorators import roles_accepted
+from flask_security import current_user
+from decimal import Decimal
 
 module = 'raw_materials'
 
@@ -149,3 +151,94 @@ def suppliers_material(id):
         raw_material=raw_material,
         current_suppliers=current_suppliers
     )
+
+@raw_materials_bp.route('/inventory')
+@roles_accepted('Administrador', 'Compras', 'Produccion') # Añadí Producción por si lo necesitan ver
+def inventory_status():
+    # Solo traemos las activas para el control de inventario actual
+    raw_materials = Raw_Material.query.filter_by(estatus='Activo').all()
+    return render_template('inventory/material_list.html', raw_materials=raw_materials)
+
+
+@raw_materials_bp.route('/add_bulk_movement', methods=['GET', 'POST'])
+@roles_accepted('Administrador', 'Compras', 'Produccion')
+def add_bulk_movement():
+    form = FormBulkInventoryMovement(request.form)
+    materials_list = Raw_Material.query.filter_by(estatus='Activo').all()
+    material_choices = [(m.id, m.name) for m in materials_list]
+
+    # Carga inicial de opciones
+    for entry in form.movements:
+        entry.material_id.choices = material_choices
+
+    if request.method == 'POST' and form.validate():
+        try:
+            movimientos_a_procesar = []
+            materiales_seleccionados = set()
+            
+            # --- FASE 1: VALIDACIÓN ---
+            for entry in form.movements.data:
+                mid = entry['material_id']
+                
+                # Validación de duplicados
+                if mid in materiales_seleccionados:
+                    flash("No puedes seleccionar la misma materia prima más de una vez en el mismo ajuste.", "danger")
+                    db.session.rollback()
+                    for e in form.movements: e.material_id.choices = material_choices
+                    return render_template('inventory/material_movement.html', form=form)
+                
+                materiales_seleccionados.add(mid)
+                material = Raw_Material.query.get(mid)
+                qty = Decimal(str(entry['quantity']))
+                m_type = entry['movement_type']
+
+                # Validación de topes (stock_max)
+                if m_type == 1: # Entrada
+                    if (material.available_stock + qty) > material.stock_max:
+                        espacio = material.stock_max - material.available_stock
+                        flash(f"Límite excedido en {material.name}: Máximo {material.stock_max}. Disponible: {espacio}.", "danger")
+                        db.session.rollback()
+                        for e in form.movements: e.material_id.choices = material_choices
+                        return render_template('inventory/material_movement.html', form=form)
+                
+                elif m_type == 2: # Salida
+                    if qty > material.available_stock:
+                        flash(f"No hay suficiente stock de '{material.name}'. "
+              f"Intentaste retirar {qty}, pero solo hay {material.available_stock} disponible.", "danger")
+                        db.session.rollback()
+                        for e in form.movements: e.material_id.choices = material_choices
+                        return render_template('inventory/material_movement.html', form=form)
+                
+                movimientos_a_procesar.append((material, qty, m_type, entry))
+
+            # --- FASE 2: APLICACIÓN ---
+            for material, qty, m_type, entry_data in movimientos_a_procesar:
+                new_move = RawMaterialMovement(
+                    material_id=material.id,
+                    movement_type=m_type,
+                    reason=entry_data['reason'],
+                    quantity=qty,
+                    status=1,
+                    user_id=current_user.id,
+                    pending_quantity=0
+                )
+                
+                if m_type == 1:
+                    material.real_stock += qty
+                    material.available_stock += qty
+                else:
+                    material.real_stock -= qty
+                    material.available_stock -= qty
+                
+                db.session.add(new_move)
+
+            db.session.commit()
+            flash("Ajustes aplicados correctamente.", "success")
+            return redirect(url_for('raw_materials.inventory_status'))
+
+        except Exception as e:
+            db.session.rollback()
+            for e_form in form.movements: e_form.material_id.choices = material_choices
+            flash(f"Error de sistema: {str(e)}", "danger")
+
+    return render_template('inventory/material_movement.html', form=form)
