@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
-from models import db, Raw_Material, Raw_Material_Supplier, Supplier, RawMaterialMovement
+from models import db, Raw_Material, Raw_Material_Supplier, Supplier, InventoryMovementPT as RawMaterialMovement
 from forms import FormRaw_Materials, FormRaw_Materials_Supplier, FormBulkInventoryMovement
 from utils.decorators import roles_accepted
 from flask_security import current_user

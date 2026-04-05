@@ -345,29 +345,6 @@ def verificar_cancelaciones():
 
 ## MOVIMIENTOS INVENTARIO MATERIA PRIMA ##
 
-class RawMaterialMovement(db.Model):
-    __tablename__ = 'movimientosinventariomp'
-
-    id = db.Column('id_movimiento_mp', db.Integer, primary_key=True, autoincrement=True)
-    material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
-    # 1: Entrada, 2: Salida
-    movement_type = db.Column('tipo_movimiento', db.Integer, nullable=False)
-    # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto, 5:Devolucion(solo si metemos devoluciones)
-    reason = db.Column('motivo', db.Integer, nullable=False)
-    quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
-    pending_quantity = db.Column('cantidad_pendiente', db.Numeric(10, 2), default=0.00)
-    # 1: Aplicado (Afecta Real), 2: Pendiente/Apartado 
-    status = db.Column('status_movimiento', db.Integer, default=1)
-    expiration_date = db.Column('fecha_caducidad', db.Date, nullable=True)
-    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
-    timestamp = db.Column('timestamp', db.DateTime, default=datetime.utcnow)
-
-    # Relaciones
-    material = db.relationship('Raw_Material', backref='inventory_movements')
-    user = db.relationship('User', backref='inventory_actions')
-
-    def __repr__(self):
-        return f'<RawMaterialMovement ID:{self.id} Material:{self.material_id} Type:{self.movement_type}>'
 class ProductionOrder(db.Model):
     __tablename__ = 'ordenesproduccion'
 
@@ -436,20 +413,29 @@ class ProductionLotQuality(db.Model):
     obtained_value = db.Column('valor_obtenido', db.String(50))
     is_approved = db.Column('aprobado', db.Boolean, default=False)
 
-## INVENTARIOS (MOVIMIENTOS) ##
-
 class InventoryMovementMP(db.Model):
     __tablename__ = 'movimientosinventariomp'
-
-    id = db.Column('id_movimiento_mp', db.Integer, primary_key=True)
+    id = db.Column('id_movimiento_mp', db.Integer, primary_key=True, autoincrement=True)
     material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
-    type = db.Column('tipo_movimiento', db.Integer, nullable=False) # 1: Entrada, 2: Salida
-    reason = db.Column('motivo', db.Integer, nullable=False) # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto
+    # 1: Entrada, 2: Salida
+    movement_type = db.Column('tipo_movimiento', db.Integer, nullable=False)
+    # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto
+    reason = db.Column('motivo', db.Integer, nullable=False)
     quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
-    resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=False)
-    expiry_date = db.Column('fecha_caducidad', db.Date)
-    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=True) 
+    pending_quantity = db.Column('cantidad_pendiente', db.Numeric(10, 2), default=0.00)
+    # 1: Aplicado, 2: Pendiente
+    status = db.Column('status_movimiento', db.Integer, default=1)
+    expiration_date = db.Column('fecha_caducidad', db.Date, nullable=True)
+    user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    timestamp = db.Column('timestamp', db.DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    material = db.relationship('Raw_Material', backref='inventory_movements')
+    user = db.relationship('User', backref='inventory_actions')
+
+    def __repr__(self):
+        return f'<RawMaterialMovement ID:{self.id} Material:{self.material_id}>'
 
 class InventoryMovementPT(db.Model):
     __tablename__ = 'movimientosinventariopt'

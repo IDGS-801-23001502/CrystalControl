@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, g, redirect, url_for, flash, make_response
 from flask_login import current_user
-from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier, RawMaterialMovement
+from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier, InventoryMovementPT as RawMaterialMovement
 from utils.decorators import roles_accepted
 from forms import PurchaseRequestForm, AnalysisForm
 from datetime import date, datetime
