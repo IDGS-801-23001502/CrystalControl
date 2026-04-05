@@ -201,3 +201,51 @@ def quality_pending():
     from models import ProductionLot
     lots = ProductionLot.query.filter_by(status=2).all()
     return render_template('production/quality_list.html', lots=lots)
+
+@production_bp.route('/inventory_pt')
+@roles_accepted('Administrador', 'Produccion')
+def inventory_pt():
+    # Obtenemos todos los productos y sus lotes activos
+    productos = Producto.query.all()
+    # Movimientos recientes de producto terminado
+    movimientos = InventoryMovementPT.query.order_by(InventoryMovementPT.timestamp.desc()).all()
+    return render_template('production/inventory_pt.html', productos=productos, movimientos=movimientos)
+
+@production_bp.route('/inventory_pt_adjustment', methods=['GET', 'POST'])
+@roles_accepted('Administrador')
+def inventory_pt_adjustment():
+    if request.method == 'POST':
+        try:
+            producto_id = request.form.get('product_id')
+            tipo = int(request.form.get('type')) # 1: Entrada, 2: Salida
+            cantidad = float(request.form.get('quantity'))
+            motivo = int(request.form.get('reason')) # 3: Ajuste, 1: Merma
+            
+            producto = Producto.query.get_or_404(producto_id)
+            
+            # Actualizar Stock
+            if tipo == 1:
+                producto.stock = (producto.stock or 0) + cantidad
+            else:
+                producto.stock = (producto.stock or 0) - cantidad
+
+            # Registrar Movimiento
+            nuevo_mov = InventoryMovementPT(
+                product_id=producto.id,
+                type=tipo,
+                reason=motivo,
+                quantity=cantidad,
+                resulting_stock=producto.stock,
+                user_id=current_app.config.get('USER_ID') # O el id del current_user
+            )
+            db.session.add(nuevo_mov)
+            db.session.commit()
+            
+            flash("Ajuste de inventario realizado con éxito", "success")
+            return redirect(url_for('production.inventory_pt_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error al realizar ajuste: {str(e)}", "danger")
+
+    productos = Producto.query.filter_by(status='Activo').all()
+    return render_template('production/inventory_pt_adjustment.html', productos=productos)
