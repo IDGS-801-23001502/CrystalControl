@@ -1,5 +1,7 @@
-{% extends "layout_clients.html" %} {% block title %}Mi Carrito{% endblock %} {%
-block content %}
+{% extends "layout_clients.html" %} 
+{% block title %}Mi Carrito{% endblock %} 
+
+{% block content %}
 <div class="max-w-7xl mx-auto">
   <div class="mb-10">
     <h1 class="text-3xl font-black text-[#243c60] uppercase tracking-tighter">
@@ -12,165 +14,113 @@ block content %}
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 space-y-4">
-      <div
-        class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-6 transition-all hover:shadow-md"
-      >
-        <div
-          class="w-24 h-24 bg-[#f4faf5] rounded-2xl flex items-center justify-center p-2"
-        >
-          <img
-            src="{{ url_for('static', filename='img/productos/quimico_ejemplo.png') }}"
-            alt="Producto"
-            class="max-h-full object-contain"
-          />
-        </div>
+      
+      {% if cart %}
+        {% for key, item in cart.items() %}
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-6 transition-all hover:shadow-md">
+          <div class="w-24 h-24 bg-[#f4faf5] rounded-2xl flex items-center justify-center p-2">
+            <img
+              src="{{ url_for('static', filename='img/productos/default.png') }}"
+              alt="{{ item.nombre }}"
+              class="max-h-full object-contain"
+            />
+          </div>
 
-        <div class="flex-grow text-center sm:text-left">
-          <h3
-            class="font-black text-[#243c60] uppercase text-base leading-tight"
-          >
-            Detergente Industrial Bio-Degradable
-          </h3>
-          <p
-            class="text-[10px] text-[#7dc6e9] font-black uppercase tracking-widest mt-1"
-          >
-            Categoría: Limpieza Pesada
-          </p>
+          <div class="flex-grow text-center sm:text-left">
+            <h3 class="font-black text-[#243c60] uppercase text-base leading-tight">
+              {{ item.nombre }}
+            </h3>
+            <p class="text-[10px] text-[#7dc6e9] font-black uppercase tracking-widest mt-1">
+              Presentación: {{ item.presentacion }}
+            </p>
 
-          <div
-            class="mt-4 flex items-center justify-center sm:justify-start gap-4"
-          >
-            <div
-              class="flex items-center border-2 border-slate-100 rounded-xl overflow-hidden"
-            >
-              <button
-                class="px-3 py-1 bg-slate-50 hover:bg-slate-100 text-[#243c60] font-bold transition-colors"
-              >
-                -
-              </button>
-              <input
-                type="text"
-                value="1"
-                class="w-10 text-center text-xs font-black text-[#243c60] outline-none"
-                readonly
-              />
-              <button
-                class="px-3 py-1 bg-slate-50 hover:bg-slate-100 text-[#243c60] font-bold transition-colors"
-              >
-                +
-              </button>
+            <div class="mt-4 flex items-center justify-center sm:justify-start gap-4">
+              <div class="flex items-center border-2 border-slate-100 rounded-xl overflow-hidden">
+                <span class="px-4 py-1 text-xs font-black text-[#243c60]">
+                  Cant: {{ item.cantidad }}
+                </span>
+              </div>
+              
+              <a href="{{ url_for('e-commerce.remove_from_cart', id=item.id_producto) }}" 
+                 class="text-red-400 hover:text-red-600 transition-colors p-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </a>
             </div>
-            <button
-              class="text-red-400 hover:text-red-600 transition-colors p-2"
-            >
-              <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
+          </div>
+
+          <div class="text-right">
+            <p class="text-lg font-black text-[#243c60] tracking-tighter">
+              ${{ "{:,.2f}".format(item.precio * item.cantidad) }}
+            </p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">
+              ${{ "{:,.2f}".format(item.precio) }} c/u
+            </p>
           </div>
         </div>
-
-        <div class="text-right">
-          <p class="text-lg font-black text-[#243c60] tracking-tighter">
-            $450.00
-          </p>
-          <p class="text-[10px] text-slate-400 font-bold uppercase">
-            Precio Unitario
-          </p>
+        {% endfor %}
+      {% else %}
+        <div class="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-slate-200">
+          <p class="text-slate-400 font-bold uppercase tracking-widest">El carrito está vacío</p>
+          <a href="{{ url_for('e-commerce.catalog') }}" class="text-[#7dc6e9] text-xs font-black uppercase mt-4 inline-block">Volver al catálogo</a>
         </div>
-      </div>
+      {% endif %}
 
-      <a
-        href="/"
-        class="inline-flex items-center gap-2 text-[#7dc6e9] hover:text-[#243c60] font-black uppercase text-[10px] tracking-widest transition-colors mt-4"
-      >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
+      <a href="{{ url_for('e-commerce.catalog') }}" class="inline-flex items-center gap-2 text-[#7dc6e9] hover:text-[#243c60] font-black uppercase text-[10px] tracking-widest transition-colors mt-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
         Continuar comprando
       </a>
     </div>
 
     <div class="lg:col-span-1">
-      <div
-        class="bg-[#243c60] rounded-3xl p-8 shadow-xl text-white sticky top-32"
-      >
+      <div class="bg-[#243c60] rounded-3xl p-8 shadow-xl text-white sticky top-32">
         <h2 class="text-xl font-black uppercase tracking-tighter mb-8 italic">
           Resumen de <span class="text-[#9ec946]">Orden</span>
         </h2>
 
-        <div class="space-y-4 mb-8">
-          <div
-            class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400"
-          >
-            <span>Subtotal</span>
-            <span class="text-white">$450.00</span>
+        <form action="{{ url_for('e-commerce.confirmar_compra') }}" method="POST">
+          {{ form.csrf_token }}
+          
+          <div class="mb-6">
+            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Dirección de Envío</label>
+            {{ form.shipping_address(class="w-full bg-white/10 border border-white/20 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-[#9ec946] placeholder:text-slate-500", placeholder="Calle, Número, Colonia...") }}
           </div>
-          <div
-            class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400"
-          >
-            <span>Envío</span>
-            <span class="text-[#9ec946]">Gratis</span>
-          </div>
-          <div
-            class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400 border-t border-white/10 pt-4"
-          >
-            <span>Impuestos (IVA)</span>
-            <span class="text-white">$72.00</span>
-          </div>
-        </div>
 
-        <div class="flex justify-between items-end mb-8">
-          <span class="text-xs font-black uppercase tracking-[0.2em]"
-            >Total Final</span
-          >
-          <span class="text-3xl font-black text-[#9ec946] tracking-tighter"
-            >$522.00</span
-          >
-        </div>
+          <div class="space-y-4 mb-8">
+            <div class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400">
+              <span>Subtotal</span>
+              <span class="text-white">${{ "{:,.2f}".format(total) }}</span>
+            </div>
+            <div class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400">
+              <span>Envío</span>
+              <span class="text-[#9ec946]">Gratis</span>
+            </div>
+            <div class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-400 border-t border-white/10 pt-4">
+              <span>Impuestos (IVA 16%)</span>
+              <span class="text-white">${{ "{:,.2f}".format(total * 0.16) }}</span>
+            </div>
+          </div>
 
-        <button
-          class="w-full bg-[#9ec946] hover:bg-[#8bb33d] text-[#243c60] py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-[#9ec946]/20 active:scale-95"
-        >
-          Proceder al Pago
-        </button>
+          <div class="flex justify-between items-end mb-8">
+            <span class="text-xs font-black uppercase tracking-[0.2em]">Total Final</span>
+            <span class="text-3xl font-black text-[#9ec946] tracking-tighter">
+              ${{ "{:,.2f}".format(total * 1.16) }}
+            </span>
+          </div>
+
+          <button type="submit" {% if not cart %}disabled{% endif %}
+            class="w-full bg-[#9ec946] hover:bg-[#8bb33d] text-[#243c60] py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-[#9ec946]/20 active:scale-95 disabled:opacity-50">
+            Confirmar y Pagar
+          </button>
+        </form>
 
         <div class="mt-6 flex flex-col gap-3">
-          <div
-            class="flex items-center gap-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest"
-          >
-            <svg
-              class="w-4 h-4 text-[#7dc6e9]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04 escape-4.016 11.955 11.955 0 01-1.382 12.06 11.958 11.958 0 01-9.618 3.04z"
-              />
+          <div class="flex items-center gap-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+            <svg class="w-4 h-4 text-[#7dc6e9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04z" />
             </svg>
             Pago 100% Seguro cifrado
           </div>

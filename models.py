@@ -258,7 +258,7 @@ class Sales(db.Model):
     profit_total = db.Column('total_utilidad', db.Numeric(10, 2))
     shipping_address = db.Column('direccion_envio', db.String(50))
     id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'))
-    id_break = db.Column('id_corte', db.Integer, db.ForeignKey('Cortes_caja.id_corte'))
+    id_break = db.Column('id_corte', db.Integer, db.ForeignKey('cortes_cajas.id_corte'))
     tracking = db.Column('rastreo', db.String(50))
 
     status = db.Column('status', db.Integer) 

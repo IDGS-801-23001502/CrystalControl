@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
-from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
+from wtforms import DecimalField, StringField, PasswordField, SelectField, SubmitField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators
 
 class FormUsuarios(FlaskForm):
@@ -259,3 +259,29 @@ class FormInventoryMovementItem(FlaskForm):
 class FormBulkInventoryMovement(FlaskForm):
     # Lista dinámica de movimientos
     movements = FieldList(FormField(FormInventoryMovementItem), min_entries=1)
+
+# --- VENTAS ONLINE --- #
+
+class AddToCartForm(FlaskForm):
+    id_product = HiddenField('ID Producto', validators=[validators.DataRequired()])
+    # Ahora el precio y presentación vendrán de esta selección
+    id_presentacion_precio = SelectField('Selecciona Presentación', coerce=int, validators=[validators.DataRequired()])
+    quantity = IntegerField('Cantidad', validators=[validators.DataRequired(), validators.NumberRange(min=1)], default=1)
+    submit = SubmitField('Añadir al Carrito')
+
+class CheckoutForm(FlaskForm):
+    # Para la dirección de envío y completar la tabla 'Ventas'
+    shipping_address = StringField('Dirección de Envío', validators=[validators.DataRequired(), validators.Length(max=50)])
+    # El status se manejará internamente (1: Solicitada / 2: Esperando pago)
+    submit = SubmitField('Confirmar Pedido')
+
+class PaymentForm(FlaskForm):
+    # Para la tabla 'ventas_pagos'
+    id_sale = HiddenField('ID Venta')
+    payment_method = SelectField('Método de Pago', choices=[
+        (1, 'Efectivo'), (2, 'Tarjeta Débito'), (3, 'Tarjeta Crédito'),
+        (4, 'Transferencia'), (5, 'Clip/Terminal'), (6, 'Crédito tienda')
+    ], coerce=int)
+    paid_amount = DecimalField('Monto a Pagar', validators=[validators.DataRequired()])
+    reference = StringField('Referencia (opcional)')
+    submit = SubmitField('Finalizar Pago')

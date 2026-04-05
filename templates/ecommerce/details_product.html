@@ -67,45 +67,50 @@
         Producto verificado bajo los estándares de CrystalControl para asegurar la máxima pureza.
       </p>
 
-      <form action="{{ url_for('e-commerce.catalog') }}" method="POST" class="space-y-8">
-        <input type="hidden" name="producto_id" value="{{ producto.id }}">
+      <form action="{{ url_for('e-commerce.add_to_cart') }}" method="POST" class="space-y-8">
+  {# Protección CSRF de Flask-WTF y el ID oculto del producto #}
+  {{ form.csrf_token }}
+  {{ form.id_product(value=producto.id) }}
+  
+  <div class="flex flex-col sm:flex-row items-end gap-6">
+    <div class="w-full sm:w-32">
+      <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Cantidad</label>
+      <div class="flex items-center bg-[#f4faf5] rounded-2xl p-1 border border-slate-100">
+        <button type="button" onclick="this.nextElementSibling.stepDown()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">-</button>
         
-        <div class="flex flex-col sm:flex-row items-end gap-6">
-          <div class="w-full sm:w-32">
-            <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Cantidad</label>
-            <div class="flex items-center bg-[#f4faf5] rounded-2xl p-1 border border-slate-100">
-              <button type="button" onclick="this.nextElementSibling.stepDown()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">-</button>
-              <input type="number" name="cantidad" value="1" min="1" max="{{ producto.stock }}" class="w-full bg-transparent text-center font-black text-sm outline-none border-none" />
-              <button type="button" onclick="this.previousElementSibling.stepUp()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">+</button>
-            </div>
-          </div>
+        {# Renderizamos el input de cantidad del form de Flask #}
+        {{ form.quantity(class="w-full bg-transparent text-center font-black text-sm outline-none border-none", min="1", max=producto.stock, value="1") }}
+        
+        <button type="button" onclick="this.previousElementSibling.stepUp()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">+</button>
+      </div>
+    </div>
 
-          <div class="flex-grow w-full">
-            <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Presentación</label>
-            <select 
-                id="presentation-selector" 
-                name="presentacion" 
-                class="w-full bg-[#f4faf5] border border-slate-100 rounded-2xl py-3 px-4 font-bold text-sm text-[#243c60] outline-none focus:ring-2 focus:ring-[#7dc6e9] cursor-pointer"
-            >
-              {% for p in producto.precios %}
-                <option value="{{ p.id }}" data-price="{{ p.price_men }}">
-                  {{ p.presentation }}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
+    <div class="flex-grow w-full">
+      <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Presentación</label>
+      
+      {# Renderizamos el select de Flask-WTF manteniendo tus estilos de Tailwind #}
+      <select 
+          id="presentation-selector" 
+          name="id_presentacion_precio" 
+          class="w-full bg-[#f4faf5] border border-slate-100 rounded-2xl py-3 px-4 font-bold text-sm text-[#243c60] outline-none focus:ring-2 focus:ring-[#7dc6e9] cursor-pointer"
+      >
+        {% for p in producto.precios %}
+          <option value="{{ p.id }}" data-price="{{ p.price_men }}">
+            {{ p.presentation }} - ${{ "{:,.2f}".format(p.price_men) }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
 
-        <div class="flex gap-4">
-          <button type="submit" {% if producto.stock <= 0 %}disabled{% endif %} class="flex-grow bg-[#9ec946] text-[#243c60] py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            {{ 'Añadir al Carrito' if producto.stock > 0 else 'Sin Existencias' }}
-          </button>
-          <button type="button" class="w-16 bg-[#243c60] text-white rounded-2xl flex items-center justify-center hover:bg-[#7dc6e9] transition-colors shadow-xl shadow-[#243c60]/10">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-      </form>
+  <div class="flex gap-4">
+    {# Botón de Submit #}
+    <button type="submit" {% if producto.stock <= 0 %}disabled{% endif %} class="flex-grow bg-[#9ec946] text-[#243c60] py-5 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {{ 'Añadir al Carrito' if producto.stock > 0 else 'Sin Existencias' }}
+    </button>
+  </div>
+</form>
 
       <div class="mt-12 grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
         <div>
