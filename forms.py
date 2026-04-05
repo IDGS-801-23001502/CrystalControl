@@ -133,7 +133,8 @@ class FormProduct(FlaskForm):
     ])
 
     stock = IntegerField('Stock disponible', [
-        validators.Optional()
+        validators.Optional(),
+        validators.Disabled()
     ], default=0)
 
     picture = FileField('Foto del producto', [
