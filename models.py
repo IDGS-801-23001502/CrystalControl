@@ -2,8 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
 from flask_pymongo import PyMongo
 from sqlalchemy.dialects.mysql import TINYINT
-from datetime import datetime
-
+from datetime import datetime, timedelta
  
 mongo= PyMongo()
 db = SQLAlchemy()
@@ -250,26 +249,99 @@ class PurchaseDetail(db.Model):
 class Sales(db.Model):
     __tablename__ = 'Ventas'
     
-    id = db.Column('id_ventas', db.Integer, primary_key=True)
-    folio = db.Column('folio', db.String(20), unique=True, nullable=False)
-    id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    id = db.Column('id_venta', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    folio = db.Column('folio', db.String(20), unique=True)
+    id_user = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
     sale_date = db.Column('fecha_venta', db.DateTime, server_default=db.func.now())
-    gross_total = db.Column('total_bruto', db.Numeric(10,2))
-    profit_total = db.Column('total_utilidad', db.Numeric(10,2))
-    payment_method = db.Column('metodo_pago', db.String(50))
-    id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'), nullable=False)
+    estimated_delivery_date = db.Column('fecha_entrega_estimada', db.String(5))
+    gross_total = db.Column('total_bruto', db.Numeric(10, 2))
+    profit_total = db.Column('total_utilidad', db.Numeric(10, 2))
+    shipping_address = db.Column('direccion_envio', db.String(50))
+    id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'))
+    id_break = db.Column('id_corte', db.Integer, db.ForeignKey('cortes_cajas.id_corte'))
+    tracking = db.Column('rastreo', db.String(50))
+
+    status = db.Column('status', db.Integer) 
+
+    @property
+    def value_status(self):
+        values = {1: 'Solicitada', 2: 'Esperando pago', 3: 'Pagada', 4: 'En camino', 5:'Entregada', 6:'Cancelada'}
+        return values.get(self.status)
 
 class SaleDetail(db.Model):
     __tablename__ = 'detalle_venta'
-    
-    id = db.Column('id_detalle_venta', db.Integer, primary_key=True)
-    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), nullable=False)
-    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), nullable=False)
+    id = db.Column('id_detalle_venta', db.Integer, primary_key=True, nullable=False)
+    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_ventas'), primary_key=True)
+    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), primary_key=True)
     lot = db.Column('cantidad', db.Integer)
     unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
     moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
 
-## PRODUCCIÓN ##
+class SalePayment(db.Model):
+    __tablename__ = 'ventas_pagos'
+    
+    id = db.Column('id_pago', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_venta'), nullable=False)
+    payment_method = db.Column('metodo_pago', db.Integer, nullable=False)
+    paid_amount = db.Column('monto_pagado', db.Numeric(10, 2), nullable=False)
+    payment_reference = db.Column('referencia_pago', db.String(100), nullable=True)
+    payment_date = db.Column('fecha_pago', db.DateTime, server_default=db.func.now())
+
+    @property
+    def methods(self):
+        values = {1: 'Efectivo', 2: 'Tarjeta Debito', 3: 'Tarjeta Credito', 4: 'Transferencia', 5:'Clip/Terminal', 6:'Credito tienda'}
+        return values.get(self.payment_method)
+    
+class CashRegisters(db.Model):
+    __tablename__ = 'cortes_cajas'
+    
+    id = db.Column('id_corte', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    id_cash_box = db.Column('id_caja', db.Integer, db.ForeignKey('Cajas.id_caja'), nullable=False)
+    
+    open_date = db.Column('fecha_apertura', db.DateTime, server_default=db.func.now())
+    close_date = db.Column('fecha_cierre', db.DateTime, nullable=True)
+
+    open_amount = db.Column('monto_apertura', db.Numeric(10, 2), nullable=False)
+    expected_close_amount = db.Column('monto_cierre_esperado', db.Numeric(10, 2), nullable=True)
+    real_close_amount = db.Column('monto_cierre_real', db.Numeric(10, 2), nullable=True)
+    difference = db.Column('diferencia', db.Numeric(10, 2), nullable=True)
+    
+    status = db.Column('estatus', db.Integer, default=1)
+
+    @property
+    def value_status(self):
+        values = {1: 'Abierta', 2: 'Cerrada'}
+        return values.get(self.status)
+
+class CashBox(db.Model):
+    __tablename__ = 'Cajas'
+    
+    id = db.Column('id_caja', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    name = db.Column('nombre_caja', db.String(50))
+    id_user_cashier = db.Column('id_usuario_cajero', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
+    status = db.Column('status', db.Integer, default=1) 
+
+    @property
+    def value_status(self):
+        values = {1: 'Activa', 2: 'Inactiva'}
+        return values.get(self.status)    
+
+
+### EVENTO PARA LAS VENTAS A CANCELAR POR ANTIGUEDAD ###
+
+def verificar_cancelaciones():
+    limite = datetime.now() - timedelta(days=3)
+    # Buscamos ventas que:
+    # 1. Tengan fecha anterior al límite
+    # 2. No estén ya canceladas (6) ni entregadas (5)
+    ventas_a_cancelar = Sales.query.filter(
+        Sales.sale_date < limite,
+        Sales.status.notin_([3, 4, 5, 6])
+    ).update({Sales.status: 6}, synchronize_session=False)
+    
+    db.session.commit()
+    print(f"Se cancelaron {ventas_a_cancelar} ventas por antigüedad.")
+
 
 ## MOVIMIENTOS INVENTARIO MATERIA PRIMA ##
 
