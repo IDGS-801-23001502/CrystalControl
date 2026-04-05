@@ -1,0 +1,88 @@
+{% extends "layout_employees.html" %}
+{% block title %} Nueva Orden de Producción {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn:hover  { background-color: #047857; }
+  .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
+</style>
+
+<div class="max-w-3xl mx-auto mt-10 px-4 mb-20">
+
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h18" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Programar Orden de Producción</h1>
+        <p class="text-xs text-slate-500">Configura la receta y cantidad para iniciar el proceso</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+    <form action="{{ url_for('production.add_order') }}" method="post">
+      {{ form.csrf_token }}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="relative z-0 w-full group">
+          {{ form.recipe_id(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Receta a utilizar
+          </label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.requested_quantity(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Cantidad total (Lote solicitado)
+          </label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.operator_id(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Operador asignado
+          </label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.scheduled_date(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+            Fecha y hora de inicio
+          </label>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8 flex items-start gap-3">
+        <svg class="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-xs text-blue-700 leading-relaxed">
+          <strong>Nota de escalado:</strong> Al guardar, el sistema calculará automáticamente la cantidad de insumos necesarios basándose en la receta seleccionada y realizará una validación de inventario en tiempo real.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 border-t border-slate-100 pt-6">
+        <button type="submit" class="emerald-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-semibold rounded-lg shadow-md active:scale-95 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+          Programar Producción
+        </button>
+        <a href="{{ url_for('production.production') }}" class="cancel-btn inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-lg">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

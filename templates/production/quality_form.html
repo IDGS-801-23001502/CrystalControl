@@ -1,0 +1,66 @@
+{% extends "layout_employees.html" %}
+{% block title %} Dictamen de Calidad {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+</style>
+
+<div class="max-w-3xl mx-auto mt-10 px-4 mb-20">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+      <svg class="emerald-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl font-semibold text-slate-800">Dictamen de Laboratorio</h1>
+      <p class="text-xs text-slate-500">Lote: <span class="font-bold">{{ lot.lot_code }}</span> - {{ lot.product_name }}</p>
+    </div>
+  </div>
+
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+    <form action="{{ url_for('production.quality_check', lot_id=lot.id) }}" method="post">
+      {{ form.csrf_token }}
+      {{ form.lot_id(value=lot.id) }}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="relative z-0 w-full group">
+          {{ form.ph_level(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Nivel de pH Obtenido</label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.density(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Densidad (g/cm³)</label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.appearance(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Aspecto Visual</label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.is_approved(class="block py-2.5 px-0 w-full text-sm font-semibold text-emerald-700 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Dictamen Final</label>
+        </div>
+      </div>
+
+      <div class="relative z-0 w-full mb-8 group">
+        {{ form.comments(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer", rows=3) }}
+        <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Observaciones técnicas / Notas de laboratorio</label>
+      </div>
+
+      <div class="flex items-center gap-3 pt-6 border-t border-slate-100">
+        <button type="submit" class="emerald-btn px-8 py-2.5 text-sm font-semibold rounded-lg shadow-md transition-all active:scale-95">
+          Registrar Dictamen y Liberar
+        </button>
+        <a href="{{ url_for('production.production') }}" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

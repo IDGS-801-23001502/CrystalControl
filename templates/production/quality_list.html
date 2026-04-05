@@ -1,0 +1,61 @@
+{% extends "layout_employees.html" %}
+{% block title %} Control de Calidad {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+</style>
+
+<div class="max-w-6xl mx-auto mt-10 px-4 mb-20">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+      <svg class="emerald-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl font-semibold text-slate-800">Inspección de Calidad</h1>
+      <p class="text-xs text-slate-500">Lotes en cuarentena pendientes de liberación técnica</p>
+    </div>
+  </div>
+
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm text-left text-slate-500">
+      <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b">
+        <tr>
+          <th class="px-6 py-4 font-semibold">Código de Lote</th>
+          <th class="px-6 py-4 font-semibold">Producto</th>
+          <th class="px-6 py-4 font-semibold">Fecha Fab.</th>
+          <th class="px-6 py-4 font-semibold text-center">Estado</th>
+          <th class="px-6 py-4 font-semibold text-right">Acción</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for lot in lots %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-6 py-4 font-medium text-slate-700">{{ lot.lot_code }}</td>
+          <td class="px-6 py-4 text-slate-600">{{ lot.product_name }}</td>
+          <td class="px-6 py-4 text-slate-500">{{ lot.created_at.strftime('%d/%m/%Y') }}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase tracking-tighter">En Cuarentena</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <a href="{{ url_for('production.quality_check', lot_id=lot.id) }}" class="emerald-btn px-3 py-1.5 text-xs font-semibold rounded-lg shadow-sm inline-flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" /></svg>
+              Inspeccionar
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="px-6 py-10 text-center text-slate-400 font-light">No hay lotes pendientes de validación.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

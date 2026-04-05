@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField
+from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField
 from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators
 
@@ -234,3 +234,90 @@ class FormRecipe(FlaskForm):
     # min_entries=1 asegura que al menos aparezca una fila al cargar
     materials = FieldList(FormField(FormRecipeDetail), min_entries=1)
     steps = FieldList(FormField(FormRecipeStep), min_entries=1)
+
+class FormProductionOrder(FlaskForm):
+    id = HiddenField('id')
+    
+    # Folio es readonly porque el sistema lo genera automáticamente (OP-YYYYMMDD...)
+    folio = StringField('Folio de Orden', render_kw={'readonly': True})
+    
+    # El usuario elige qué receta va a preparar
+    recipe_id = SelectField('Seleccionar Receta', coerce=int, validators=[
+        validators.DataRequired(message="Debe seleccionar una receta activa")
+    ])
+    
+    # Esta es la cantidad total deseada (ej. los 400L que mencionabas)
+    requested_quantity = DecimalField('Cantidad a Producir', [
+        validators.InputRequired(message="La cantidad es obligatoria"),
+        validators.NumberRange(min=0.01, message="La cantidad debe ser mayor a 0")
+    ], places=2)
+    
+    # La unidad de medida suele venir de la receta, pero se pone para validación
+    unit_med = SelectField('Unidad de Medida', coerce=int, choices=[
+        (1, 'Kilos'),
+        (2, 'Litros'),
+        (3, 'Piezas')
+    ])
+    
+    # Selección del operador (usuario con perfil de producción)
+    operator_id = SelectField('Operador Responsable', coerce=int, validators=[
+        validators.DataRequired(message="Asigne un operador a esta orden")
+    ])
+    
+    # Fecha y hora en la que se planea iniciar
+    scheduled_date = DateTimeLocalField('Fecha Programada', 
+        format='%Y-%m-%dT%H:%M',
+        validators=[validators.DataRequired(message="Seleccione fecha y hora")]
+    )
+
+    # El estatus suele manejarse internamente, pero se deja como Hidden si es necesario
+    status = HiddenField('Estatus', default=2) # 2: Pendiente
+
+class FormCloseProductionOrder(FlaskForm):
+    # Campos informativos (Readonly) para que el operador compare
+    requested_quantity = DecimalField('Cantidad Programada', render_kw={'readonly': True})
+    
+    # --- DATOS DE PRODUCCIÓN REAL ---
+    produced_qty = DecimalField('Cantidad Final Obtenida', [
+        validators.InputRequired(message="Debe ingresar la cantidad resultante"),
+        validators.NumberRange(min=0, message="La cantidad no puede ser negativa")
+    ], places=2)
+
+    real_waste = DecimalField('Merma Real Detectada', [
+        validators.InputRequired(message="Ingrese la merma (puede ser 0)"),
+        validators.NumberRange(min=0, message="La merma no puede ser negativa")
+    ], places=2, default=0.00)
+
+    # --- DATOS DEL LOTE (TRAZABILIDAD) ---
+    expiry_date = DateTimeLocalField('Fecha de Caducidad', 
+        format='%Y-%m-%dT%H:%M',
+        validators=[validators.DataRequired(message="Indique la fecha de vencimiento")]
+    )
+
+    location = StringField('Ubicación en Almacén', [
+        validators.DataRequired(message="Indique el pasillo o estante"),
+        validators.Length(max=50)
+    ], default="Almacén de Cuarentena")
+
+    notes = TextAreaField('Observaciones de la Producción')
+
+class FormQualityCheck(FlaskForm):
+    # El ID del lote es oculto
+    lot_id = HiddenField('lot_id')
+    
+    # Parámetros comunes en industria química (ajusta según tu producto)
+    ph_level = StringField('Nivel de pH', [validators.DataRequired()])
+    density = StringField('Densidad', [validators.DataRequired()])
+    appearance = SelectField('Aspecto Visual', choices=[
+        ('Correcto', 'Correcto'),
+        ('Turbio', 'Turbio'),
+        ('Color Incorrecto', 'Color Incorrecto')
+    ])
+    
+    # Decisión final
+    is_approved = SelectField('Dictamen Final', coerce=int, choices=[
+        (1, 'Aprobado (Disponible para Venta)'),
+        (0, 'Rechazado (Mala Calidad / Merma)')
+    ])
+    
+    comments = TextAreaField('Notas de Laboratorio')
