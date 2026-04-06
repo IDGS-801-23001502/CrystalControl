@@ -44,6 +44,16 @@
       </div>
     </div>
 
+
+    <div class="flex gap-2">
+        <a href="{{ url_for('production.lots_pt') }}"
+          class="emerald-btn inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Ver Lotes
+        </a>
+    </div>
     <div class="flex gap-2">
         <a href="{{ url_for('production.inventory_pt_adjustment') }}"
           class="emerald-btn inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm">
@@ -144,8 +154,6 @@
 
           <td class="px-6 py-4 text-center">
             <div class="flex items-center justify-center gap-2">
-                <a href="#" class="emerald-link hover:underline text-xs font-medium">Ver Lotes</a>
-                <span class="text-slate-300">|</span>
                 <a href="{{url_for('production.inventory_pt_history',product_id=prod.id)}}" class="text-slate-500 hover:text-slate-800 text-xs font-medium">Historial</a>
             </div>
           </td>
@@ -186,3 +194,4 @@ document.getElementById('inventory-search').addEventListener('keyup', function()
 </script>
 
 {% endblock %}
+

@@ -32,13 +32,13 @@
   <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
     <form action="{{ url_for('production.add_order') }}" method="post">
       {{ form.csrf_token }}
+      {{ form.operator_id }}
+      {{ form.status }}
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div class="relative z-0 w-full group">
           {{ form.recipe_id(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Receta a utilizar
-          </label>
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"></label>
         </div>
 
         <div class="relative z-0 w-full group">
@@ -49,17 +49,8 @@
         </div>
 
         <div class="relative z-0 w-full group">
-          {{ form.operator_id(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Operador asignado
-          </label>
-        </div>
-
-        <div class="relative z-0 w-full group">
           {{ form.scheduled_date(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Fecha y hora de inicio
-          </label>
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"></label>
         </div>
       </div>
 
@@ -73,9 +64,9 @@
       </div>
 
       <div class="flex items-center gap-3 border-t border-slate-100 pt-6">
-        <a href="{{ url_for('production.add_order') }}" class="emerald-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-semibold rounded-lg shadow-md active:scale-95 transition-all">
-          Solicitar Producción
-        </a>
+        <button type="submit" class="emerald-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-semibold rounded-lg shadow-md active:scale-95 transition-all">
+            Solicitar Producción
+        </button>
         <a href="{{ url_for('production.production') }}" class="cancel-btn inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-lg">
           Cancelar
         </a>
