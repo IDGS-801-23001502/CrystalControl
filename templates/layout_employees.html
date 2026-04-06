@@ -310,11 +310,11 @@
             {# Análisis #}
             {% if current_user.has_role('Administrador') or current_user.has_role('Gerente') %}
               <a
-              href="#"
-              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == '#' else 'text-slate-600 hover:bg-slate-50' }}"
+              href="{{url_for('analytics.main')}}"
+              class="flex items-center p-3 text-xs font-bold uppercase rounded-xl transition-all {{ 'text-emerald-700 bg-emerald-50' if request.path == url_for('analytics.main') else 'text-slate-600 hover:bg-slate-50' }}"
             >
               <svg
-                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == '#' else 'text-slate-400' }}"
+                class="w-4 h-4 mr-3 {{ 'text-emerald-500' if request.path == url_for('analytics.main') else 'text-slate-400' }}"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
