@@ -3,10 +3,11 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon       { color: #059669; }
-  .emerald-border-top { border-top: 3px solid #10b981; }
-  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
+  .emerald-border-top  { border-top: 3px solid #10b981; }
+  .emerald-btn         { background-color: #059669; color: #fff; transition: all 0.2s; }
+  .emerald-btn:hover   { background-color: #047857; transform: translateY(-1px); }
 </style>
 
 <div class="max-w-4xl mx-auto mt-10 px-4 mb-20">
@@ -18,23 +19,29 @@
     </div>
     <div>
       <h1 class="text-xl font-semibold text-slate-800">Finalizar Producción: {{ order.folio }}</h1>
-      <p class="text-xs text-slate-500">Registra los resultados finales y genera el lote de producto</p>
+      <p class="text-xs text-slate-500">Confirma los datos finales para generar el ingreso a almacén</p>
     </div>
   </div>
 
   <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-4 bg-slate-50 rounded-lg border border-slate-100">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-4 bg-slate-50 rounded-lg border border-slate-100">
         <div>
-            <p class="text-[10px] uppercase text-slate-400 font-bold">Receta</p>
-            <p class="text-sm text-slate-700 font-medium">{{ order.recipe.final_name }}</p>
+            <p class="text-[10px] uppercase text-slate-400 font-bold">Producto / Receta</p>
+            <p class="text-sm text-slate-700 font-bold">{{ order.recipe.final_name }}</p>
         </div>
         <div>
-            <p class="text-[10px] uppercase text-slate-400 font-bold">Cantidad Esperada</p>
-            <p class="text-sm text-slate-700 font-medium">{{ order.requested_quantity }} L</p>
+            <p class="text-[10px] uppercase text-slate-400 font-bold">Masa Total Insumos</p>
+            <p id="masa_total" class="text-sm text-emerald-600 font-bold">{{ "%.2f"|format(total_input) }}</p>
         </div>
         <div>
-            <p class="text-[10px] uppercase text-slate-400 font-bold">Operador</p>
-            <p class="text-sm text-slate-700 font-medium">{{ order.operator_id }}</p>
+            <p class="text-[10px] uppercase text-slate-400 font-bold">Cant. Programada</p>
+            <p class="text-sm text-slate-700 font-bold">{{ order.requested_quantity }} 
+                <span class="text-[10px]">{% if order.unit_med == 1 %}KG{% elif order.unit_med == 2 %}L{% else %}PZ{% endif %}</span>
+            </p>
+        </div>
+        <div>
+            <p class="text-[10px] uppercase text-slate-400 font-bold">Responsable</p>
+            <p class="text-sm text-slate-700 font-bold">{{ order.operator.nombre }}</p> 
         </div>
     </div>
 
@@ -43,33 +50,57 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div class="relative z-0 w-full group">
-          {{ form.produced_qty(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Cantidad Real Obtenida (L)</label>
+          {{ form.produced_qty(id="produced_qty", class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 font-bold uppercase text-[10px]">Cantidad Real Obtenida</label>
         </div>
 
         <div class="relative z-0 w-full group">
-          {{ form.real_waste(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Merma Real Detectada</label>
+          {{ form.real_waste(id="real_waste", class="block py-2.5 px-0 w-full text-sm text-red-600 font-bold bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-red-500 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-red-600 font-bold uppercase text-[10px]">Merma / Desperdicio Real</label>
         </div>
 
         <div class="relative z-0 w-full group">
-            {{ form.expiry_date(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-            <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Fecha de Caducidad del Lote</label>
+            {{ form.expiry_date(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer", type="date") }}
+            <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 font-bold uppercase text-[10px]">Fecha de Caducidad (Calculada)</label>
         </div>
 
         <div class="relative z-0 w-full group">
             {{ form.location(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 peer") }}
-            <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Ubicación en Almacén</label>
+            <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 font-bold uppercase text-[10px]">Ubicación en Almacén</label>
         </div>
       </div>
 
       <div class="flex items-center gap-3 pt-6 border-t border-slate-100">
-        <button type="submit" class="emerald-btn px-6 py-2.5 text-sm font-semibold rounded-lg shadow-md transition-all active:scale-95">
-          Finalizar y Generar Lote
+        <button type="submit" class="emerald-btn px-8 py-3 text-sm font-bold rounded-xl shadow-lg transition-all active:scale-95">
+          FINALIZAR Y GENERAR LOTE
         </button>
-        <a href="{{ url_for('production.production') }}" class="text-sm text-slate-500 hover:underline">Regresar</a>
+        <a href="{{ url_for('production.production') }}" class="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">CANCELAR</a>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const producedInput = document.getElementById('produced_qty');
+    const wasteInput = document.getElementById('real_waste');
+    const masaTotal = parseFloat(document.getElementById('masa_total').innerText);
+
+    function updateWaste() {
+        const producedQty = parseFloat(producedInput.value) || 0;
+        const waste = masaTotal - producedQty;
+        // Mostramos el cálculo con 2 decimales
+        wasteInput.value = waste.toFixed(2);
+    }
+
+    // Escuchar cambios en la cantidad producida
+    producedInput.addEventListener('input', updateWaste);
+
+    // Inicializar cálculo por si ya hay datos cargados (GET)
+    if (producedInput.value) {
+        updateWaste();
+    }
+});
+</script>
+
 {% endblock %}
