@@ -97,9 +97,9 @@ endblock %} {% block content %}
             class="text-[10px] font-black uppercase text-slate-400 tracking-widest"
             >Total a pagar</span
           >
-          <span class="text-2xl font-black text-[#243c60] tracking-tighter"
-            >$522.00</span
-          >
+          <span class="text-2xl font-black text-[#243c60] tracking-tighter">
+              ${{ "{:,.2f}".format(venta.gross_total) }}
+          </span>
         </div>
         <p
           class="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed"
@@ -111,10 +111,17 @@ endblock %} {% block content %}
     </div>
 
     <form
-      action="#"
-      method="POST"
+      action="{{ url_for('e-commerce.pasarela_pago', id_venta=venta.id) }}" 
+      method="POST" 
       class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100 space-y-6"
     >
+    {{ form.csrf_token }}
+    {{ form.id_sale(value=venta.id) }}
+    {{ form.paid_amount(value=venta.gross_total) }}
+
+    <input type="hidden" name="id_sale" value="{{ venta.id }}">
+    <input type="hidden" name="paid_amount" value="{{ venta.gross_total }}">
+
       <div class="space-y-2">
         <label
           class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
@@ -137,6 +144,7 @@ endblock %} {% block content %}
           <input
             type="text"
             id="card-number"
+          name="reference"
             maxlength="19"
             placeholder="0000 0000 0000 0000"
             class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"

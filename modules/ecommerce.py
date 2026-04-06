@@ -142,41 +142,40 @@ def confirmar_compra():
         return redirect(url_for('e-commerce.catalog'))
 
     if form.validate_on_submit():
-        # 1. Calcular totales para el modelo Sales
         total_venta = sum(item['precio'] * item['cantidad'] for item in cart.values())
         
-        # 2. Crear la Venta (Status 2: Esperando Pago / Apartada)
+        # Obtenemos el usuario. Si no hay, podemos poner un 1 (Genérico) o manejar el error
+        user_id = session.get('user_id') or 1
+        
         nueva_venta = Sales(
             folio=str(uuid.uuid4())[:8].upper(),
-            id_user=session.get('user_id'),
+            id_user=user_id, # Aquí irá None o el ID si ya se logueó
             shipping_address=form.shipping_address.data,
             gross_total=total_venta,
-            status=2 # Aparecerá en el historial como 'Esperando pago'
+            status=2 
         )
         db.session.add(nueva_venta)
-        db.session.flush() # Para obtener el id_venta
+        db.session.flush() 
 
-        # 3. Crear los detalles (SaleDetail)
         for item in cart.values():
             detalle = SaleDetail(
                 id_sale=nueva_venta.id,
-                id_product=item['id'],
+                # CAMBIO AQUÍ: Usamos 'id_producto' que es como lo guardaste arriba
+                id_product=item['id_producto'], 
                 lot=item['cantidad'],
-                unit_price_moment=item['precio']
+                unit_price_moment=item['precio'],
+                moment_utility=0
             )
             db.session.add(detalle)
         
-        # 4. Vaciar carrito y guardar cambios
         db.session.commit()
         session.pop('cart', None)
         
         flash("Pedido apartado. Procede al pago para enviarlo.")
+        # IMPORTANTE: Cambiamos a id_venta=nueva_venta.id para que coincida con tu ruta
         return redirect(url_for('e-commerce.pasarela_pago', id_venta=nueva_venta.id))
-    print("ERRORES DEL FORMULARIO:", form.errors)
-    flash("Error de seguridad (CSRF). Inténtalo de nuevo.")
+    
     return redirect(url_for('e-commerce.carrito'))
-
-
 
 @ecommerce_bp.route("/carrito/remove/<int:id>")
 def remove_from_cart(id):
