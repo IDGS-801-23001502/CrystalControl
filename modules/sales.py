@@ -3,6 +3,7 @@ from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, Cash
 from decimal import Decimal
 from utils.decorators import roles_accepted
 from utils.functions import parse_gs1_128
+from sqlalchemy import func
 from flask_security import current_user
 from datetime import datetime
 
@@ -83,8 +84,6 @@ def open_cash_register():
     ).all()
 
     return render_template('sales/open_register_form.html', cajas=cajas_disponibles)
-
-from sqlalchemy import func
 
 @sales_bp.route('/pos/cerrar-corte', methods=['GET', 'POST'])
 @roles_accepted('Vendedor', 'Administrador')
