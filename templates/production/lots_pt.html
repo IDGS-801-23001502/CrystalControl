@@ -1,0 +1,84 @@
+{% extends "layout_employees.html" %}
+{% block title %} Lotes de Producto Terminado {% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto mt-10 px-4 mb-20">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Inventario de Lotes</h1>
+            <p class="text-sm text-slate-500">Historial de productos fabricados y disponibilidad en almacén</p>
+        </div>
+        
+        <form method="GET" action="{{ url_for('production.lots_pt') }}" class="relative">
+            <input type="text" name="search" value="{{ search }}" 
+                   placeholder="Buscar lote o producto..." 
+                   class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-emerald-500 focus:border-emerald-500 w-full md:w-64">
+            <div class="absolute left-3 top-2.5 text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Código de Lote</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Producto / Ref. Orden</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Stock Actual</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Costo U.</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Caducidad</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    {% for lot in lots %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <span class="font-mono font-bold text-emerald-700">{{ lot.lot_code }}</span>
+                            <p class="text-[10px] text-slate-400">{{ lot.warehouse_location or 'Sin ubicación' }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-slate-700">{{ lot.product_name }}</p>
+                            <p class="text-[10px] text-slate-400">Orden: #{{ lot.order_folio_ref }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-3 py-1 bg-slate-100 rounded-full font-bold text-slate-700">
+                                {{ lot.current_stock }} <small class="text-[9px]">{{ lot.unit_med }}</small>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center font-medium text-slate-600">
+                            ${{ "%.2f"|format(lot.unit_cost) }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="{% if lot.expiry_date < now %}text-red-500 font-bold{% else %}text-slate-600{% endif %}">
+                                    {{ lot.expiry_date.strftime('%d/%m/%Y') }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if lot.status == 1 %}
+                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">LIBERADO</span>
+                            {% elif lot.status == 2 %}
+                                <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-md">CUARENTENA</span>
+                            {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-md">RECHAZADO</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-slate-400 italic">
+                            No se encontraron lotes producidos.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

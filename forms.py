@@ -254,21 +254,15 @@ class FormProductionOrder(FlaskForm):
     ], places=2)
     
     # La unidad de medida suele venir de la receta, pero se pone para validación
-    unit_med = SelectField('Unidad de Medida', coerce=int, choices=[
-        (1, 'Kilos'),
-        (2, 'Litros'),
-        (3, 'Piezas')
-    ])
+    unit_med = IntegerField('Unidad de Medida')
     
     # Selección del operador (usuario con perfil de producción)
-    operator_id = SelectField('Operador Responsable', coerce=int, validators=[
-        validators.DataRequired(message="Asigne un operador a esta orden")
-    ])
+    operator_id = HiddenField('Operador Responsable')
     
     # Fecha y hora en la que se planea iniciar
-    scheduled_date = DateTimeLocalField('Fecha Programada', 
+    scheduled_date = DateTimeLocalField('Fecha De solicitud', 
         format='%Y-%m-%dT%H:%M',
-        validators=[validators.DataRequired(message="Seleccione fecha y hora")]
+        validators=[validators.Optional()]
     )
 
     # El estatus suele manejarse internamente, pero se deja como Hidden si es necesario

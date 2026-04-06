@@ -3,96 +3,168 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon       { color: #059669; }
-  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
-  .emerald-border-top { border-top: 3px solid #10b981; }
-  .emerald-btn        { background-color: #059669; color: #fff; }
-  .emerald-btn:hover  { background-color: #047857; }
+  /* Colores de Marca y Estilos de Interfaz */
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
+  .emerald-badge       { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top  { border-top: 3px solid #10b981; }
+  .emerald-btn         { background-color: #059669; color: #fff; transition: all 0.2s ease; }
+  .emerald-btn:hover   { background-color: #047857; transform: translateY(-1px); }
+
+  /* Pill-badges para Estatus */
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    border-width: 1px;
+  }
+  .status-2 { background-color: #fef3c7; color: #92400e; border-color: #fde68a; } /* Pendiente */
+  .status-3 { background-color: #e0f2fe; color: #075985; border-color: #bae6fd; } /* En Proceso */
+  .status-4 { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; } /* Completado */
+  .status-5 { background-color: #f1f5f9; color: #475569; border-color: #e2e8f0; } /* Cancelado */
 </style>
 
-<div class="max-w-6xl mx-auto mt-10 px-4 mb-20">
+<div class="max-w-7xl mx-auto mt-10 px-4 mb-20">
 
-  <div class="flex items-center justify-between mb-6">
-    <div class="flex items-center gap-3">
-      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
-        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="flex items-center gap-4">
+      <div class="emerald-icon-bg flex items-center justify-center w-12 h-12 rounded-2xl border shadow-sm">
+        <svg class="emerald-icon w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h18" />
         </svg>
       </div>
       <div>
-        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Órdenes de Producción</h1>
-        <p class="text-xs text-slate-500">Gestión y seguimiento del proceso de fabricación</p>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Panel de Producción</h1>
+        <p class="text-sm text-slate-500 font-medium">Control de fabricación y trazabilidad de lotes</p>
       </div>
     </div>
-   </div>
 
-  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="flex items-center gap-3">
+        <a href="{{ url_for('production.quality_pending') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            Calidad Pendiente
+        </a>
+        <a href="{{ url_for('production.add_order') }}" class="emerald-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          Nueva Orden
+        </a>
+    </div>
+  </div>
+
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-slate-500">
-        <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
+      <table class="w-full text-sm text-left">
+        <thead class="text-[11px] text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">
           <tr>
-            <th class="px-6 py-4 font-semibold">Folio</th>
-            <th class="px-6 py-4 font-semibold">Producto / Receta</th>
-            <th class="px-6 py-4 font-semibold">Cantidad</th>
-            <th class="px-6 py-4 font-semibold">Fecha Prog.</th>
-            <th class="px-6 py-4 font-semibold text-center">Estatus</th>
-            <th class="px-6 py-4 font-semibold text-right">Acciones</th>
+            <th class="px-6 py-4 font-bold">Información de Orden</th>
+            <th class="px-6 py-4 font-bold">Producto / Receta</th>
+            <th class="px-6 py-4 font-bold">Cantidad Programada</th>
+            <th class="px-6 py-4 font-bold">Cronograma</th>
+            <th class="px-6 py-4 font-bold text-center">Estatus</th>
+            <th class="px-6 py-4 font-bold text-right">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           {% for order in orders %}
           <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-6 py-4 font-medium text-slate-700">
-              {{ order.folio }}
-            </td>
             <td class="px-6 py-4">
-              <div class="text-slate-600">{{ order.recipe.final_name }}</div>
-              <div class="text-[10px] text-slate-400 uppercase tracking-wider">Receta ID: {{ order.recipe_id }}</div>
+              <div class="font-bold text-slate-800 text-base">{{ order.folio }}</div>
+              <div class="flex items-center gap-1.5 mt-1">
+                <div class="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center">
+                    <svg class="w-2.5 h-2.5 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
+                </div>
+                <span class="text-[10px] text-slate-500 font-semibold">{{ order.operator.nombre }}</span>
+              </div>
             </td>
-            <td class="px-6 py-4 text-slate-600">
-              {{ order.requested_quantity }} 
-              <span class="text-xs text-slate-400">
-                {% if order.unit_med == 1 %}Kg{% elif order.unit_med == 2 %}L{% else %}Pz{% endif %}
-              </span>
+
+            <td class="px-6 py-4">
+              <div class="text-slate-700 font-bold leading-tight">{{ order.recipe.final_name }}</div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5">REF-RECETA: {{ order.recipe.unique_code }}</div>
             </td>
-            <td class="px-6 py-4 text-slate-500">
-              {{ order.scheduled_date.strftime('%d/%m/%Y %H:%M') }}
+
+            <td class="px-6 py-4">
+              <div class="flex items-baseline gap-1">
+                <span class="text-lg font-extrabold text-slate-800">{{ order.requested_quantity }}</span>
+                <span class="text-xs font-bold text-slate-400 uppercase">
+                    {% if order.unit_med == 1 %}KG{% elif order.unit_med == 2 %}LT{% else %}PZ{% endif %}
+                </span>
+              </div>
             </td>
+
+            <td class="px-6 py-4">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-slate-600">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span class="text-xs font-semibold">{{ order.scheduled_date.strftime('%d %b, %Y') }}</span>
+                </div>
+                {% if order.start_date %}
+                <div class="flex items-center gap-2 text-blue-500">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span class="text-[10px] font-bold uppercase italic">Inició: {{ order.start_date.strftime('%H:%M') }}</span>
+                </div>
+                {% endif %}
+              </div>
+            </td>
+
             <td class="px-6 py-4 text-center">
-              {% if order.status == 2 %}
-                <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Pendiente</span>
-              {% elif order.status == 3 %}
-                <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">En Proceso</span>
-              {% elif order.status == 4 %}
-                <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Completado</span>
-              {% endif %}
+                <span class="status-badge status-{{ order.status }}">
+                    {% if order.status == 2 %}Pendiente
+                    {% elif order.status == 3 %}En Proceso
+                    {% elif order.status == 4 %}Completado
+                    {% elif order.status == 5 %}Cancelado
+                    {% endif %}
+                </span>
             </td>
+
             <td class="px-6 py-4 text-right">
-              <div class="flex justify-end gap-2">
+              <div class="flex justify-end items-center gap-2">
+                
+                {# CASO 1: ORDEN PENDIENTE -> MOSTRAR BOTÓN INICIAR #}
                 {% if order.status == 2 %}
-                <a href="{{ url_for('production.start_order', id=order.id) }}" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Iniciar Producción">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+                <a href="{{ url_for('production.start_order', id=order.id) }}" 
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
+                  INICIAR
                 </a>
                 {% endif %}
 
+                {# CASO 2: ORDEN EN PROCESO -> MOSTRAR BOTÓN FINALIZAR #}
                 {% if order.status == 3 %}
-                <a href="{{ url_for('production.close_order', id=order.id) }}" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Cerrar y Generar Lote">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <a href="{{ url_for('production.close_order', id=order.id) }}" 
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  FINALIZAR
                 </a>
                 {% endif %}
+
+                {# BOTÓN VER DETALLES (SIEMPRE DISPONIBLE) #}
+                <a href="{{url_for('production.order_details', id=order.id)}}" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </a>
               </div>
             </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="6" class="px-6 py-10 text-center text-slate-400">
-              No hay órdenes de producción programadas.
+            <td colspan="6" class="px-6 py-16 text-center">
+              <div class="flex flex-col items-center justify-center">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+                <h3 class="text-slate-500 font-bold">No hay órdenes programadas</h3>
+                <p class="text-slate-400 text-xs">Las nuevas órdenes que generes aparecerán en este listado.</p>
+              </div>
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
+    </div>
+    
+    <div class="bg-slate-50/50 px-6 py-3 border-t border-slate-100 flex justify-between items-center">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total de registros: {{ orders|length }}</span>
     </div>
   </div>
 </div>

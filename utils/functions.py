@@ -1,7 +1,7 @@
 from flask import request
 from flask_login import current_user
 from datetime import datetime
-from models import mongo
+from models import mongo, db, Sales, SaleDetail,Producto, InventoryMovementPT
 from sqlalchemy import inspect
 
 def object_to_dict(obj):
@@ -104,3 +104,52 @@ def register_log_auto(accion, modulo, obj_puro_original=None, obj_puro_nuevo=Non
     except Exception as e:
         print(f"Error en el log automático: {e}")
         return False
+    
+def sale_out(sale_id):
+    try:
+        #Obtener la venta y sus detalles
+        venta = Sales.query.get(sale_id)
+        if not venta:
+            return False, "Venta no encontrada."
+
+        detalles = SaleDetail.query.filter_by(id_sale=venta.id).all()
+        if not detalles:
+            return False, "La venta no tiene productos registrados en el detalle."
+
+        for item in detalles:
+            producto = Producto.query.get(item.id_product)
+            if not producto:
+                continue
+            # Guardamos estado original para el log de auditoría
+            stock_anterior = producto.stock or 0
+            
+            #Actualizar Stock en la tabla Producto
+            cantidad_vendida = item.lot
+            producto.stock = stock_anterior - cantidad_vendida
+
+            #Crear el movimiento de Inventario PT
+            nuevo_movimiento = InventoryMovementPT(
+                product_id=producto.id,
+                type=2,           
+                reason=2,         
+                quantity=cantidad_vendida,
+                resulting_stock=producto.stock,
+                user_id=current_user.id if current_user.is_authenticated else None,
+                timestamp=datetime.now()
+            )
+            db.session.add(nuevo_movimiento)
+
+            #Registrar en el Log de Auditoría
+            register_log_auto(
+                accion="Actualización",
+                modulo="Inventario PT (Venta)",
+                obj_puro_original=None,
+                obj_puro_nuevo=producto
+            )
+        db.session.commit()
+        return True, f"Inventario actualizado para la venta {venta.folio}"
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al procesar salida de inventario: {e}")
+        return False, str(e)
