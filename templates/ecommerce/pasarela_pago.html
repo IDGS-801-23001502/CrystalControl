@@ -29,7 +29,6 @@ endblock %} {% block content %}
       Finalizar <span class="text-[#7dc6e9]">Compra</span>
     </h1>
   </div>
-
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
     <div class="space-y-8">
       <div
@@ -41,7 +40,6 @@ endblock %} {% block content %}
         <div
           class="absolute -left-10 -bottom-10 w-40 h-40 bg-[#7dc6e9]/10 rounded-full blur-3xl"
         ></div>
-
         <div class="relative h-full flex flex-col justify-between">
           <div class="flex justify-between items-start">
             <svg
@@ -90,7 +88,6 @@ endblock %} {% block content %}
           </div>
         </div>
       </div>
-
       <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
         <div class="flex justify-between items-center mb-4">
           <span
@@ -109,7 +106,6 @@ endblock %} {% block content %}
         </p>
       </div>
     </div>
-
     <form
       action="{{ url_for('e-commerce.pasarela_pago', id_venta=venta.id) }}" 
       method="POST" 
@@ -118,10 +114,8 @@ endblock %} {% block content %}
     {{ form.csrf_token }}
     {{ form.id_sale(value=venta.id) }}
     {{ form.paid_amount(value=venta.gross_total) }}
-
     <input type="hidden" name="id_sale" value="{{ venta.id }}">
     <input type="hidden" name="paid_amount" value="{{ venta.gross_total }}">
-
       <div class="space-y-2">
         <label
           class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
@@ -134,7 +128,6 @@ endblock %} {% block content %}
           class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60] uppercase"
         />
       </div>
-
       <div class="space-y-2">
         <label
           class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
@@ -160,7 +153,6 @@ endblock %} {% block content %}
           </div>
         </div>
       </div>
-
       <div class="grid grid-cols-2 gap-6">
         <div class="space-y-2">
           <label
@@ -188,7 +180,6 @@ endblock %} {% block content %}
           />
         </div>
       </div>
-
       <div class="pt-6">
         <button
           type="submit"
@@ -224,12 +215,10 @@ endblock %} {% block content %}
       e.target.value = value === "•••• •••• •••• ••••" ? "" : value;
       document.getElementById("card-display-number").innerText = value;
     });
-
   document.getElementById("card-name").addEventListener("input", function (e) {
     document.getElementById("card-display-name").innerText =
       e.target.value || "{{ current_user.nombre|upper }}";
   });
-
   document
     .getElementById("card-expiry")
     .addEventListener("input", function (e) {
