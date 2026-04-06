@@ -127,15 +127,13 @@
                   <p
                     class="text-[11px] font-black text-[#243c60] uppercase leading-none mb-1.5"
                   >
-                    {{ current_user.nombre if hasattr(current_user, 'nombre')
-                    else current_user.username }}
+                    {{ current_user.nombre}}
                   </p>
                 </div>
                 <div
                   class="w-12 h-12 rounded-full bg-gradient-to-br from-[#7dc6e9] to-[#243c60] flex items-center justify-center text-white text-base font-black shadow-lg border-2 border-white transition-transform group-hover:scale-105"
                 >
-                  {{ (current_user.nombre[0] if hasattr(current_user, 'nombre')
-                  else current_user.username[0])|upper }}
+                  {{ (current_user.nombre[0])}}
                 </div>
               </div>
 

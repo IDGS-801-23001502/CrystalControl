@@ -43,7 +43,7 @@ def login_client():
                 
     return render_template('login/login_client.html')
 
-@login_bp.route("/register")
+@login_bp.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == "POST":
         nombre = request.form.get("nombre")
@@ -66,12 +66,13 @@ def register():
         db.session.flush()
 
         client = Cliente(
-            id_usuario=role_cliente.id,
+            id_usuario=user_client.id,
             direccion_envio = address,
-            telefono = phone
+            telefono = ''
         )
         db.session.add(client)
         db.session.commit()
+        return redirect(url_for('login.login_client'))
     return render_template("login/register.html")
 
 # LOGOUT UNIVERSAL
