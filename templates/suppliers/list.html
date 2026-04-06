@@ -137,16 +137,29 @@
             {% endif %}
           </td>
           <td class="px-6 py-4 flex items-center justify-center gap-3">
-            <a href="{{ url_for('suppliers.edit_supplier', id=sup.id) }}"
-               class="emerald-link inline-flex items-center gap-1 text-xs font-medium transition-colors">Editar</a>
-            {%if sup.status == 'Activo' %}
-            <a href="{{ url_for('suppliers.delete_supplier', id=sup.id) }}"
-               class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">Desactivar</a>
-            {%else %}
-            <a href="{{ url_for('suppliers.delete_supplier', id=sup.id) }}"
-                class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors">Activar</a>
-            {% endif %}
-          </td>
+  
+  {# Solo mostrar Editar si el proveedor está Activo #}
+  {% if sup.status == 'Activo' %}
+    <a href="{{ url_for('suppliers.edit_supplier', id=sup.id) }}"
+       class="emerald-link inline-flex items-center gap-1 text-xs font-medium transition-colors">
+       Editar
+    </a>
+  {% endif %}
+
+  {# Alternar entre Desactivar y Activar #}
+  {% if sup.status == 'Activo' %}
+    <a href="{{ url_for('suppliers.delete_supplier', id=sup.id) }}"
+       class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">
+       Desactivar
+    </a>
+  {% else %}
+    <a href="{{ url_for('suppliers.delete_supplier', id=sup.id) }}"
+       class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors">
+       Activar
+    </a>
+  {% endif %}
+  
+</td>
         </tr>
         {% endfor %}
       </tbody>

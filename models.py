@@ -270,7 +270,7 @@ class Sales(db.Model):
 
 class SaleDetail(db.Model):
     __tablename__ = 'detalle_venta'
-    id = db.Column('id_detalle_venta', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    id = db.Column('id_detalle_venta', db.Integer, primary_key=True, nullable=False)
     id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_venta'), primary_key=True)
     id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), primary_key=True)
     lot = db.Column('cantidad', db.Integer)

@@ -1,9 +1,10 @@
 from wtforms import form
 import os
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request, current_app
-from models import db, Recipe, ProductionOrder, ProductionOrderInput, Raw_Material, User, ProductionLot, ProductionLotQuality, InventoryMovementMP, InventoryMovementPT, Producto
-from forms import FormProductionOrder, FormQualityCheck, FormCloseProductionOrder
+from models import db, Recipe, ProductionOrder, ProductionOrderInput, Raw_Material, User, ProductionLot, ProductionLotQuality, InventoryMovementMP, InventoryMovementPT, Producto, Sales, SaleDetail
+from forms import FormProductionOrder, FormQualityCheck, FormCloseProductionOrder, FormInventoryAdjustment
 from utils.decorators import roles_accepted
+from flask_security import current_user
 from datetime import datetime
 
 
@@ -214,38 +215,99 @@ def inventory_pt():
 @production_bp.route('/inventory_pt_adjustment', methods=['GET', 'POST'])
 @roles_accepted('Administrador')
 def inventory_pt_adjustment():
-    if request.method == 'POST':
+    form = FormInventoryAdjustment()
+
+    productos = Producto.query.filter_by(status='Activo').all()
+    form.product_id.choices = [(p.id, f"{p.name} (Actual: {p.stock})") for p in productos]
+
+    if form.validate_on_submit():
         try:
-            producto_id = request.form.get('product_id')
-            tipo = int(request.form.get('type')) # 1: Entrada, 2: Salida
-            cantidad = float(request.form.get('quantity'))
-            motivo = int(request.form.get('reason')) # 3: Ajuste, 1: Merma
+            producto = Producto.query.get_or_404(form.product_id.data)
+            tipo = form.type.data
+            cantidad = float(form.quantity.data)
             
-            producto = Producto.query.get_or_404(producto_id)
-            
-            # Actualizar Stock
-            if tipo == 1:
+            # Lógica de Stock
+            if tipo == 1: # Entrada
                 producto.stock = (producto.stock or 0) + cantidad
-            else:
+            else: # Salida
                 producto.stock = (producto.stock or 0) - cantidad
 
-            # Registrar Movimiento
+            # Registro en el modelo de movimientos
             nuevo_mov = InventoryMovementPT(
                 product_id=producto.id,
                 type=tipo,
-                reason=motivo,
+                reason=form.reason.data,
                 quantity=cantidad,
                 resulting_stock=producto.stock,
-                user_id=current_app.config.get('USER_ID') # O el id del current_user
+                user_id=current_user.id,
+                timestamp=datetime.now()
             )
+            
             db.session.add(nuevo_mov)
             db.session.commit()
             
-            flash("Ajuste de inventario realizado con éxito", "success")
-            return redirect(url_for('production.inventory_pt_list'))
+            flash("Inventario actualizado correctamente", "success")
+            return redirect(url_for('production.inventory_pt'))
+            
         except Exception as e:
             db.session.rollback()
-            flash(f"Error al realizar ajuste: {str(e)}", "danger")
+            flash(f"Error: {str(e)}", "danger")
 
-    productos = Producto.query.filter_by(status='Activo').all()
-    return render_template('production/inventory_pt_adjustment.html', productos=productos)
+    return render_template('production/inventory_pt_adjustment.html', form=form, productos=productos)
+
+@production_bp.route('/history/<int:product_id>')
+@roles_accepted('Administrador', 'Produccion')
+def inventory_pt_history(product_id):
+    producto = Producto.query.get_or_404(product_id)
+    movimientos = InventoryMovementPT.query.filter_by(product_id=product_id).order_by(InventoryMovementPT.timestamp.desc()).all()
+    
+    return render_template('production/inventory_pt_history.html',
+                           producto=producto, 
+                           movimientos=movimientos)
+
+@production_bp.route('/sale_movement', methods=['POST'])
+@roles_accepted('Administrador', 'Vendedor')
+def sale_movement():
+    #Se recibe el ID de la venta creada
+    sale_id = request.form.get('sale_id')
+    venta = Sales.query.get_or_404(sale_id)
+    
+    try:
+        #Obtener productos asociados a esa venta
+        detalles = SaleDetail.query.filter_by(id_sale=venta.id).all()
+        
+        if not detalles:
+            flash("La venta no tiene productos registrados", "warning")
+            return redirect(url_for('production.inventory_pt'))
+
+        for item in detalles:
+            producto = Producto.query.get(item.id_product)
+            
+            if producto:
+                cantidad_venta = item.lot
+                
+                #Actualizar el stock
+                nuevo_stock = (producto.stock or 0) - cantidad_venta
+                producto.stock = nuevo_stock
+
+                #Registrar el movimiento
+                nuevo_movimiento = InventoryMovementPT(
+                    product_id=producto.id,
+                    type=2,
+                    reason=2,
+                    quantity=cantidad_venta,
+                    resulting_stock=nuevo_stock,
+                    user_id=current_user.id,
+                    timestamp=datetime.now()
+                )
+                
+                db.session.add(nuevo_movimiento)
+
+        db.session.commit()
+        flash(f"Movimientos de inventario generados para la venta Folio: {venta.folio}", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al procesar el movimiento: {str(e)}", "danger")
+
+    return render_template('ecommerce/catalog.html')

@@ -1,0 +1,135 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon { color: #059669; }
+  .emerald-badge { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+</style>
+
+<div class="max-w-7xl mx-auto mt-10 px-4 mb-10">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Historial de Movimientos</h1>
+        <p class="text-xs text-slate-500">Kardex detallado: <span class="font-bold text-slate-700">{{ producto.name }}</span></p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('production.inventory_pt') }}" 
+         class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all active:scale-95 shadow-sm">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        Regresar al Inventario
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/50 border-b border-slate-200">
+            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fecha y Hora</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tipo</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Motivo</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">Cantidad</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">Stock Resultante</th>
+            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Operador</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for mov in movimientos %}
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4 text-sm text-slate-600 font-medium">
+              {{ mov.timestamp.strftime('%d/%m/%Y %I:%M %p') }}
+            </td>
+            <td class="px-6 py-4">
+              {% if mov.type == 1 %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  Entrada
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">
+                  Salida
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4">
+              <span class="text-sm text-slate-600">
+                {% if mov.reason == 1 %} Merma / Daño
+                {% elif mov.reason == 2 %} Producción Terminada
+                {% elif mov.reason == 3 %} Ajuste Manual
+                {% elif mov.reason == 4 %} Devolución
+                {% else %} Movimiento General {% endif %}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-right font-bold {{ 'text-emerald-600' if mov.type == 1 else 'text-rose-600' }}">
+              {{ '+' if mov.type == 1 else '-' }} {{ mov.quantity }}
+            </td>
+            <td class="px-6 py-4 text-sm text-right font-mono text-slate-700">
+              {{ mov.resulting_stock }}
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-200">
+                  {{ mov.usuario.username[0].upper() if mov.usuario else 'S' }}
+                </div>
+                <span class="text-sm text-slate-600">{{ mov.usuario.username if mov.usuario else 'Sistema' }}</span>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-6 py-20 text-center">
+              <div class="flex flex-col items-center">
+                <div class="p-4 bg-slate-50 rounded-full mb-4">
+                  <svg class="w-10 h-10 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                  </svg>
+                </div>
+                <h3 class="text-slate-800 font-semibold">Sin historial disponible</h3>
+                <p class="text-slate-500 text-sm max-w-xs mx-auto mt-1">Este producto aún no registra movimientos de stock en el sistema.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <div class="bg-white border border-slate-200 p-4 rounded-xl">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entradas Totales</p>
+      <p class="text-xl font-bold text-emerald-600 mt-1">
+        {% set total_in = movimientos | selectattr('type', 'equalto', 1) | map(attribute='quantity') | sum %}
+        {{ total_in }} <span class="text-xs font-normal text-slate-400">unidades</span>
+      </p>
+    </div>
+    <div class="bg-white border border-slate-200 p-4 rounded-xl">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Salidas Totales</p>
+        <p class="text-xl font-bold text-rose-600 mt-1">
+          {% set total_out = movimientos | selectattr('type', 'equalto', 2) | map(attribute='quantity') | sum %}
+          {{ total_out }} <span class="text-xs font-normal text-slate-400">unidades</span>
+        </p>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-xl border-b-emerald-500 border-b-4">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo en Almacén</p>
+        <p class="text-xl font-bold text-slate-800 mt-1">
+          {{ producto.stock }} <span class="text-xs font-normal text-slate-400">disponibles</span>
+        </p>
+      </div>
+  </div>
+
+</div>
+
+{% endblock %}

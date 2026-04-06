@@ -133,7 +133,8 @@ class FormProduct(FlaskForm):
     ])
 
     stock = IntegerField('Stock disponible', [
-        validators.Optional()
+        validators.Optional(),
+        validators.Disabled()
     ], default=0)
 
     picture = FileField('Foto del producto', [
@@ -371,3 +372,27 @@ class PaymentForm(FlaskForm):
     paid_amount = DecimalField('Monto a Pagar', validators=[validators.DataRequired()])
     reference = StringField('Referencia (opcional)')
     submit = SubmitField('Finalizar Pago')
+class FormInventoryAdjustment(FlaskForm):
+    product_id = SelectField('Producto', coerce=int, validators=[
+        validators.DataRequired(message="Debe seleccionar un producto")
+    ])
+    type = SelectField('Tipo de Movimiento', coerce=int, choices=[
+        (1, 'Entrada (+)'),
+        (2, 'Salida (-)')
+    ], validators=[validators.DataRequired()])
+    
+    quantity = DecimalField('Cantidad', [
+        validators.InputRequired(message="La cantidad es obligatoria"),
+        validators.NumberRange(min=0.1, message="La cantidad debe ser mayor a 0")
+    ], places=2)
+    
+    reason = SelectField('Motivo', coerce=int, choices=[
+        (3, 'Ajuste de Inventario'),
+        (1, 'Merma / Daño'),
+        (4, 'Devolución')
+    ], validators=[validators.DataRequired()])
+    
+    notes = TextAreaField('Observaciones', [
+        validators.Optional(),
+        validators.Length(max=255)
+    ])

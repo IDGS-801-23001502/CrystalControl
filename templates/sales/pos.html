@@ -315,33 +315,38 @@
 
   <!-- TOP BAR -->
   <div class="pos-topbar">
-    <div class="topbar-left">
-      <div class="pos-icon-wrap">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-        </svg>
-      </div>
-      <div>
-        <div class="pos-title">Punto de Venta</div>
-        <div class="pos-subtitle">Caja 1 — Turno Vespertino</div>
-      </div>
+  <div class="topbar-left">
+    <div class="pos-icon-wrap">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
     </div>
-    <div class="topbar-meta">
-      <div class="meta-chip">
-        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-        </svg>
-        Cajero: <strong>{{ current_user.username }}</strong>
+    <div>
+      <div class="pos-title">{{ caja.name }}</div>
+      <div class="pos-subtitle">
+        Corte #{{ corte.id }} — Abierto: {{ corte.open_date.strftime('%H:%M') }} hrs
       </div>
-      <div class="meta-chip">
-        <div class="meta-dot"></div>
-        <strong>En línea</strong>
-      </div>
-      <div id="pos_clock" class="pos-clock">--:--:--</div>
     </div>
   </div>
+
+  <div class="topbar-meta">
+    <div class="meta-chip">
+      <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
+      Cajero: <strong>{{ vendedor.nombre }}</strong>
+    </div>
+
+    <div class="meta-chip">
+      <div class="meta-dot bg-emerald-500 animate-pulse"></div>
+      <strong class="text-emerald-600">{{ corte.value_status }}</strong>
+    </div>
+
+    <div id="pos_clock" class="pos-clock">--:--:--</div>
+  </div>
+</div>
 
   <!-- BODY 3 COLUMNAS -->
   <div class="pos-body">
