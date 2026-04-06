@@ -86,42 +86,48 @@ def add_product():
 @roles_accepted('Administrador')
 def edit_product(id):
     producto = Producto.query.get_or_404(id)
-    # Obtenemos el primer registro de precios asociado
     precios = ProductoPresentacionPrecio.query.filter_by(id_producto=id).first()
     
-    if request.method == 'GET':
+    if request.method == 'POST':
+        form = FormProduct(request.form)
+    else:
         form = FormProduct(obj=producto)
         form.status.data = producto.status
-        # Llenamos manualmente los campos que pertenecen a la otra tabla
         if precios:
             form.price_men.data = precios.price_men
             form.price_may.data = precios.price_may
             form.presentation.data = precios.presentation
-    else:
-        form = FormProduct()
 
     if form.validate_on_submit():
         try:
-            # Actualizar datos tabla Producto
+            # Actualizar datos de la tabla Producto
             producto.status = form.status.data
             producto.name = form.name.data
             producto.category = form.category.data
-            producto.barcode = form.barcode.data
-            producto.stock = form.stock.data
             
-            # Lógica de imagen
+            # Lógica de imagen (se activa solo si hay un archivo nuevo)
             if form.picture.data:
                 file = form.picture.data
-                filename = secure_filename(file.filename)
-                upload_path = os.path.join(current_app.root_path, 'static/img/products')
-                file.save(os.path.join(upload_path, filename))
-                producto.picture = filename
+                if file and file.filename != '':
+                    filename = secure_filename(file.filename)
+                    upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                    os.makedirs(upload_path, exist_ok=True)
+                    file.save(os.path.join(upload_path, filename))
+                    producto.picture = filename
 
-            # Actualizar datos tabla Precios
+            #Actualizar datos de la tabla Precios
             if precios:
                 precios.price_men = form.price_men.data
                 precios.price_may = form.price_may.data
                 precios.presentation = form.presentation.data
+            else:
+                nuevos_precios = ProductoPresentacionPrecio(
+                    id_producto=id,
+                    price_men=form.price_men.data,
+                    price_may=form.price_may.data,
+                    presentation=form.presentation.data
+                )
+                db.session.add(nuevos_precios)
             
             db.session.commit()
             flash("Cambios guardados correctamente", "success")
@@ -130,7 +136,7 @@ def edit_product(id):
         except Exception as e:
             db.session.rollback()
             flash(f"Error al actualizar: {str(e)}", "danger")
-
+    
     return render_template('products/edit.html', form=form, producto=producto)
 
 @products_bp.route('/delete_product/<int:id>', methods=['GET','POST'])

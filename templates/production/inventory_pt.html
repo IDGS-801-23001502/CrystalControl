@@ -106,7 +106,7 @@
                 {% endif %}
                 <div>
                     <span class="font-bold text-slate-800 block">{{ prod.name }}</span>
-                    <span class="text-[10px] text-slate-400">ID: #{{ prod.id }}</span>
+                    <span class="text-[10px] text-slate-400">ID: #{{ prod.barcode }}</span>
                 </div>
             </div>
           </th>
@@ -146,7 +146,7 @@
             <div class="flex items-center justify-center gap-2">
                 <a href="#" class="emerald-link hover:underline text-xs font-medium">Ver Lotes</a>
                 <span class="text-slate-300">|</span>
-                <a href="#" class="text-slate-500 hover:text-slate-800 text-xs font-medium">Historial</a>
+                <a href="{{url_for('production.inventory_pt_history',product_id=prod.id)}}" class="text-slate-500 hover:text-slate-800 text-xs font-medium">Historial</a>
             </div>
           </td>
         </tr>
