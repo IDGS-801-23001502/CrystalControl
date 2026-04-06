@@ -205,6 +205,7 @@
     --color-stone-800: oklch(26.8% 0.007 34.298);
     --color-stone-900: oklch(21.6% 0.006 56.043);
     --color-stone-950: oklch(14.7% 0.004 49.25);
+    --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
     --breakpoint-md: 48rem;
@@ -319,7 +320,6 @@
     --color-warning: var(--color-orange-500);
     --color-dark: var(--color-gray-800);
     --color-orange: var(--color-orange-400);
-    --color-muted: var(--color-gray-50);
     --color-light: var(--color-gray-100);
     --color-default: var(--color-gray-200);
     --color-default-medium: var(--color-gray-200);
@@ -849,9 +849,6 @@
   .top-1 {
     top: calc(var(--spacing) * 1);
   }
-  .top-1\/2 {
-    top: calc(1 / 2 * 100%);
-  }
   .top-2 {
     top: calc(var(--spacing) * 2);
   }
@@ -908,9 +905,6 @@
   }
   .left-0 {
     left: calc(var(--spacing) * 0);
-  }
-  .left-1\/2 {
-    left: calc(1 / 2 * 100%);
   }
   .left-5 {
     left: calc(var(--spacing) * 5);
@@ -1540,6 +1534,9 @@
   .h-\[calc\(100\%-1rem\)\] {
     height: calc(100% - 1rem);
   }
+  .h-auto {
+    height: auto;
+  }
   .h-fit {
     height: fit-content;
   }
@@ -1737,6 +1734,9 @@
   .max-w-72 {
     max-width: calc(var(--spacing) * 72);
   }
+  .max-w-full {
+    max-width: 100%;
+  }
   .max-w-lg {
     max-width: var(--container-lg);
   }
@@ -1822,10 +1822,6 @@
   .origin-\[0\] {
     transform-origin: 0;
   }
-  .-translate-x-1\/2 {
-    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
   .-translate-x-full {
     --tw-translate-x: -100%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -1836,10 +1832,6 @@
   }
   .translate-x-full {
     --tw-translate-x: 100%;
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
-  .-translate-y-1\/2 {
-    --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .-translate-y-4 {
@@ -2310,9 +2302,6 @@
   .border-emerald-500 {
     border-color: var(--color-emerald-500);
   }
-  .border-emerald-600 {
-    border-color: var(--color-emerald-600);
-  }
   .border-emerald-800 {
     border-color: var(--color-emerald-800);
   }
@@ -2476,9 +2465,6 @@
   .bg-brand {
     background-color: var(--color-brand);
   }
-  .bg-danger {
-    background-color: var(--color-danger);
-  }
   .bg-dark-backdrop\/70 {
     background-color: color-mix(in srgb, oklch(13% 0.028 261.692) 70%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -2523,9 +2509,6 @@
   }
   .bg-gray-100 {
     background-color: var(--color-gray-100);
-  }
-  .bg-gray-200 {
-    background-color: var(--color-gray-200);
   }
   .bg-gray-900 {
     background-color: var(--color-gray-900);
@@ -2608,14 +2591,8 @@
   .bg-slate-800 {
     background-color: var(--color-slate-800);
   }
-  .bg-success {
-    background-color: var(--color-success);
-  }
   .bg-transparent {
     background-color: transparent;
-  }
-  .bg-warning {
-    background-color: var(--color-warning);
   }
   .bg-white {
     background-color: var(--color-white);
@@ -2931,9 +2908,6 @@
   .pb-4 {
     padding-bottom: calc(var(--spacing) * 4);
   }
-  .pb-6 {
-    padding-bottom: calc(var(--spacing) * 6);
-  }
   .pb-8 {
     padding-bottom: calc(var(--spacing) * 8);
   }
@@ -3212,9 +3186,6 @@
   .text-body {
     color: var(--color-body);
   }
-  .text-dark {
-    color: var(--color-dark);
-  }
   .text-emerald-100 {
     color: var(--color-emerald-100);
   }
@@ -3239,9 +3210,6 @@
   .text-fg-disabled {
     color: var(--color-fg-disabled);
   }
-  .text-gray-200 {
-    color: var(--color-gray-200);
-  }
   .text-gray-400 {
     color: var(--color-gray-400);
   }
@@ -3251,6 +3219,9 @@
   .text-gray-600 {
     color: var(--color-gray-600);
   }
+  .text-gray-700 {
+    color: var(--color-gray-700);
+  }
   .text-gray-900 {
     color: var(--color-gray-900);
   }
@@ -3259,9 +3230,6 @@
   }
   .text-heading {
     color: var(--color-heading);
-  }
-  .text-orange-500 {
-    color: var(--color-orange-500);
   }
   .text-orange-700 {
     color: var(--color-orange-700);

@@ -1,0 +1,48 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10 px-4">
+    <div class="emerald-border-top bg-white border border-slate-200 rounded-lg shadow-sm p-8">
+        <h2 class="text-xl font-bold text-slate-800 mb-2">Finalizar Turno</h2>
+        <p class="text-sm text-slate-500 mb-6">Resumen de ingresos para el Corte #{{ corte.id }}</p>
+
+        <div class="bg-slate-50 rounded-lg p-4 mb-8 border border-slate-100">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Ingresos por Ventas</h3>
+            <div class="space-y-3">
+                {% set metodos = {1: 'Efectivo', 2: 'Tarjeta Debito', 3: 'Tarjeta Credito', 4: 'Transferencia', 5: 'Clip/Terminal', 6: 'Credito tienda'} %}
+                
+                {% for id_m, nombre in metodos.items() %}
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-600">{{ nombre }}</span>
+                    <span class="font-mono font-bold text-slate-800">${{ "{:,.2f}".format(totales.get(id_m, 0)) }}</span>
+                </div>
+                {% endfor %}
+                
+                <div class="border-t border-slate-200 pt-3 flex justify-between items-center font-bold">
+                    <span class="text-emerald-700">Total Ventas Turno:</span>
+                    <span class="text-emerald-700">${{ "{:,.2f}".format(monto_esperado - corte.open_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form action="" method="POST">
+            <input type="hidden" name="csrf_token" value="{{csrf_token}}">
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Monto Esperado (Fondo + Ventas)</label>
+                    <div class="text-2xl font-bold text-slate-800">${{ "{:,.2f}".format(monto_esperado) }}</div>
+                </div>
+                
+                <div class="relative z-0 w-full group">
+                    <input type="number" step="0.01" name="real_close_amount" required 
+                        class="block py-2.5 px-0 w-full text-lg font-bold text-emerald-600 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer" placeholder=" " />
+                    <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">Monto Real en Caja</label>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-900 active:scale-95 transition-all shadow-lg">
+                Confirmar y Cerrar Caja
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

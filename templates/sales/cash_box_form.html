@@ -1,0 +1,89 @@
+{% extends "layout_employees.html" %}
+{% block title %}Nueva Caja{% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn:hover  { background-color: #047857; }
+  .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
+  
+  /* Soporte para el efecto Peer de Tailwind en los labels */
+  .peer:placeholder-shown ~ label {
+    transform: translateY(0) scale(1);
+  }
+  .peer:focus ~ label {
+    transform: translateY(-1.5rem) scale(0.75);
+    color: #10b981; /* emerald-500 */
+  }
+</style>
+
+<div class="max-w-2xl mx-auto mt-10 px-4">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+      <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl font-semibold text-slate-800 leading-tight">Registrar Caja</h1>
+      <p class="text-xs text-slate-500">Configura un punto de venta para Express and Clean</p>
+    </div>
+    <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
+      Nuevo
+    </span>
+  </div>
+
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-lg shadow-sm p-8">
+    <form action="{{ url_for('sales.create_cash_box') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+      
+      <div class="relative z-0 w-full mb-8 group">
+        <input type="text" name="name" id="name" required
+          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer" 
+          placeholder=" " />
+        <label for="name" 
+          class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Nombre de la Caja (Ej: Terminal Matriz)
+        </label>
+      </div>
+
+      <div class="relative z-0 w-full mb-10 group">
+        <select name="id_user_cashier" id="id_user_cashier"
+          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-500 peer">
+          <option value="" class="text-slate-400">-- Sin vendedor asignado --</option>
+          {% for v in vendedores %}
+            <option value="{{ v.id }}" class="text-slate-900">[{{ v.username }}] - {{ v.nombre }}</option>
+          {% endfor %}
+        </select>
+        <label for="id_user_cashier" 
+          class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+          Vendedor Responsable
+        </label>
+        <p class="text-[10px] text-slate-400 mt-2 italic">Opcional: Si se deja vacío, cualquier vendedor podrá abrir esta caja.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit"
+          class="emerald-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm focus:outline-none">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          Guardar Caja
+        </button>
+        <a href="{{ url_for('sales.list_cash_boxes') }}"
+          class="cancel-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 focus:outline-none">
+          Cancelar
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

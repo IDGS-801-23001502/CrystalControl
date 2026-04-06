@@ -3,6 +3,69 @@ from flask_login import current_user
 from datetime import datetime
 from models import mongo
 from sqlalchemy import inspect
+import barcode
+from barcode.writer import ImageWriter
+from io import BytesIO
+import base64
+import re
+
+def parse_gs1_128(barcode_raw):
+    """
+    Descompone la cadena del escáner en datos de negocio.
+    Ejemplo entrada: 010000001000000210LOT2024A
+    """
+    data = {
+        'producto_id': None,
+        'presentacion_id': None,
+        'lote': None,
+        'error': None
+    }
+    
+    try:
+        # 1. Extraer GTIN (AI 01 ocupa los siguientes 14 dígitos)
+        if barcode_raw.startswith('01'):
+            gtin_completo = barcode_raw[2:16]
+            # Según nuestra lógica anterior: 7 dígitos prod, 7 dígitos pres
+            data['producto_id'] = int(gtin_completo[:7])
+            data['presentacion_id'] = int(gtin_completo[7:])
+            
+            # 2. Extraer Lote (AI 10 es lo que sigue después de la posición 16)
+            if '10' in barcode_raw[16:18]:
+                data['lote'] = barcode_raw[18:]
+            else:
+                # Si el código es variable, buscamos el identificador 10
+                match_lote = re.search(r'10(.+)', barcode_raw[16:])
+                if match_lote:
+                    data['lote'] = match_lote.group(1)
+        else:
+            data['error'] = "Formato GS1-128 no reconocido (Falta AI 01)"
+            
+    except Exception as e:
+        data['error'] = f"Error al procesar código: {str(e)}"
+        
+    return data
+
+def generar_gs1_128(producto_id, presentacion_id, lote_nombre):
+    # Estructura simplificada GS1-128:
+    # (01) ID_PRODUCTO_PRES (14 chars) + (10) LOTE (Variable)
+    
+    # Rellenamos con ceros para cumplir los 14 dígitos del GTIN (AI 01)
+    gtin = f"{producto_id:07d}{presentacion_id:07d}" 
+    
+    # Cadena completa siguiendo el estándar (sin paréntesis en la data real)
+    # Los paréntesis se suelen usar solo en el texto visual
+    codigo_data = f"01{gtin}10{lote_nombre}"
+    
+    # Crear el código de barras
+    code128 = barcode.get('code128', codigo_data, writer=ImageWriter())
+    
+    # Guardar en memoria para enviarlo al HTML
+    buffer = BytesIO()
+    code128.write(buffer)
+    
+    # Convertir a Base64 para mostrar en el navegador
+    img_str = base64.b64encode(buffer.getvalue()).decode()
+    return img_str
 
 def object_to_dict(obj):
     """Convierte un objeto de SQLAlchemy en un diccionario de datos."""

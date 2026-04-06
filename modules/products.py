@@ -1,12 +1,10 @@
-from wtforms import form
 import os
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request, current_app
 from models import db, Producto, ProductoPresentacionPrecio 
 from forms import FormProduct
-from flask_wtf.csrf import CSRFProtect 
 from utils.decorators import roles_accepted
-from flask_security import current_user
 from werkzeug.utils import secure_filename
+from utils.functions import generar_gs1_128
 
 module='products'
 
@@ -178,3 +176,11 @@ def search_suggestions():
         })
         
     return jsonify(results)
+
+@products_bp.route('/generar_etiqueta/<int:prod_id>/<int:pres_id>/<string:lote>')
+@roles_accepted('Administrador')
+def ver_etiqueta(prod_id, pres_id, lote):
+    img_b64 = generar_gs1_128(prod_id, pres_id, lote)
+    return render_template('products/barcode_view.html', 
+                           barcode_img=img_b64,
+                           lote=lote)
