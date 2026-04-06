@@ -322,3 +322,28 @@ class FormQualityCheck(FlaskForm):
     ])
     
     comments = TextAreaField('Notas de Laboratorio')
+
+class FormInventoryAdjustment(FlaskForm):
+    product_id = SelectField('Producto', coerce=int, validators=[
+        validators.DataRequired(message="Debe seleccionar un producto")
+    ])
+    type = SelectField('Tipo de Movimiento', coerce=int, choices=[
+        (1, 'Entrada (+)'),
+        (2, 'Salida (-)')
+    ], validators=[validators.DataRequired()])
+    
+    quantity = DecimalField('Cantidad', [
+        validators.InputRequired(message="La cantidad es obligatoria"),
+        validators.NumberRange(min=0.1, message="La cantidad debe ser mayor a 0")
+    ], places=2)
+    
+    reason = SelectField('Motivo', coerce=int, choices=[
+        (3, 'Ajuste de Inventario'),
+        (1, 'Merma / Daño'),
+        (4, 'Devolución')
+    ], validators=[validators.DataRequired()])
+    
+    notes = TextAreaField('Observaciones', [
+        validators.Optional(),
+        validators.Length(max=255)
+    ])

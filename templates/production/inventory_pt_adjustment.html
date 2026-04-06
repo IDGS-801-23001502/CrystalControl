@@ -11,15 +11,18 @@
   .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
   .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
   
-  /* Estilo para los selects nativos para que combinen con el diseño peer */
+  /* Estilo para los selects para que coincidan con el diseño Floating Label */
   .custom-select {
-    border: 0;
-    border-bottom: 2px solid #cbd5e1;
-    background-color: transparent;
+    display: block;
     padding: 0.625rem 0;
     width: 100%;
     font-size: 0.875rem;
     color: #0f172a;
+    background-color: transparent;
+    border: 0;
+    border-bottom: 2px solid #cbd5e1;
+    appearance: none;
+    cursor: pointer;
   }
   .custom-select:focus {
     outline: none;
@@ -38,85 +41,88 @@
     </div>
     <div>
       <h1 class="text-xl font-semibold text-slate-800 leading-tight">Ajuste de Inventario PT</h1>
-      <p class="text-xs text-slate-500">Corrección manual de existencias en almacén</p>
+      <p class="text-xs text-slate-500">Gestión manual de existencias de productos terminados</p>
     </div>
-    <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border text-uppercase">
-      Control de Stock
+    <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border uppercase tracking-wider">
+      Módulo Producción
     </span>
   </div>
 
   <div class="emerald-border-top bg-white border border-slate-200 rounded-lg shadow-sm p-8">
-    <form action="{{ url_for('production.inventory_pt_adjustment') }}" method="post">
+    <form action="{{ url_for('production.inventory_pt_adjustment') }}" method="POST">
+      {{ form.csrf_token }}
       
       <div class="relative z-0 w-full mb-8 group">
-        <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Seleccionar Producto</label>
-        <select name="product_id" class="custom-select" required>
-            <option value="" disabled selected>Elija un producto de la lista...</option>
-            {% for p in productos %}
-            <option value="{{ p.id }}">{{ p.name }} (Actual: {{ p.stock }} pzas)</option>
-            {% endfor %}
-        </select>
+        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 block">Producto a ajustar</label>
+        {{ form.product_id(class="custom-select peer") }}
+        {% if form.product_id.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.product_id.errors[0] }}</p>
+        {% endif %}
       </div>
 
       <div class="grid md:grid-cols-2 md:gap-8">
         <div class="relative z-0 w-full mb-8 group">
-          <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Tipo de Movimiento</label>
-          <select name="type" class="custom-select" required>
-              <option value="1">Entrada (+)</option>
-              <option value="2">Salida (-)</option>
-          </select>
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 block">Tipo de Operación</label>
+          {{ form.type(class="custom-select peer") }}
+          {% if form.type.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.type.errors[0] }}</p>
+          {% endif %}
         </div>
 
         <div class="relative z-0 w-full mb-8 group">
-          <input type="number" name="quantity" step="1" min="1" required
-            class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer" placeholder=" " />
+          {{ form.quantity(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
           <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Cantidad a Ajustar
+            Cantidad (Pzas/Unidades)
           </label>
+          {% if form.quantity.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.quantity.errors[0] }}</p>
+          {% endif %}
         </div>
       </div>
 
-      <div class="relative z-0 w-full mb-10 group">
-        <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Motivo del Ajuste</label>
-        <select name="reason" class="custom-select" required>
-            <option value="3">Diferencia en Inventario Físico (Ajuste)</option>
-            <option value="1">Merma / Producto Dañado</option>
-            <option value="4">Devolución de Producción</option>
-        </select>
+      <div class="relative z-0 w-full mb-8 group">
+        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 block">Motivo justificado</label>
+        {{ form.reason(class="custom-select peer") }}
+        {% if form.reason.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.reason.errors[0] }}</p>
+        {% endif %}
       </div>
 
       <div class="relative z-0 w-full mb-10 group">
-        <textarea name="notes" rows="2"
-          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer" placeholder=" "></textarea>
+        {{ form.notes(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", rows="2", placeholder=" ") }}
         <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-          Observaciones del Movimiento
+          Notas adicionales / Referencia de auditoría
         </label>
+        {% if form.notes.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.notes.errors[0] }}</p>
+        {% endif %}
       </div>
 
       <div class="flex items-center gap-3">
         <button type="submit"
-          class="emerald-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm focus:outline-none">
+          class="emerald-btn inline-flex items-center gap-1.5 px-6 py-3 text-sm font-semibold rounded-lg active:scale-95 transition-all duration-150 shadow-md focus:outline-none">
           <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>
-          Procesar Ajuste
+          Ejecutar Ajuste
         </button>
-        <a href="{{ url_for('production.inventory_pt_list') }}"
-          class="cancel-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 focus:outline-none">
-          Volver al Inventario
+        <a href="{{ url_for('production.inventory_pt') }}"
+          class="cancel-btn inline-flex items-center gap-1.5 px-6 py-3 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 focus:outline-none">
+          Cancelar
         </a>
       </div>
     </form>
   </div>
   
-  <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+  <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
       <div class="flex gap-3">
-          <svg class="w-5 h-5 text-amber-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          <svg class="w-5 h-5 text-amber-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.401 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
           </svg>
-          <p class="text-xs text-amber-800 leading-relaxed">
-            <strong>Atención:</strong> Los ajustes manuales afectan directamente el stock general del producto y quedarán registrados en el historial con su nombre de usuario para auditorías de almacén.
-          </p>
+          <div class="text-xs text-amber-800 leading-relaxed">
+            <p class="font-bold mb-1">Registro de Auditoría Activo</p>
+            Esta acción modificará el stock global de forma inmediata. Todos los cambios se guardarán con la estampa de tiempo y el usuario <strong>{{ current_user.username if current_user.is_authenticated else 'Sesión Actual' }}</strong>.
+          </div>
       </div>
   </div>
 </div>
