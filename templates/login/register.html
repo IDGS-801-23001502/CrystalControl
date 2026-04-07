@@ -13,7 +13,7 @@
         ></div>
         <div class="relative z-10">
           <h2 class="text-3xl font-black leading-tight mb-6">
-            Únete a la <span class="text-[#9ec946]">Red Crystal</span>
+            Únete a la red <span class="text-[#9ec946]">Express and Clean</span>
           </h2>
           <ul class="space-y-4 text-sm font-medium text-[#7dc6e9]">
             <li class="flex items-center gap-2">
@@ -85,6 +85,7 @@
           method="POST"
           class="space-y-5"
         >
+        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
           <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
             <div>
               <label
