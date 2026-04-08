@@ -127,9 +127,9 @@ class FormProduct(FlaskForm):
         ('Cuidado Personal', 'Cuidado Personal')
     ])
 
-    barcode = StringField('Código de barras', [
+    cant_may = IntegerField('Pzas para Mayoreo', [
         validators.Optional(),
-        validators.Disabled()  
+        validators.NumberRange(min=0, message="Las piezas para venta a mayoreo debe ser positiva")  
     ])
 
     stock = IntegerField('Stock disponible', [
@@ -144,17 +144,30 @@ class FormProduct(FlaskForm):
     status = HiddenField('Estatus', default='Activo')
 
     price_men = DecimalField('Precio de menudeo', [
-        validators.DataRequired(message="El precio de menudeo es requerido")
+        validators.DataRequired(message="El precio de menudeo es requerido"),
+        validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
     ], places=2)
     
     price_may = DecimalField('Precio de mayoreo', [
-        validators.DataRequired(message="El precio de mayoreo es requerido")
+        validators.DataRequired(message="El precio de mayoreo es requerido"),
+        validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
     ], places=2)
 
     presentation = StringField('Presentación (Ej: Botella, Caja)', [
         validators.DataRequired(message="La presentación es requerida"),
         validators.Length(max=50)
     ])
+
+    unit_size = DecimalField('Tamaño por Unidad', [
+        validators.DataRequired(message="El tamaño por unidad es requerido"),
+        validators.NumberRange(min = 0, message="La cantidad no puede ser negativa")
+        ])
+
+    unit_type = SelectField('Unidad Base', choices=[
+            (1, 'Mililitros (ml) — líquidos'),
+            (2, 'Gramos (g) — sólidos')
+        ], coerce=int
+    )
 
 class PurchaseItemForm(FlaskForm):
     material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
@@ -298,12 +311,12 @@ class FormCloseProductionOrder(FlaskForm):
     
     # --- DATOS DE PRODUCCIÓN REAL ---
     produced_qty = DecimalField('Cantidad Final Obtenida', [
-        validators.InputRequired(message="Debe ingresar la cantidad resultante"),
+        validators.DataRequired(message="Debe ingresar la cantidad resultante"),
         validators.NumberRange(min=0, message="La cantidad no puede ser negativa")
     ], places=2)
 
     real_waste = DecimalField('Merma Real Detectada', [
-        validators.InputRequired(message="Ingrese la merma (puede ser 0)"),
+        validators.DataRequired(message="Ingrese la merma (puede ser 0)"),
         validators.NumberRange(min=0, message="La merma no puede ser negativa")
     ], places=2, default=0.00)
 
@@ -335,8 +348,8 @@ class FormQualityCheck(FlaskForm):
     
     # Decisión final
     is_approved = SelectField('Dictamen Final', coerce=int, choices=[
-        (1, 'Aprobado (Disponible para Venta)'),
-        (0, 'Rechazado (Mala Calidad / Merma)')
+        (1, 'Aprobado (Disponible para venta)'),
+        (0, 'Rechazado (No disponible para venta)')
     ])
     
     comments = TextAreaField('Notas de Laboratorio')

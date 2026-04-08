@@ -94,6 +94,7 @@
           <th scope="col" class="px-6 py-3 font-semibold">Presentación</th>
           <th scope="col" class="px-6 py-3 font-semibold">Precio Men.</th>
           <th scope="col" class="px-6 py-3 font-semibold">Precio May.</th>
+          <th scope="col" class="px-6 py-3 font-semibold">Pzas. May.</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Estatus</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Acciones</th>
         </tr>
@@ -137,6 +138,9 @@
           </td>
           <td class="px-6 py-4 text-slate-600">
             {{ '$' ~ info.price_may if info else '-' }}
+          </td>
+          <td class="px-6 py-4 font-medium text-slate-700">
+              {{ info.cant_may }}
           </td>
           
           <td class="px-6 py-4 text-center">
