@@ -6,7 +6,6 @@
 <style>
   *,*::before,*::after{box-sizing:border-box}
 
-  /* ── Paleta: misma que el índice de recetas ── */
   :root{
     --em:        #059669;
     --em-hover:  #047857;
@@ -35,10 +34,8 @@
     --radius-xl: 16px;
   }
 
-  /* ── Page ── */
   .rf-page { font-family:'Sora',sans-serif; max-width:860px; margin:0 auto; padding:2rem 1.5rem 5rem; }
 
-  /* ── Header (mismo patrón que el índice) ── */
   .rf-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.75rem; }
   .rf-header-left { display:flex; align-items:center; gap:12px; }
   .rf-icon-wrap {
@@ -50,13 +47,12 @@
   .rf-title { font-size:20px; font-weight:600; color:var(--slate-800); letter-spacing:-0.3px; line-height:1.2; }
   .rf-sub   { font-size:12px; color:var(--slate-500); margin-top:2px; }
 
-  /* ── Sections ── */
   .rf-section {
     background:var(--white);
     border:1px solid var(--slate-200);
     border-radius:var(--radius-lg);
     margin-bottom:1.25rem;
-    overflow:hidden;
+    overflow:visible;
     box-shadow:0 1px 3px rgba(0,0,0,0.04);
   }
   .rf-section.am-top { border-top:3px solid #f59e0b; }
@@ -68,6 +64,7 @@
     display:flex; justify-content:space-between; align-items:center;
     border-bottom:1px solid var(--slate-200);
     background:var(--slate-50);
+    border-radius:var(--radius-lg) var(--radius-lg) 0 0;
   }
   .rf-section-title {
     font-family:'JetBrains Mono',monospace;
@@ -84,7 +81,6 @@
   .rf-section-title.pasos               { color:#1e3a8a; }
   .rf-section-body { padding:1.25rem; }
 
-  /* ── Fields ── */
   .rf-field { display:flex; flex-direction:column; gap:5px; }
   .rf-label {
     font-family:'JetBrains Mono',monospace;
@@ -108,11 +104,9 @@
   .rf-input.is-invalid, .rf-select.is-invalid { border-color:var(--red); }
   .rf-textarea { resize:vertical; min-height:68px; }
 
-  /* ── Grids ── */
   .rf-grid-3 { display:grid; grid-template-columns:2fr 1fr 1fr; gap:0.875rem; }
   .mt-1 { margin-top:0.875rem; }
 
-  /* ── Badge requerido ── */
   .rf-badge {
     font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600;
     background:var(--amber-bg); color:var(--amber-txt);
@@ -120,7 +114,6 @@
     border:1px solid var(--amber-bd);
   }
 
-  /* ── Add buttons (pill, igual que filtros del índice) ── */
   .rf-add-btn {
     display:inline-flex; align-items:center; gap:6px;
     padding:5px 14px; border-radius:999px;
@@ -134,7 +127,6 @@
   .rf-add-btn.blue  { background:var(--blue-bg); color:var(--blue); border-color:var(--blue-bd); }
   .rf-add-btn.blue:hover  { background:var(--blue); color:#fff; border-color:var(--blue); }
 
-  /* ── Remove button ── */
   .rf-remove {
     width:28px; height:28px; border-radius:6px;
     border:1px solid var(--slate-200); background:transparent;
@@ -143,6 +135,55 @@
     transition:background 0.15s, border-color 0.15s, color 0.15s; flex-shrink:0;
   }
   .rf-remove:hover { background:var(--red-bg); border-color:var(--red-bd); color:var(--red); }
+
+  /* ── Search / Autocomplete ── */
+  .search-wrap { position:relative; }
+  .search-dropdown {
+    display:none;
+    position:absolute;
+    top:calc(100% + 4px);
+    left:0; right:0;
+    background:var(--white);
+    border:1px solid var(--slate-200);
+    border-radius:var(--radius-md);
+    box-shadow:0 4px 20px rgba(0,0,0,0.12);
+    z-index:9999;
+    max-height:220px;
+    overflow-y:auto;
+  }
+  .search-dropdown-item {
+    padding:9px 12px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13.5px;
+    border-bottom:1px solid var(--slate-100);
+    transition:background 0.1s;
+  }
+  .search-dropdown-item:last-child { border-bottom:none; }
+  .search-dropdown-item:hover { background:var(--em-light); }
+  .search-dropdown-empty {
+    padding:10px 12px;
+    font-size:13px;
+    color:var(--slate-400);
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* ── Selected chip ── */
+  .selected-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--em-light); border:1px solid var(--em-border);
+    border-radius:999px; padding:4px 10px;
+    font-size:12px; font-weight:600; color:#047857;
+    margin-top:6px;
+  }
+  .selected-chip .chip-remove {
+    cursor:pointer; font-size:11px; color:#047857;
+    background:none; border:none; padding:0; line-height:1;
+    display:flex; align-items:center;
+  }
+  .selected-chip .chip-remove:hover { color:var(--red); }
 
   /* ── Materials table ── */
   .rf-table-head {
@@ -158,10 +199,18 @@
     display:grid; grid-template-columns:3fr 1fr 1fr 36px;
     gap:0.75rem; align-items:center;
     padding:6px 0; border-bottom:1px solid var(--slate-100);
-    transition:background 0.1s, padding 0.1s;
+    transition:background 0.1s;
   }
   .material-row:hover { background:var(--em-light); border-radius:6px; padding-left:4px; padding-right:4px; }
   .material-row:last-child { border-bottom:none; }
+
+  .unit-pill {
+    font-size:12px; color:var(--slate-500); font-weight:500;
+    background:var(--slate-100); padding:8px;
+    border-radius:var(--radius-md);
+    border:1px dashed var(--slate-200);
+    text-align:center;
+  }
 
   /* ── Step rows ── */
   .step-row {
@@ -181,7 +230,7 @@
   .step-inner   { display:grid; grid-template-columns:60px 1fr 1fr 1fr 36px; gap:0.75rem; align-items:start; }
   .step-inner-2 { display:grid; grid-template-columns:1fr 140px; gap:0.75rem; margin-top:0.75rem; }
 
-  /* ── Resumen automático ── */
+  /* ── Resumen ── */
   .rf-summary {
     background:var(--blue-bg);
     border:1px solid var(--blue-bd);
@@ -226,7 +275,7 @@
 
 <div class="rf-page">
 
-  <!-- ── Header ──────────────────────────────────── -->
+  <!-- ── Header ── -->
   <div class="rf-header">
     <div class="rf-header-left">
       <div class="rf-icon-wrap">
@@ -240,27 +289,22 @@
       </div>
       <div>
         <p class="rf-title">
-        {{ "Modificar Receta (Nueva Versión)" if is_edit else "Crear Nueva Receta" }}
+          {{ "Modificar Receta (Nueva Versión)" if is_edit else "Crear Nueva Receta" }}
         </p>
 
-
         {% if is_edit %}
-  <div class="version-alert" style="background: #fff9e6; border-left: 4px solid #f59e0b; padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
-    <p style="font-size: 13px; color: #92400e; margin: 0;">
-      <svg xmlns="http://www.w3.org/2000/svg" style="display:inline; width:16px; margin-right:5px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <strong>Modo Versionamiento:</strong> Estás editando la receta <strong>{{ recipe.unique_code }}</strong>. 
-      Al guardar, esta se volverá histórica y nacerá una nueva versión activa.
-    </p>
-  </div>
-
-       {%else%}
+        <div class="version-alert" style="background:#fff9e6;border-left:4px solid #f59e0b;padding:1rem;margin-bottom:1.5rem;border-radius:0 8px 8px 0;">
+          <p style="font-size:13px;color:#92400e;margin:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="display:inline;width:16px;margin-right:5px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <strong>Modo Versionamiento:</strong> Estás editando la receta <strong>{{ recipe.unique_code }}</strong>.
+            Al guardar, esta se volverá histórica y nacerá una nueva versión activa.
+          </p>
+        </div>
+        {% else %}
         <p class="rf-sub">Completa los campos para registrar la fórmula de producción</p>
-  {% endif %}
-
-
-        
+        {% endif %}
       </div>
     </div>
   </div>
@@ -268,7 +312,7 @@
   <form method="POST" id="recipe-form">
     {{ form.csrf_token }}
 
-    <!-- ── Información General ──────────────────── -->
+    <!-- ── Información General ── -->
     <div class="rf-section am-top">
       <div class="rf-section-head">
         <span class="rf-section-title general">
@@ -282,15 +326,37 @@
             {{ form.final_name.label.text }}
             <span class="rf-badge">requerido</span>
           </label>
-          {{ form.final_name(class="rf-input" + (" is-invalid" if form.final_name.errors else ""),
-                             placeholder="ej. Vanish") }}
+          {{ form.final_name(class="rf-input" + (" is-invalid" if form.final_name.errors else ""), placeholder="ej. Vanish") }}
         </div>
 
         <div class="rf-grid-3 mt-1">
+
+          <!-- Producto con buscador -->
           <div class="rf-field">
-            <label class="rf-label">{{ form.product_id.label.text }}</label>
-            {{ form.product_id(class="rf-select") }}
+            <label class="rf-label">
+              Producto
+              <span class="rf-badge">requerido</span>
+            </label>
+            <div class="search-wrap" id="prod-wrap">
+              <input class="rf-input" id="prod-search-input"
+                     placeholder="Escribe para buscar un producto..."
+                     autocomplete="off"
+                     {% if form.product_id.data %}disabled{% endif %}>
+              <div class="search-dropdown" id="prod-dropdown"></div>
+            </div>
+            <div id="prod-selected-wrap">
+              {% if form.product_id.data %}
+                {% set prod_id = form.product_id.data %}
+                {% set prod_name = form.product_id.choices | selectattr('0', 'equalto', prod_id) | map(attribute='1') | first | default('Producto') %}
+                <div class="selected-chip">
+                  <span id="prod-chip-name">{{ prod_name }}</span>
+                  <button type="button" class="chip-remove" id="btn-clear-product">✕</button>
+                </div>
+              {% endif %}
+            </div>
+            {{ form.product_id(style="display:none", id="product_id_hidden") }}
           </div>
+
           <div class="rf-field">
             <label class="rf-label">{{ form.produced_quantity.label.text }}</label>
             {{ form.produced_quantity(class="rf-input", placeholder="0", id="produced_quantity") }}
@@ -303,44 +369,65 @@
 
         <div class="rf-field mt-1">
           <label class="rf-label">{{ form.general_instructions.label.text }}</label>
-          {{ form.general_instructions(class="rf-textarea", rows="2",
-                                       placeholder="Notas generales del proceso...") }}
+          {{ form.general_instructions(class="rf-textarea", rows="2", placeholder="Notas generales del proceso...") }}
         </div>
 
       </div>
     </div>
 
-    <!-- ── Materiales e Insumos ─────────────────── -->
+    <!-- ── Materiales e Insumos ── -->
     <div class="rf-section em-top">
       <div class="rf-section-head">
         <span class="rf-section-title materiales">
           <span class="pill-dot"></span> Materiales e Insumos
         </span>
-        <button type="button" class="rf-add-btn green" id="add-material">+ Agregar material</button>
+        <button type="button" class="rf-add-btn green" id="open-mat-search">+ Agregar material</button>
       </div>
       <div class="rf-section-body">
+
+        <!-- Buscador de materiales (se muestra al pulsar el botón) -->
+          <div id="mat-search-wrap" style="display:block; margin-bottom:12px;">
+          <div class="search-wrap">
+            <input class="rf-input" id="mat-search-input"
+                   placeholder="Escribe para buscar una materia prima..."
+                   autocomplete="off">
+            <div class="search-dropdown" id="mat-dropdown"></div>
+          </div>
+        </div>
+
         <div class="rf-table-head">
           <span class="rf-col-label">Material</span>
           <span class="rf-col-label">Cantidad</span>
           <span class="rf-col-label">Unidad</span>
           <span></span>
         </div>
+
         <div id="materials-container" data-unidades='{{ materiales_info | tojson | safe }}'>
           {% for m in form.materials %}
-          <div class="material-row">
-            {{ m.material_id(class="rf-select") }}
+          <div class="material-row" data-material-id="{{ m.material_id.data }}">
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--slate-800);margin:0">
+                {{ m.material_id.choices | selectattr('0', 'equalto', m.material_id.data) | map(attribute='1') | first | default('Material') }}
+              </p>
+              <input type="hidden" name="{{ m.material_id.name }}" value="{{ m.material_id.data }}">
+            </div>
             {{ m.required_quantity(class="rf-input") }}
-            <div class="rf-unit-display" style="font-size: 12px; color: var(--slate-500); font-weight: 500; background: var(--slate-100); padding: 8px; border-radius: var(--radius-md); border: 1px dashed var(--slate-200); text-align: center;">
-            <span class="unit-text">---</span>
-        </div>
-        <button type="button" class="rf-remove remove-row">✕</button>
+            <div class="unit-pill">
+              {{ materiales_info.get(m.material_id.data, '---') }}
+            </div>
+            <button type="button" class="rf-remove remove-mat-row">✕</button>
           </div>
           {% endfor %}
         </div>
+
+        <p id="mat-empty-msg" style="font-size:12px;color:var(--slate-400);margin-top:8px;{% if form.materials.entries %}display:none;{% endif %}">
+          Usa el buscador para agregar materias primas a la receta.
+        </p>
+
       </div>
     </div>
 
-    <!-- ── Pasos del Proceso ────────────────────── -->
+    <!-- ── Pasos del Proceso ── -->
     <div class="rf-section bl-top">
       <div class="rf-section-head">
         <span class="rf-section-title pasos">
@@ -370,13 +457,12 @@
                 <label class="rf-label">{{ s.estimated_time.label.text }}</label>
                 {{ s.estimated_time(class="rf-input", placeholder="30") }}
               </div>
-              <button type="button" class="rf-remove remove-row" style="margin-top:22px">✕</button>
+              <button type="button" class="rf-remove remove-step-row" style="margin-top:22px">✕</button>
             </div>
             <div class="step-inner-2">
               <div class="rf-field">
                 <label class="rf-label">{{ s.step_description.label.text }}</label>
-                {{ s.step_description(class="rf-textarea", rows="1",
-                                      placeholder="Describe este paso del proceso...") }}
+                {{ s.step_description(class="rf-textarea", rows="1", placeholder="Describe este paso del proceso...") }}
               </div>
               <div></div>
             </div>
@@ -386,7 +472,7 @@
       </div>
     </div>
 
-    <!-- ── Resumen Automático ───────────────────── -->
+    <!-- ── Resumen Automático ── -->
     <div class="rf-summary">
       <p class="rf-summary-title">Resumen Automático</p>
       <div class="rf-summary-grid">
@@ -401,7 +487,7 @@
       </div>
     </div>
 
-    <!-- ── Acciones ─────────────────────────────── -->
+    <!-- ── Acciones ── -->
     <div class="rf-actions">
       <button type="submit" class="rf-submit">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -418,8 +504,302 @@
 {% endblock %}
 
 
-
 {% block scripts %}
-  <script src="{{ url_for('static', filename='js/recipes.js') }}"></script>
-{% endblock %}
+<script>
+const SEARCH_URLS = {
+  products:  "{{ url_for('recipes.search_products') }}",
+  materials: "{{ url_for('recipes.search_materials') }}"
+};
 
+document.addEventListener('DOMContentLoaded', function () {
+
+  const matContainer = document.getElementById('materials-container');
+  const matEmpty     = document.getElementById('mat-empty-msg');
+  let matIndex       = matContainer.querySelectorAll('.material-row').length;
+
+  // ─────────────────────────────────────────────
+  // Utilidad: renderiza items en un dropdown
+  // ─────────────────────────────────────────────
+  function showDropdown(dropEl, items, labelFn, metaFn, onSelect) {
+    dropEl.innerHTML = '';
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'search-dropdown-empty';
+      empty.textContent = 'Sin resultados';
+      dropEl.appendChild(empty);
+      dropEl.style.display = 'block';
+      return;
+    }
+    items.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'search-dropdown-item';
+      d.innerHTML = `
+        <span style="font-weight:500;color:var(--slate-800)">${labelFn(item)}</span>
+        <span style="font-size:11px;font-family:monospace;color:var(--slate-500)">${metaFn(item)}</span>
+      `;
+      // mousedown en lugar de click para que no se dispare el blur antes
+      d.addEventListener('mousedown', e => {
+        e.preventDefault();
+        onSelect(item);
+      });
+      dropEl.appendChild(d);
+    });
+    dropEl.style.display = 'block';
+  }
+
+  function hideDropdown(dropEl) {
+    dropEl.style.display = 'none';
+    dropEl.innerHTML = '';
+  }
+
+  // ─────────────────────────────────────────────
+  // PRODUCTO
+  // ─────────────────────────────────────────────
+  const prodInput  = document.getElementById('prod-search-input');
+  const prodDrop   = document.getElementById('prod-dropdown');
+  const prodHidden = document.getElementById('product_id_hidden');
+  const prodWrap   = document.getElementById('prod-selected-wrap');
+
+  let prodTimer = null;
+
+  prodInput.addEventListener('input', () => {
+    clearTimeout(prodTimer);
+    const q = prodInput.value.trim();
+    if (!q) { hideDropdown(prodDrop); return; }
+    prodTimer = setTimeout(async () => {
+      try {
+        const res  = await fetch(`${SEARCH_URLS.products}?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        showDropdown(prodDrop, data,
+          p => p.name,
+          p => p.category || '',
+          item => selectProduct(item)
+        );
+      } catch(err) {
+        console.error('Error buscando producto:', err);
+      }
+    }, 250);
+  });
+
+  prodInput.addEventListener('blur', () => {
+    setTimeout(() => hideDropdown(prodDrop), 200);
+  });
+
+  function selectProduct(item) {
+    prodHidden.value   = item.id;
+    prodInput.value    = '';
+    prodInput.disabled = true;
+    prodInput.placeholder = 'Producto seleccionado';
+    hideDropdown(prodDrop);
+    prodWrap.innerHTML = `
+      <div class="selected-chip">
+        <span>${item.name}</span>
+        <button type="button" class="chip-remove" id="btn-clear-product">✕</button>
+      </div>`;
+    document.getElementById('btn-clear-product').addEventListener('click', clearProduct);
+  }
+
+  function clearProduct() {
+    prodHidden.value      = '';
+    prodWrap.innerHTML    = '';
+    prodInput.disabled    = false;
+    prodInput.placeholder = 'Escribe para buscar un producto...';
+    prodInput.focus();
+  }
+
+  // Si ya hay producto cargado (modo edición), conectar el botón de limpiar
+  document.getElementById('btn-clear-product')?.addEventListener('click', clearProduct);
+
+  // ─────────────────────────────────────────────
+  // MATERIALES
+  // ─────────────────────────────────────────────
+  const matSearchWrap = document.getElementById('mat-search-wrap');
+  const matInput      = document.getElementById('mat-search-input');
+  const matDrop       = document.getElementById('mat-dropdown');
+
+  let matTimer = null;
+
+  document.getElementById('open-mat-search').addEventListener('click', () => {
+    matSearchWrap.style.display = 'block';
+    matInput.focus();
+  });
+
+  matInput.addEventListener('input', () => {
+    clearTimeout(matTimer);
+    const q = matInput.value.trim();
+    if (!q) { hideDropdown(matDrop); return; }
+    matTimer = setTimeout(async () => {
+      try {
+        // IDs ya agregados para excluirlos del resultado
+        const usados = [...matContainer.querySelectorAll('.material-row')]
+          .map(r => parseInt(r.dataset.materialId))
+          .filter(Boolean);
+
+        const res  = await fetch(`${SEARCH_URLS.materials}?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const filtrado = data.filter(m => !usados.includes(m.id));
+
+        showDropdown(matDrop, filtrado,
+          m => m.name,
+          m => m.unit || '',
+          item => addMaterialRow(item)
+        );
+      } catch(err) {
+        console.error('Error buscando material:', err);
+      }
+    }, 250);
+  });
+
+  matInput.addEventListener('blur', () => {
+    setTimeout(() => hideDropdown(matDrop), 200);
+  });
+
+  function addMaterialRow(item) {
+    const idx = matIndex++;
+    matInput.value = '';
+    hideDropdown(matDrop);
+    if (matEmpty) matEmpty.style.display = 'none';
+
+    // Ocultar el buscador después de agregar el primero
+    matSearchWrap.style.display = 'none';   
+
+    const row = document.createElement('div');
+    row.className = 'material-row';
+    row.dataset.materialId = item.id;
+    row.innerHTML = `
+      <div>
+        <p style="font-size:13px;font-weight:500;color:var(--slate-800);margin:0">${item.name}</p>
+        <input type="hidden" name="materials-${idx}-material_id" value="${item.id}">
+      </div>
+      <input class="rf-input" type="number"
+             name="materials-${idx}-required_quantity"
+             placeholder="0.00" min="0" step="0.01">
+      <div class="unit-pill">${item.unit || '---'}</div>
+      <button type="button" class="rf-remove remove-mat-row">✕</button>
+    `;
+    matContainer.appendChild(row);
+    row.querySelector('input[type=number]').focus();
+    calcularTotalesDinamicos();
+  }
+
+  // Eliminar fila de material
+  matContainer.addEventListener('click', e => {
+    if (e.target.classList.contains('remove-mat-row')) {
+      e.target.closest('.material-row').remove();
+      if (!matContainer.querySelectorAll('.material-row').length && matEmpty) {
+        matEmpty.style.display = 'block';
+      }
+      calcularTotalesDinamicos();
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  // PASOS
+  // ─────────────────────────────────────────────
+  const processChoices = [[1,'Mezclado'],[2,'Envasado'],[3,'Reposo']];
+
+  function buildStepSelect(name, selectedVal) {
+    const opts = processChoices.map(([v, l]) =>
+      `<option value="${v}" ${selectedVal == v ? 'selected' : ''}>${l}</option>`
+    ).join('');
+    return `<select name="${name}" class="rf-select">${opts}</select>`;
+  }
+
+  function updateStepIndices() {
+    document.querySelectorAll('#steps-container .step-row').forEach((row, i) => {
+      row.querySelectorAll('input, select, textarea').forEach(el => {
+        ['name', 'id'].forEach(attr => {
+          const v = el.getAttribute(attr);
+          if (v) el.setAttribute(attr, v.replace(/-\d+-/, `-${i}-`));
+        });
+      });
+      const num = row.querySelector('.step-num');
+      if (num) num.textContent = `PASO ${i + 1}`;
+      const ord = row.querySelector('input[name$="-step_order"]');
+      if (ord) ord.value = i + 1;
+    });
+  }
+
+  document.getElementById('add-step').addEventListener('click', () => {
+    const container = document.getElementById('steps-container');
+    const idx = container.querySelectorAll('.step-row').length;
+    const div = document.createElement('div');
+    div.className = 'step-row';
+    div.innerHTML = `
+      <p class="step-num">PASO ${idx + 1}</p>
+      <div class="step-inner">
+        <div class="rf-field">
+          <label class="rf-label">Orden</label>
+          <input class="rf-input" name="steps-${idx}-step_order" value="${idx + 1}" readonly>
+        </div>
+        <div class="rf-field">
+          <label class="rf-label">Etapa</label>
+          <input class="rf-input" name="steps-${idx}-stage_name" placeholder="ej. Mezcla inicial">
+        </div>
+        <div class="rf-field">
+          <label class="rf-label">Tipo proceso</label>
+          ${buildStepSelect(`steps-${idx}-process_type`, 1)}
+        </div>
+        <div class="rf-field">
+          <label class="rf-label">Tiempo (min)</label>
+          <input class="rf-input" type="number" name="steps-${idx}-estimated_time" placeholder="30">
+        </div>
+        <button type="button" class="rf-remove remove-step-row" style="margin-top:22px">✕</button>
+      </div>
+      <div class="step-inner-2">
+        <div class="rf-field">
+          <label class="rf-label">Descripción</label>
+          <textarea class="rf-textarea" name="steps-${idx}-step_description"
+                    rows="1" placeholder="Describe este paso..."></textarea>
+        </div>
+        <div></div>
+      </div>`;
+    container.appendChild(div);
+    calcularTotalesDinamicos();
+  });
+
+  document.getElementById('steps-container').addEventListener('click', e => {
+    if (e.target.classList.contains('remove-step-row')) {
+      const container = document.getElementById('steps-container');
+      if (container.querySelectorAll('.step-row').length > 1) {
+        e.target.closest('.step-row').remove();
+        updateStepIndices();
+        calcularTotalesDinamicos();
+      } else {
+        alert('Debes mantener al menos un paso.');
+      }
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  // RESUMEN AUTOMÁTICO
+  // ─────────────────────────────────────────────
+  function calcularTotalesDinamicos() {
+    let tiempoTotal = 0;
+    const numMat    = matContainer.querySelectorAll('.material-row').length;
+    const unidadLote = document.getElementById('unit_med')?.value || '1';
+    const extraU    = unidadLote == '2' ? 0.3 : unidadLote == '1' ? 0.2 : 0.05;
+    let merma       = 1.0 + (numMat * 0.2) + extraU;
+
+    document.querySelectorAll('.step-row').forEach(row => {
+      const t = row.querySelector('input[name$="-estimated_time"]');
+      if (t) tiempoTotal += parseInt(t.value) || 0;
+      const tipo = row.querySelector('select[name$="-process_type"]')?.value;
+      if      (tipo == '1') merma += 1.2;
+      else if (tipo == '2') merma += 0.5;
+      else if (tipo == '3') merma += 0.1;
+    });
+
+    const lote   = parseFloat(document.getElementById('produced_quantity')?.value) || 0;
+    const factor = lote > 0 && lote < 15 ? 1.25 : lote > 50 ? 0.9 : 1.0;
+
+    document.getElementById('display-tiempo-total').textContent = tiempoTotal + ' min';
+    document.getElementById('display-merma-total').textContent  = (merma * factor).toFixed(2) + '%';
+  }
+
+  document.getElementById('recipe-form').addEventListener('input', calcularTotalesDinamicos);
+  updateStepIndices();
+  calcularTotalesDinamicos();
+});
+</script>
+{% endblock %}
