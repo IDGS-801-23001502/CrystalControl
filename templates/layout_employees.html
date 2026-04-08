@@ -176,19 +176,19 @@
             >
               <a
                 href="{{url_for('production.production')}}"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('production.production') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Procesos
               </a>
               <a
                 href="{{url_for('production.add_order')}}"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('production.add_order') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Solicitud Producción
               </a>
               <a
                 href="{{url_for('production.quality_pending')}}"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px]' if request.path == url_for('production.quality_pending') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Validación
               </a>
@@ -221,8 +221,8 @@
               class="ml-9 border-l-2 border-slate-100 flex flex-col gap-1 py-1"
             >
               <a
-                href="#"
-                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px] bg-emerald-50/50 rounded-r-lg' if request.path == '#' else 'text-slate-400 hover:text-emerald-600' }}"
+                href="{{url_for('sales.sales')}}"
+                class="p-2 pl-4 text-xs font-bold transition-colors uppercase {{ 'text-emerald-600 border-l-2 border-emerald-500 -ml-[2px] bg-emerald-50/50 rounded-r-lg' if request.path == url_for('sales.sales') else 'text-slate-400 hover:text-emerald-600' }}"
               >
                 Lista de Ventas
               </a>

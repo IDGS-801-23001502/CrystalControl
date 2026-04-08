@@ -157,6 +157,11 @@ class Recipe(db.Model):
     steps = db.relationship('RecipeStep', backref='recipe')
     product = db.relationship('Producto', backref='recipe')
 
+    @property
+    def nombre_unidad_lote(self):
+        unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
+        return unidades.get(self.unit_med, 'Desconocido')
+
 
 class RecipeDetail(db.Model):
     __tablename__ = 'receta_detalle'
@@ -165,7 +170,7 @@ class RecipeDetail(db.Model):
     recipe_id = db.Column('id_receta', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
     material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
     required_quantity =  db.Column('cantidad_necesaria', db.Numeric(10, 2), nullable=False)
-    unit_med = db.Column('unidad_medida', TINYINT) #1-Kilos 2-Litros 3-Piezas 
+    # unit_med = db.Column(db.Integer) 
 
     material = db.relationship('Raw_Material', backref='recipe_details')
 
@@ -180,6 +185,11 @@ class RecipeStep(db.Model):
     estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
     process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
 
+    @property
+    def nombre_proceso(self):
+        procesos = {1: 'Mezclado', 2: 'Envasado', 3: 'Reposo'}
+        return procesos.get(self.process_type, 'Otro')
+
 ##PRODUCTOS##
 
 class Producto(db.Model):
@@ -192,6 +202,7 @@ class Producto(db.Model):
     stock = db.Column('stock_disponible', db.Integer, default=0)
     picture = db.Column('foto', db.String(255), nullable=True) 
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+    #stock_real = db.Column('stock_real', db.Integer)
 
     precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
 
@@ -203,6 +214,9 @@ class ProductoPresentacionPrecio(db.Model):
     price_men = db.Column('precio_menudeo', db.Numeric(10, 2), nullable=False)
     price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
     presentation = db.Column('presentacion', db.String(50), nullable=False)
+    cant_may = db.Column('cantidad_mayoreo', db.Integer, nullable = False)
+    unit_size = db.Column('tamano_unidad', db.Numeric(10), nullable=True)
+    unit_type = db.Column('tipo_unidad_base', db.Integer, default=1)
 
 # Modelos de Compras
 class Purchase(db.Model):
@@ -351,7 +365,7 @@ class ProductionOrder(db.Model):
     id = db.Column('id_orden_produccion', db.Integer, primary_key=True)
     folio = db.Column('folio_orden', db.String(20), unique=True, nullable=False)
     recipe_id = db.Column('id_receta_ref', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
-    requested_quantity = db.Column('cantidad_solicitada', db.Numeric(10, 2), nullable=False)
+    requested_quantity = db.Column('cantidad_solicitada', db.Integer, nullable=False)
     unit_med = db.Column('unidad_medida', db.Integer, nullable=False) # 1: kg, 2: lt, 3: pieza
     operator_id = db.Column('id_operador', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
     real_waste = db.Column('merma_real', db.Numeric(10, 2), default=0.00)
@@ -448,3 +462,6 @@ class InventoryMovementPT(db.Model):
     resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=False)
     user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    products = db.relationship('Producto', backref='product_movements')
+    user = db.relationship('User', backref='user_inventory_actions')

@@ -111,6 +111,31 @@ def create_admin():
             asignar_permiso('Administrador', m_name, 4)
         
         #Permisos Extra aqui
+        # Permisos para el rol: Compras
+        asignar_permiso('Compras', 'suppliers', 4)
+        asignar_permiso('Compras', 'raw_materials', 4)
+        asignar_permiso('Compras', 'purchases', 4)
+
+        # Permisos para el rol: Almacenista
+        asignar_permiso('Almacenista', 'suppliers', 1)
+        asignar_permiso('Almacenista', 'raw_materials', 4) #Por inventario
+        asignar_permiso('Almacenista', 'purchases', 2)
+        asignar_permiso('Almacenista', 'products', 4) #Por inventario
+
+        # Permisos para el rol: Vendedor
+        asignar_permiso('Vendedor', 'sales', 3)
+        asignar_permiso('Vendedor', 'products', 1)
+
+        # Permisos para el rol: Produccion
+        asignar_permiso('Produccion', 'raw_materials', 2)
+        asignar_permiso('Produccion', 'production', 4)
+        asignar_permiso('Produccion', 'products', 1)
+        asignar_permiso('Produccion', 'recipes', 4)
+
+        # Permisos para el rol: Gerente
+        asignar_permiso('Gerente', 'analytics', 4)
+        asignar_permiso('Gerente', 'sales', 4)
+        asignar_permiso('Gerente', 'products', 1)
         
         db.session.commit()
         print("Configuración de módulos y permisos completada.")

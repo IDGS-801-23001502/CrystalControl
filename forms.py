@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField, SubmitField
+from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField, SubmitField, DateField
 from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators
 
@@ -127,9 +127,9 @@ class FormProduct(FlaskForm):
         ('Cuidado Personal', 'Cuidado Personal')
     ])
 
-    barcode = StringField('Código de barras', [
+    cant_may = IntegerField('Pzas para Mayoreo', [
         validators.Optional(),
-        validators.Disabled()  
+        validators.NumberRange(min=0, message="Las piezas para venta a mayoreo debe ser positiva")  
     ])
 
     stock = IntegerField('Stock disponible', [
@@ -144,17 +144,30 @@ class FormProduct(FlaskForm):
     status = HiddenField('Estatus', default='Activo')
 
     price_men = DecimalField('Precio de menudeo', [
-        validators.DataRequired(message="El precio de menudeo es requerido")
+        validators.DataRequired(message="El precio de menudeo es requerido"),
+        validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
     ], places=2)
     
     price_may = DecimalField('Precio de mayoreo', [
-        validators.DataRequired(message="El precio de mayoreo es requerido")
+        validators.DataRequired(message="El precio de mayoreo es requerido"),
+        validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
     ], places=2)
 
     presentation = StringField('Presentación (Ej: Botella, Caja)', [
         validators.DataRequired(message="La presentación es requerida"),
         validators.Length(max=50)
     ])
+
+    unit_size = DecimalField('Tamaño por Unidad', [
+        validators.DataRequired(message="El tamaño por unidad es requerido"),
+        validators.NumberRange(min = 0, message="La cantidad no puede ser negativa")
+        ])
+
+    unit_type = SelectField('Unidad Base', choices=[
+            (1, 'Mililitros (ml) — líquidos'),
+            (2, 'Gramos (g) — sólidos')
+        ], coerce=int
+    )
 
 class PurchaseItemForm(FlaskForm):
     material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
@@ -180,11 +193,7 @@ class FormRecipeDetail(FlaskForm):
     required_quantity = DecimalField('Cantidad', [
         validators.InputRequired(message="Requerido")
     ], places=2)
-    unit_med = SelectField('Unidad', coerce=int, choices=[
-        (1, 'Kilos'),
-        (2, 'Litros'),
-        (3, 'Piezas')
-    ])
+    # unit_med ha sido eliminado de aquí porque se traerá del modelo MateriaPrima
 
 class FormRecipeStep(FlaskForm):
     """Formulario para una fila de pasos de la receta"""
@@ -226,7 +235,8 @@ class FormRecipe(FlaskForm):
     unit_med = SelectField('Unidad de Medida del Lote', coerce=int, choices=[
         (1, 'Kilos'),
         (2, 'Litros'),
-        (3, 'Piezas')
+        (3, 'Galones'),
+        (4, 'Pieza')
     ])
     
     status = HiddenField('Estatus', default=1)
@@ -260,37 +270,31 @@ class FormInventoryMovementItem(FlaskForm):
 class FormBulkInventoryMovement(FlaskForm):
     # Lista dinámica de movimientos
     movements = FieldList(FormField(FormInventoryMovementItem), min_entries=1)
+
 class FormProductionOrder(FlaskForm):
     id = HiddenField('id')
     
-    # Folio es readonly porque el sistema lo genera automáticamente (OP-YYYYMMDD...)
     folio = StringField('Folio de Orden', render_kw={'readonly': True})
     
-    # El usuario elige qué receta va a preparar
     recipe_id = SelectField('Seleccionar Receta', coerce=int, validators=[
         validators.DataRequired(message="Debe seleccionar una receta activa")
     ])
     
-    # Esta es la cantidad total deseada (ej. los 400L que mencionabas)
     requested_quantity = DecimalField('Cantidad a Producir', [
         validators.InputRequired(message="La cantidad es obligatoria"),
-        validators.NumberRange(min=0.01, message="La cantidad debe ser mayor a 0")
-    ], places=2)
+        validators.NumberRange(min=1, message="La cantidad debe ser mayor a 0")
+    ])
     
-    # La unidad de medida suele venir de la receta, pero se pone para validación
     unit_med = IntegerField('Unidad de Medida')
     
-    # Selección del operador (usuario con perfil de producción)
     operator_id = HiddenField('Operador Responsable')
     
-    # Fecha y hora en la que se planea iniciar
     scheduled_date = DateTimeLocalField('Fecha De solicitud', 
         format='%Y-%m-%dT%H:%M',
         validators=[validators.Optional()]
     )
 
-    # El estatus suele manejarse internamente, pero se deja como Hidden si es necesario
-    status = HiddenField('Estatus', default=2) # 2: Pendiente
+    status = HiddenField('Estatus', default=2)
 
 class FormCloseProductionOrder(FlaskForm):
     # Campos informativos (Readonly) para que el operador compare
@@ -298,18 +302,18 @@ class FormCloseProductionOrder(FlaskForm):
     
     # --- DATOS DE PRODUCCIÓN REAL ---
     produced_qty = DecimalField('Cantidad Final Obtenida', [
-        validators.InputRequired(message="Debe ingresar la cantidad resultante"),
+        validators.DataRequired(message="Debe ingresar la cantidad resultante"),
         validators.NumberRange(min=0, message="La cantidad no puede ser negativa")
     ], places=2)
 
     real_waste = DecimalField('Merma Real Detectada', [
-        validators.InputRequired(message="Ingrese la merma (puede ser 0)"),
+        validators.DataRequired(message="Ingrese la merma (puede ser 0)"),
         validators.NumberRange(min=0, message="La merma no puede ser negativa")
     ], places=2, default=0.00)
 
     # --- DATOS DEL LOTE (TRAZABILIDAD) ---
-    expiry_date = DateTimeLocalField('Fecha de Caducidad', 
-        format='%Y-%m-%dT%H:%M',
+    expiry_date = DateField('Fecha de Caducidad', 
+        format='%Y-%m-%d',
         validators=[validators.DataRequired(message="Indique la fecha de vencimiento")]
     )
 
@@ -335,8 +339,8 @@ class FormQualityCheck(FlaskForm):
     
     # Decisión final
     is_approved = SelectField('Dictamen Final', coerce=int, choices=[
-        (1, 'Aprobado (Disponible para Venta)'),
-        (0, 'Rechazado (Mala Calidad / Merma)')
+        (1, 'Aprobado (Disponible para venta)'),
+        (0, 'Rechazado (No disponible para venta)')
     ])
     
     comments = TextAreaField('Notas de Laboratorio')
@@ -366,6 +370,7 @@ class PaymentForm(FlaskForm):
     paid_amount = DecimalField('Monto a Pagar', validators=[validators.DataRequired()])
     reference = StringField('Referencia (opcional)')
     submit = SubmitField('Finalizar Pago')
+
 class FormInventoryAdjustment(FlaskForm):
     product_id = SelectField('Producto', coerce=int, validators=[
         validators.DataRequired(message="Debe seleccionar un producto")

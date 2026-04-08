@@ -8,15 +8,19 @@
             <h1 class="text-2xl font-bold text-slate-800">Inventario de Lotes</h1>
             <p class="text-sm text-slate-500">Historial de productos fabricados y disponibilidad en almacén</p>
         </div>
-        
+
         <form method="GET" action="{{ url_for('production.lots_pt') }}" class="relative">
-            <input type="text" name="search" value="{{ search }}" 
-                   placeholder="Buscar lote o producto..." 
-                   class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-emerald-500 focus:border-emerald-500 w-full md:w-64">
-            <div class="absolute left-3 top-2.5 text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
+            <input type="text" name="search" value="{{ search }}" placeholder="Buscar lote o producto"
+                class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-emerald-500 focus:border-emerald-500 w-full md:w-64">
         </form>
+
+        <a href="{{ url_for('production.inventory_pt') }}"
+          class="bg-emerald-500 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+          Regresar al Listado
+        </a>
     </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -24,12 +28,18 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Código de Lote</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Producto / Ref. Orden</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Stock Actual</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Costo U.</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Caducidad</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Estado</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Código de
+                            Lote</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Producto /
+                            Ref. Orden</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">
+                            Stock Actual</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">
+                            Costo U.</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Caducidad
+                        </th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">
+                            Estado</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm">
@@ -45,26 +55,34 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                             <span class="px-3 py-1 bg-slate-100 rounded-full font-bold text-slate-700">
-                                {{ lot.current_stock }} <small class="text-[9px]">{{ lot.unit_med }}</small>
+                                {{ lot.current_stock }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-center font-medium text-slate-600">
+                            {% if lot.unit_cost is not none %}
                             ${{ "%.2f"|format(lot.unit_cost) }}
+                            {% else %}
+                            $0.00
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <span class="{% if lot.expiry_date < now %}text-red-500 font-bold{% else %}text-slate-600{% endif %}">
+                                <span
+                                    class="{% if lot.expiry_date < now %}text-red-500 font-bold{% else %}text-slate-600{% endif %}">
                                     {{ lot.expiry_date.strftime('%d/%m/%Y') }}
                                 </span>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-center">
                             {% if lot.status == 1 %}
-                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">LIBERADO</span>
+                            <span
+                                class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">LIBERADO</span>
                             {% elif lot.status == 2 %}
-                                <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-md">CUARENTENA</span>
+                            <span
+                                class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-md">CUARENTENA</span>
                             {% else %}
-                                <span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-md">RECHAZADO</span>
+                            <span
+                                class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-md">RECHAZADO</span>
                             {% endif %}
                         </td>
                     </tr>

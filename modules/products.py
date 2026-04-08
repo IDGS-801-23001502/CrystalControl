@@ -19,7 +19,6 @@ products_bp = Blueprint(
 @roles_accepted('Administrador')
 def products():
     # Consultamos los productos.
-    # podremos acceder a los datos de la otra tabla en el HTML.
     all_products = Producto.query.all()
     return render_template('products/catalog.html', all_products=all_products)
 
@@ -65,7 +64,10 @@ def add_product():
                 id_producto=new_product.id,
                 price_men=form.price_men.data,
                 price_may=form.price_may.data,
-                presentation=form.presentation.data
+                presentation=form.presentation.data,
+                cant_may = form.cant_may.data,
+                unit_size=form.unit_size.data,
+                unit_type=form.unit_type.data
             )
             
             db.session.add(new_pricing)
@@ -95,6 +97,9 @@ def edit_product(id):
             form.price_men.data = precios.price_men
             form.price_may.data = precios.price_may
             form.presentation.data = precios.presentation
+            form.cant_may.data = precios.cant_may
+            form.unit_size.data = precios.unit_size
+            form.unit_type.data = precios.unit_type
 
     if form.validate_on_submit():
         try:
@@ -118,12 +123,18 @@ def edit_product(id):
                 precios.price_men = form.price_men.data
                 precios.price_may = form.price_may.data
                 precios.presentation = form.presentation.data
+                precios.cant_may = form.cant_may.data
+                precios.unit_size = form.unit_size.data
+                precios.unit_type = form.unit_type.data
             else:
                 nuevos_precios = ProductoPresentacionPrecio(
                     id_producto=id,
                     price_men=form.price_men.data,
                     price_may=form.price_may.data,
-                    presentation=form.presentation.data
+                    presentation=form.presentation.data,
+                    cant_may=form.cant_may.data,
+                    unit_size=form.unit_size.data,
+                    unit_type=form.unit_type.data
                 )
                 db.session.add(nuevos_precios)
             

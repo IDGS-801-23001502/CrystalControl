@@ -66,7 +66,7 @@
       <p class="text-xs text-slate-500">Actualizando datos de <strong>{{ producto.name }}</strong></p>
     </div>
     <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
-      ID: {{ producto.id }}
+      Codigo: {{ producto.barcode }}
     </span>
   </div>
 
@@ -97,12 +97,12 @@
 
       <div class="grid md:grid-cols-2 md:gap-8">
         <div class="relative z-0 w-full mb-8 group">
-          {{ form.barcode(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-          border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-          ") }}
+          {{ form.cant_may(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
+          border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer",
+          placeholder="") }}
           <label
             class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Código de Barras
+            Pzas Venta Mayoreo
           </label>
         </div>
 
@@ -149,6 +149,39 @@
         </label>
       </div>
 
+      <div class="grid md:grid-cols-2 md:gap-8 mb-8">
+
+        <div class="relative z-0 w-full group">
+          {{ form.unit_size(
+          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300
+          appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer",
+          placeholder=" "
+          ) }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0]
+                  peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
+                  peer-focus:scale-75 peer-focus:-translate-y-6">
+            Tamaño por unidad (ej. 500, 1000)
+          </label>
+          <p class="mt-1 text-xs text-slate-400 italic">
+            Cantidad numérica de la presentación. Ej: si es "Botella 500ml", escribe 500
+          </p>
+          {% if form.unit_size.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.unit_size.errors[0] }}</p>
+          {% endif %}
+        </div>
+
+        <div class="relative z-0 w-full group">
+          {{ form.unit_type(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600") }}
+          <label class="block mb-1 text-xs text-slate-500">
+            Unidad base
+          </label>
+          {% if form.unit_type.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.unit_type.errors[0] }}</p>
+          {% endif %}
+        </div>
+
+      </div>
+
       <div class="mb-10">
         <label class="block mb-2 text-sm font-medium text-slate-700">Imagen del Producto</label>
         <div class="flex items-center gap-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
@@ -180,7 +213,7 @@
           class="block mb-2 text-sm font-semibold {% if producto.status == 'Inactivo' %}text-amber-800{% else %}text-slate-700{% endif %}">
           Estatus del Producto
         </label>
-        
+
         <p class="text-xs text-amber-600 mb-3 font-medium">⚠ Este producto está actualmente desactivado.</p>
 
         <div class="relative">

@@ -527,29 +527,80 @@ barcodeInput.addEventListener('keypress', function(e) {
 });
 
 async function fetchProduct(barcode) {
-  const payload = { items: [{ barcode: barcode, cantidad: 1 }] };
-  try {
-    const response = await fetch("{{ url_for('sales.calculate_pos') }}", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': "{{ csrf_token() }}"
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (data.detalle_calculado && data.detalle_calculado.length > 0) {
-      const item = data.detalle_calculado[0];
-      addToCart(item);
-      addRecent(item);
-      showToast('Agregado: ' + item.nombre, false);
-    } else {
-      showToast('Producto no encontrado', true);
+    // Usamos tu ruta de GS1-128
+    try {
+        const response = await fetch(`/api/pos/procesar_codigo/${barcode}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const item = data.item;
+            // Estructuramos el item para que sea compatible con el carrito
+            const cartItem = {
+                id_producto: item.id_producto,
+                id_presentacion: item.id_presentacion,
+                nombre: item.nombre,
+                precio_unitario: item.precio_men,
+                lote: item.lote
+            };
+            addToCart(cartItem);
+            addRecent(cartItem);
+            showToast('Agregado: ' + item.nombre, false);
+        } else {
+            showToast(data.message || 'Código no reconocido', true);
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error al leer código GS1-128', true);
     }
-  } catch (err) {
-    console.error(err);
-    showToast('Error de conexión', true);
-  }
+}
+
+async function procesarPago() {
+    if (!cart.length) return;
+    
+    // Obtenemos el total limpio
+    const totalRaw = document.getElementById('t_total').textContent.replace('$', '').replace(',', '');
+    
+    const payload = {
+        items: cart,
+        metodo_pago: selectedPayment,
+        total: parseFloat(totalRaw)
+    };
+
+    // Bloqueamos botón para evitar doble clic
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Procesando...';
+
+    try {
+        const response = await fetch("{{ url_for('sales.procesar_venta_pos') }}", {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-CSRFToken': "{{ csrf_token() }}" 
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Venta Exitosa! Folio: ' + result.folio, false);
+            // Limpieza y reset
+            cart = [];
+            renderCart();
+            barcodeInput.focus();
+        } else {
+            showToast('Error: ' + result.message, true);
+        }
+    } catch (err) {
+        showToast('Error crítico en el servidor', true);
+    } finally {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = `
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg> Cobrar`;
+    }
 }
 
 /* ── RECIENTES ── */
@@ -572,6 +623,7 @@ function renderRecent() {
       <div class="recent-info">
         <div class="recent-name">${i.nombre}</div>
         <div class="recent-code">${i.barcode || ''}</div>
+        <div class="prod-pres">${item.presentacion || ''} ${item.lote ? `<small class="text-slate-400">| Lote: ${item.lote}</small>` : ''}</div>
       </div>
       <div class="recent-price">$${parseFloat(i.precio_unitario).toFixed(2)}</div>
       <button class="recent-add" title="Agregar">+</button>
@@ -673,28 +725,6 @@ function selectPay(btn, method) {
   document.querySelectorAll('.pos-root .pay-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   selectedPayment = method;
-}
-
-async function procesarPago() {
-  if (!cart.length) return;
-  const total = parseFloat(document.getElementById('t_total').textContent.replace('$', ''));
-  const payload = {
-    items: cart.map(i => ({ id_producto: i.id_producto, cantidad: i.cantidad, precio_unitario: i.precio_unitario })),
-    metodo_pago: selectedPayment,
-    total
-  };
-  try {
-    const response = await fetch("{{ url_for('sales.calculate_pos') }}", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': "{{ csrf_token() }}" },
-      body: JSON.stringify(payload)
-    });
-    await response.json();
-    showToast('Pago procesado: $' + total.toFixed(2), false);
-    setTimeout(() => { cart = []; renderCart(); }, 1400);
-  } catch (err) {
-    showToast('Error al procesar pago', true);
-  }
 }
 
 function cancelarVenta() {
