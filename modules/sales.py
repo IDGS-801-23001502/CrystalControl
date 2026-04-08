@@ -250,12 +250,11 @@ def procesar_codigo_pos(barcode_raw):
         if not barcode_raw.startswith('01'):
             return jsonify({"success": False, "message": "Código no reconocido"}), 400
         
+        data = parse_gs1_128(barcode_raw)
         # Extraemos IDs (7 dígitos para producto, 7 para presentación)
-        id_prod = int(barcode_raw[2:9])
-        id_pres = int(barcode_raw[9:16])
-        
-        # Extraer Lote (después del identificador '10')
-        lote_codigo = barcode_raw[18:] if '10' in barcode_raw[16:18] else None
+        id_prod = data['producto_id']
+        id_pres = data['presentacion_id']
+        lote_codigo = data['lote']
 
         # 2. Consulta a Modelos
         # Buscamos el producto y su presentación específica
