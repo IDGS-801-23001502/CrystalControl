@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from models import db, Recipe, RecipeDetail, RecipeStep, Producto, Raw_Material, Raw_Material_Supplier, ProductoPresentacionPrecio
 from forms import FormRecipe, FormRecipeDetail, FormRecipeStep
 from datetime import datetime
@@ -41,6 +41,9 @@ def add_recipe():
         step_form.process_type.choices = process_choices
 
     if form.validate_on_submit():
+        if not form.materials.data or len(form.materials.data) == 0:
+            flash("Debes agregar al menos una materia prima a la receta.", "danger")
+            return render_template('recipes/add.html', form=form, materiales_info=materiales_info)
         try:
             cant_lote = float(form.produced_quantity.data or 0)
             unidad_lote = int(form.unit_med.data or 1)
@@ -139,6 +142,10 @@ def edit_recipe(id):
     for sf in form.steps: sf.process_type.choices = process_choices
 
     if form.validate_on_submit():
+        if form.validate_on_submit():
+            if not form.materials.data or len(form.materials.data) == 0:
+                flash("Debes agregar al menos una materia prima a la receta.", "danger")
+                return render_template('recipes/add.html', form=form, materiales_info=materiales_info, is_edit=True, recipe=old_recipe)
         try:
             cant_lote = float(form.produced_quantity.data or 0)
             unidad_lote = int(form.unit_med.data or 1)
@@ -241,3 +248,23 @@ def view_recipe(id):
     return render_template('recipes/view.html', 
                            recipe=recipe, 
                            now=datetime.now())
+
+
+
+@recipes_bp.route('/search_products')
+def search_products():
+    q = request.args.get('q', '').strip()
+    productos = Producto.query.filter(
+        Producto.status == 'Activo',
+        Producto.name.ilike(f'%{q}%')
+    ).limit(10).all()
+    return jsonify([{'id': p.id, 'name': p.name, 'category': p.category} for p in productos])
+
+@recipes_bp.route('/search_materials')
+def search_materials():
+    q = request.args.get('q', '').strip()
+    materiales = Raw_Material.query.filter(
+        Raw_Material.estatus == 'Activo',
+        Raw_Material.name.ilike(f'%{q}%')
+    ).limit(10).all()
+    return jsonify([{'id': m.id, 'name': m.name, 'unit': m.nombre_unidad} for m in materiales])

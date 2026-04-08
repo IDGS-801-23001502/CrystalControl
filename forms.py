@@ -243,7 +243,7 @@ class FormRecipe(FlaskForm):
 
     # Listas dinámicas
     # min_entries=1 asegura que al menos aparezca una fila al cargar
-    materials = FieldList(FormField(FormRecipeDetail), min_entries=1)
+    materials = FieldList(FormField(FormRecipeDetail), min_entries=0)
     steps = FieldList(FormField(FormRecipeStep), min_entries=1)
 
 
