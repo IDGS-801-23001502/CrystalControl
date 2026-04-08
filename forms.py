@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField, SubmitField
+from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField, SubmitField, DateField
 from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators
 
@@ -270,37 +270,31 @@ class FormInventoryMovementItem(FlaskForm):
 class FormBulkInventoryMovement(FlaskForm):
     # Lista dinámica de movimientos
     movements = FieldList(FormField(FormInventoryMovementItem), min_entries=1)
+
 class FormProductionOrder(FlaskForm):
     id = HiddenField('id')
     
-    # Folio es readonly porque el sistema lo genera automáticamente (OP-YYYYMMDD...)
     folio = StringField('Folio de Orden', render_kw={'readonly': True})
     
-    # El usuario elige qué receta va a preparar
     recipe_id = SelectField('Seleccionar Receta', coerce=int, validators=[
         validators.DataRequired(message="Debe seleccionar una receta activa")
     ])
     
-    # Esta es la cantidad total deseada (ej. los 400L que mencionabas)
     requested_quantity = DecimalField('Cantidad a Producir', [
         validators.InputRequired(message="La cantidad es obligatoria"),
-        validators.NumberRange(min=0.01, message="La cantidad debe ser mayor a 0")
-    ], places=2)
+        validators.NumberRange(min=1, message="La cantidad debe ser mayor a 0")
+    ])
     
-    # La unidad de medida suele venir de la receta, pero se pone para validación
     unit_med = IntegerField('Unidad de Medida')
     
-    # Selección del operador (usuario con perfil de producción)
     operator_id = HiddenField('Operador Responsable')
     
-    # Fecha y hora en la que se planea iniciar
     scheduled_date = DateTimeLocalField('Fecha De solicitud', 
         format='%Y-%m-%dT%H:%M',
         validators=[validators.Optional()]
     )
 
-    # El estatus suele manejarse internamente, pero se deja como Hidden si es necesario
-    status = HiddenField('Estatus', default=2) # 2: Pendiente
+    status = HiddenField('Estatus', default=2)
 
 class FormCloseProductionOrder(FlaskForm):
     # Campos informativos (Readonly) para que el operador compare
@@ -318,8 +312,8 @@ class FormCloseProductionOrder(FlaskForm):
     ], places=2, default=0.00)
 
     # --- DATOS DEL LOTE (TRAZABILIDAD) ---
-    expiry_date = DateTimeLocalField('Fecha de Caducidad', 
-        format='%Y-%m-%dT%H:%M',
+    expiry_date = DateField('Fecha de Caducidad', 
+        format='%Y-%m-%d',
         validators=[validators.DataRequired(message="Indique la fecha de vencimiento")]
     )
 
@@ -376,6 +370,7 @@ class PaymentForm(FlaskForm):
     paid_amount = DecimalField('Monto a Pagar', validators=[validators.DataRequired()])
     reference = StringField('Referencia (opcional)')
     submit = SubmitField('Finalizar Pago')
+
 class FormInventoryAdjustment(FlaskForm):
     product_id = SelectField('Producto', coerce=int, validators=[
         validators.DataRequired(message="Debe seleccionar un producto")

@@ -365,7 +365,7 @@ class ProductionOrder(db.Model):
     id = db.Column('id_orden_produccion', db.Integer, primary_key=True)
     folio = db.Column('folio_orden', db.String(20), unique=True, nullable=False)
     recipe_id = db.Column('id_receta_ref', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
-    requested_quantity = db.Column('cantidad_solicitada', db.Numeric(10, 2), nullable=False)
+    requested_quantity = db.Column('cantidad_solicitada', db.Integer, nullable=False)
     unit_med = db.Column('unidad_medida', db.Integer, nullable=False) # 1: kg, 2: lt, 3: pieza
     operator_id = db.Column('id_operador', db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
     real_waste = db.Column('merma_real', db.Numeric(10, 2), default=0.00)

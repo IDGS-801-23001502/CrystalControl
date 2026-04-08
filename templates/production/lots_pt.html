@@ -10,9 +10,17 @@
         </div>
 
         <form method="GET" action="{{ url_for('production.lots_pt') }}" class="relative">
-            <input type="text" name="search" value="{{ search }}" placeholder="Buscar lote o producto..."
+            <input type="text" name="search" value="{{ search }}" placeholder="Buscar lote o producto"
                 class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-emerald-500 focus:border-emerald-500 w-full md:w-64">
         </form>
+
+        <a href="{{ url_for('production.inventory_pt') }}"
+          class="bg-emerald-500 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+          Regresar al Listado
+        </a>
     </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -47,7 +55,7 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                             <span class="px-3 py-1 bg-slate-100 rounded-full font-bold text-slate-700">
-                                {{ lot.current_stock }} <small class="text-[9px]">{{ lot.unit_med }}</small>
+                                {{ lot.current_stock }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-center font-medium text-slate-600">
