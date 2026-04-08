@@ -109,7 +109,7 @@
           <td class="px-6 py-4 font-medium text-slate-800">{{ recipe.final_name }}</td>
           <td class="px-6 py-4 text-center">
             {{ recipe.produced_quantity }} 
-            {% if recipe.unit_med == 1 %} Kg {% elif recipe.unit_med == 2 %} L {% else %} Pz {% endif %}
+            {% if recipe.unit_med == 1 %} Kilos {% elif recipe.unit_med == 2 %} Litros {% elif recipe.unit_med == 3 %} Galones {% else %} Piezas {% endif %}
           </td>
           <td class="px-6 py-4">
             {% if recipe.status == 1 %}

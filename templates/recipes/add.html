@@ -325,13 +325,15 @@
           <span class="rf-col-label">Unidad</span>
           <span></span>
         </div>
-        <div id="materials-container">
+        <div id="materials-container" data-unidades='{{ materiales_info | tojson | safe }}'>
           {% for m in form.materials %}
           <div class="material-row">
             {{ m.material_id(class="rf-select") }}
             {{ m.required_quantity(class="rf-input") }}
-            {{ m.unit_med(class="rf-select") }}
-            <button type="button" class="rf-remove remove-row">✕</button>
+            <div class="rf-unit-display" style="font-size: 12px; color: var(--slate-500); font-weight: 500; background: var(--slate-100); padding: 8px; border-radius: var(--radius-md); border: 1px dashed var(--slate-200); text-align: center;">
+            <span class="unit-text">---</span>
+        </div>
+        <button type="button" class="rf-remove remove-row">✕</button>
           </div>
           {% endfor %}
         </div>

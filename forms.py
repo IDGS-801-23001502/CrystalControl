@@ -180,11 +180,7 @@ class FormRecipeDetail(FlaskForm):
     required_quantity = DecimalField('Cantidad', [
         validators.InputRequired(message="Requerido")
     ], places=2)
-    unit_med = SelectField('Unidad', coerce=int, choices=[
-        (1, 'Kilos'),
-        (2, 'Litros'),
-        (3, 'Piezas')
-    ])
+    # unit_med ha sido eliminado de aquí porque se traerá del modelo MateriaPrima
 
 class FormRecipeStep(FlaskForm):
     """Formulario para una fila de pasos de la receta"""
@@ -226,7 +222,8 @@ class FormRecipe(FlaskForm):
     unit_med = SelectField('Unidad de Medida del Lote', coerce=int, choices=[
         (1, 'Kilos'),
         (2, 'Litros'),
-        (3, 'Piezas')
+        (3, 'Galones'),
+        (4, 'Pieza')
     ])
     
     status = HiddenField('Estatus', default=1)
