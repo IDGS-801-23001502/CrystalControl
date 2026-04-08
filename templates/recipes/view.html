@@ -93,7 +93,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs text-slate-400 block">Lote </label>
-                            <p class="text-slate-800 font-medium">{{ recipe.produced_quantity }} {{ unidades[recipe.unit_med] }}</p>
+                            <p class="text-slate-800 font-medium">{{ recipe.produced_quantity }} {{ recipe.nombre_unidad_lote }}</p>
                         </div>
                         <div>
                             <label class="text-xs text-slate-400 block">Tiempo Est.</label>
@@ -136,7 +136,7 @@
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="px-6 py-4 font-medium text-slate-700"> {{ detail.material.name }}</td>
                             <td class="px-6 py-4 text-right font-mono font-bold text-emerald-600">{{ detail.required_quantity }}</td>
-                            <td class="px-6 py-4 text-slate-500">{{ unidades[detail.unit_med] }}</td>
+                            <td class="px-6 py-4 text-slate-500">{{ detail.material.nombre_unidad }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -155,7 +155,7 @@
                             <div class="flex items-center gap-2 mb-1">
                                 <h4 class="font-bold text-slate-800">{{ step.stage_name }}</h4>
                                 <span class="px-2 py-0.5 bg-slate-100 text-[10px] font-bold text-slate-500 rounded uppercase">
-                                    {{ procesos[step.process_type] }}
+                                    {{ step.nombre_proceso }}
                                 </span>
                                 <span class="text-xs text-slate-400 flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -189,7 +189,7 @@
             <th style="width: 25%;">RECETA:</th>
             <td style="width: 35%; font-size: 12pt;">{{ recipe.final_name }}</td>
             <th style="width: 15%;">LOTE:</th>
-            <td style="width: 15%;">{{ recipe.produced_quantity }} {{ unidades[recipe.unit_med] }}</td>
+            <td style="width: 15%;">{{ recipe.produced_quantity }} {{ recipe.nombre_unidad_lote }}</td>
         </tr>
         <tr>
             <th>PRODUCTO:</th>
@@ -213,7 +213,7 @@
             <tr>
                 <td>{{ detail.material.name }}</td>
                 <td style="text-align: center; font-weight: bold;">{{ detail.required_quantity }}</td>
-                <td style="text-align: center;">{{ unidades[detail.unit_med] }}</td>
+                <td style="text-align: center;">{{ detail.material.nombre_unidad }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -235,7 +235,7 @@
             <tr>
                 <td style="text-align: center;">{{ step.step_order }}</td>
                 <td style="font-weight: bold;">{{ step.stage_name }}</td>
-                <td style="text-align: center;"> {{ procesos[step.process_type] }}</td>                
+                <td style="text-align: center;"> {{ step.nombre_proceso }}</td>                
                 <td style="font-size: 9pt;">{{ step.description }}</td>
                 <td style="text-align: center;">{{ step.estimated_time }} min</td>
             </tr>

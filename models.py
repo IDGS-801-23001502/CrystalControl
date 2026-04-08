@@ -157,6 +157,11 @@ class Recipe(db.Model):
     steps = db.relationship('RecipeStep', backref='recipe')
     product = db.relationship('Producto', backref='recipe')
 
+    @property
+    def nombre_unidad_lote(self):
+        unidades = {1: 'Kilos', 2: 'Litros', 3: 'Galones', 4: 'Pieza'}
+        return unidades.get(self.unit_med, 'Desconocido')
+
 
 class RecipeDetail(db.Model):
     __tablename__ = 'receta_detalle'
@@ -165,7 +170,7 @@ class RecipeDetail(db.Model):
     recipe_id = db.Column('id_receta', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
     material_id = db.Column('id_materia', db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
     required_quantity =  db.Column('cantidad_necesaria', db.Numeric(10, 2), nullable=False)
-    unit_med = db.Column('unidad_medida', TINYINT) #1-Kilos 2-Litros 3-Piezas 
+    # unit_med = db.Column(db.Integer) 
 
     material = db.relationship('Raw_Material', backref='recipe_details')
 
@@ -179,6 +184,11 @@ class RecipeStep(db.Model):
     description = db.Column('descripcion_especifica', db.Text)
     estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
     process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
+
+    @property
+    def nombre_proceso(self):
+        procesos = {1: 'Mezclado', 2: 'Envasado', 3: 'Reposo'}
+        return procesos.get(self.process_type, 'Otro')
 
 ##PRODUCTOS##
 
