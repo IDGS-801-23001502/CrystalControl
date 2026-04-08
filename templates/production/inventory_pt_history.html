@@ -80,10 +80,7 @@
             </td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-200">
-                  {{ mov.usuario.username[0].upper() if mov.usuario else 'S' }}
-                </div>
-                <span class="text-sm text-slate-600">{{ mov.usuario.username if mov.usuario else 'Sistema' }}</span>
+                <span class="text-sm text-slate-600">{{ mov.user.nombre}}</span>
               </div>
             </td>
           </tr>

@@ -192,6 +192,7 @@ class Producto(db.Model):
     stock = db.Column('stock_disponible', db.Integer, default=0)
     picture = db.Column('foto', db.String(255), nullable=True) 
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
+    #stock_real = db.Column('stock_real', db.Integer)
 
     precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
 
@@ -203,6 +204,9 @@ class ProductoPresentacionPrecio(db.Model):
     price_men = db.Column('precio_menudeo', db.Numeric(10, 2), nullable=False)
     price_may = db.Column('precio_mayoreo', db.Numeric(10, 2), nullable=False)
     presentation = db.Column('presentacion', db.String(50), nullable=False)
+    cant_may = db.Column('cantidad_mayoreo', db.Integer, nullable = False)
+    unit_size = db.Column('tamano_unidad', db.Numeric(10), nullable=True)
+    unit_type = db.Column('tipo_unidad_base', db.Integer, default=1)
 
 # Modelos de Compras
 class Purchase(db.Model):
@@ -448,3 +452,6 @@ class InventoryMovementPT(db.Model):
     resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=False)
     user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    products = db.relationship('Producto', backref='product_movements')
+    user = db.relationship('User', backref='user_inventory_actions')
