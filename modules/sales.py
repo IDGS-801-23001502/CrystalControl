@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for
-from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, CashBox, CashRegisters, User, Role, SalePayment, Sales
+from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, CashBox, CashRegisters, User, Role, SalePayment, Sales, SaleDetail
 from decimal import Decimal
 from utils.decorators import roles_accepted
 from utils.functions import parse_gs1_128
 from sqlalchemy import func
 from flask_security import current_user
 from datetime import datetime
+import uuid
 
 module = 'sales'
 
@@ -154,13 +155,6 @@ def close_cash_register():
 @sales_bp.route('/pos')
 @roles_accepted('Administrador','Vendedor')
 def view_pos():
-    # Checamos que este en horario laboral
-    '''
-    hora_actual = datetime.now().hour
-    if not (8 <= hora_actual <= 20):
-        flash("El sistema POS está fuera de horario de servicio.", "info")
-        return redirect(url_for('panel'))
-    '''
     # 1. Buscar la caja asignada a este usuario
     caja = CashBox.query.filter_by(id_user_cashier=current_user.id, status=1).first()
 
@@ -182,72 +176,70 @@ def view_pos():
                            vendedor=current_user, 
                            corte=corte_activo)
 
-@sales_bp.route('/calculate_pos', methods=['POST'])
+@sales_bp.route('/pos/procesar-venta', methods=['POST'])
 @roles_accepted('Vendedor')
-def calculate_pos():
-    """
-    Hagan de cuenta que se recibe una lista de los productos seleccionados y devuelve los cálculos
-    se supone que esto es lo esperado:
-    {
-        "items": [
-            {"barcode": "123456", "id_presentacion": 1, "cantidad": 2},
-            {"barcode": "789012", "id_presentacion": 3, "cantidad": 1}
-        ]
-    }
-    """
+def procesar_venta_pos():
     data = request.get_json()
-    if not data or 'items' not in data:
-        return jsonify({"error": "No se enviaron productos"}), 400
+    items = data.get('items', [])
+    metodo_pago_nombre = data.get('metodo_pago') # Recibimos 'Efectivo', 'Tarjeta', etc.
+    
+    if not items:
+        return jsonify({"success": False, "message": "Carrito vacío"}), 400
 
-    results = []
-    grand_total = Decimal('0.00')
+    # 1. Obtener el corte activo del usuario
+    caja = CashBox.query.filter_by(id_user_cashier=current_user.id, status=1).first()
+    corte = CashRegisters.query.filter_by(id_cash_box=caja.id, status=1).first()
 
-    for item in data['items']:
-        barcode = item.get('barcode')
-        id_presentacion = item.get('id_presentacion')
-        cantidad = int(item.get('cantidad', 1))
+    if not corte:
+        return jsonify({"success": False, "message": "No hay un corte de caja abierto"}), 400
 
-        # Aquiiiiii se busca el producto por código de barras
-        producto = Producto.query.filter_by(barcode=barcode, status='Activo').first()
+    try:
+        # 2. Crear la Cabecera de la Venta
+        nueva_venta = Sales(
+            folio=str(uuid.uuid4())[:8].upper(), # Generamos un folio rápido
+            id_user=current_user.id,
+            id_break=corte.id,
+            status=3, # 3 = Pagada
+            gross_total=Decimal(str(data.get('total', 0)))
+        )
+        db.session.add(nueva_venta)
+        db.session.flush() # Para obtener el id_venta
+
+        # 3. Registrar Detalles y actualizar Stock
+        for item in items:
+            # Buscamos la presentación para validar precio y utilidad
+            pres = ProductoPresentacionPrecio.query.get(item['id_presentacion'])
+            if not pres: continue
+
+            detalle = SaleDetail(
+                id_sale=nueva_venta.id,
+                id_product=item['id_producto'],
+                lot=item['cantidad'],
+                unit_price_moment=pres.price_men,
+                moment_utility=pres.price_men - (pres.price_men * Decimal('0.7')) # Ejemplo 30% utilidad
+            )
+            # Actualizar stock global del producto
+            prod = Producto.query.get(item['id_producto'])
+            prod.stock -= item['cantidad']
+            
+            db.session.add(detalle)
+
+        # 4. Registrar el Pago
+        # Mapeo de nombres a IDs de tu modelo
+        map_metodos = {'Efectivo': 1, 'Tarjeta': 5, 'Transferencia': 4}
+        pago = SalePayment(
+            id_sale=nueva_venta.id,
+            payment_method=map_metodos.get(metodo_pago_nombre, 1),
+            paid_amount=nueva_venta.gross_total
+        )
+        db.session.add(pago)
         
-        if not producto:
-            continue # se retorna un error si un código no existe
+        db.session.commit()
+        return jsonify({"success": True, "folio": nueva_venta.folio})
 
-        # 2. Aqui busca la presentación específica para obtener el precio
-        # Si no mandan id_presentacion, intentamos agarrar la primera disponible
-        query_presentacion = ProductoPresentacionPrecio.query.filter_by(id_producto=producto.id)
-        
-        if id_presentacion:
-            presentacion = query_presentacion.filter_by(id=id_presentacion).first()
-        else:
-            presentacion = query_presentacion.first()
-
-        if not presentacion:
-            continue
-
-        # 3. Realizar Cálculos
-        # se usa precio menudeo por defecto, aun no se como manejaran lo de mayoreo o soy de ventas y asi
-        precio_unitario = presentacion.price_men
-        subtotal_item = precio_unitario * cantidad
-
-        # 4. Acumular al Graaaaan Total
-        grand_total += subtotal_item
-
-        # 5. Estructurar respuesta del renglón (como un ticket)
-        results.append({
-            "id_producto": producto.id,
-            "nombre": producto.name,
-            "presentacion": presentacion.presentation,
-            "cantidad": cantidad,
-            "precio_unitario": float(precio_unitario),
-            "subtotal": float(subtotal_item)
-        })
-
-    return jsonify({
-        "detalle_calculado": results,
-        "total_a_pagar": float(grand_total),
-        "conteo_productos": len(results)
-    }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @sales_bp.route('/api/pos/procesar_codigo/<string:barcode>')
 @roles_accepted('Vendedor')

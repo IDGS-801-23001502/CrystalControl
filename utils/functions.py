@@ -45,27 +45,37 @@ def parse_gs1_128(barcode_raw):
         
     return data
 
-def generar_gs1_128(producto_id, presentacion_id, lote_nombre):
-    # Estructura simplificada GS1-128:
-    # (01) ID_PRODUCTO_PRES (14 chars) + (10) LOTE (Variable)
-    
-    # Rellenamos con ceros para cumplir los 14 dígitos del GTIN (AI 01)
+def formatear_cadena_gs1_128(producto_id, presentacion_id, lote_nombre):
+    """
+    Genera la cadena de texto bajo el estándar GS1-128.
+    AI 01: GTIN (14 chars)
+    AI 10: Lote (Variable)
+    """
+    # Rellenamos con ceros para cumplir los 14 dígitos del GTIN
     gtin = f"{producto_id:07d}{presentacion_id:07d}" 
     
-    # Cadena completa siguiendo el estándar (sin paréntesis en la data real)
-    # Los paréntesis se suelen usar solo en el texto visual
-    codigo_data = f"01{gtin}10{lote_nombre}"
-    
+    # Retorna la cadena de datos real (sin paréntesis)
+    return f"01{gtin}10{lote_nombre}"
+
+def generar_imagen_barcode(codigo_data):
+    """
+    Convierte una cadena de texto en una imagen Code128 en formato Base64.
+    """
     # Crear el código de barras
     code128 = barcode.get('code128', codigo_data, writer=ImageWriter())
-    
-    # Guardar en memoria para enviarlo al HTML
+    # Guardar en memoria
     buffer = BytesIO()
     code128.write(buffer)
+    # Convertir a Base64
+    return base64.b64encode(buffer.getvalue()).decode()
+
+
+def generar_gs1_128(producto_id, presentacion_id, lote_nombre):
+    # 1. Obtenemos la cadena estándar
+    codigo_data = formatear_cadena_gs1_128(producto_id, presentacion_id, lote_nombre)
     
-    # Convertir a Base64 para mostrar en el navegador
-    img_str = base64.b64encode(buffer.getvalue()).decode()
-    return img_str
+    # 2. La convertimos en imagen y la retornamos
+    return generar_imagen_barcode(codigo_data)
 
 def object_to_dict(obj):
     """Convierte un objeto de SQLAlchemy en un diccionario de datos."""
