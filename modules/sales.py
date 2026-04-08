@@ -16,6 +16,17 @@ sales_bp = Blueprint(
     static_folder='static'
 )
 
+@sales_bp.route("/")
+@roles_accepted('Administrador','Gerente')
+def sales():
+    return render_template("sales/list.html")
+
+@sales_bp.route("/")
+@roles_accepted('Administrador','Gerente')
+def utility():
+    return render_template("sales/utility_report.html")
+
+
 @sales_bp.route('/cajas')
 @roles_accepted('Administrador', 'Gerente')
 def list_cash_boxes():
@@ -141,7 +152,7 @@ def close_cash_register():
                            monto_esperado=monto_esperado)
 
 @sales_bp.route('/pos')
-@roles_accepted('Vendedor')
+@roles_accepted('Administrador','Vendedor')
 def view_pos():
     # Checamos que este en horario laboral
     '''
