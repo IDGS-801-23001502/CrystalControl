@@ -387,8 +387,7 @@ class FormInventoryAdjustment(FlaskForm):
     
     reason = SelectField('Motivo', coerce=int, choices=[
         (3, 'Ajuste de Inventario'),
-        (1, 'Merma / Daño'),
-        (4, 'Devolución')
+        (1, 'Merma / Daño')
     ], validators=[validators.DataRequired()])
     
     notes = TextAreaField('Observaciones', [
