@@ -104,10 +104,10 @@
         <tr class="product-row emerald-row bg-white border-b border-slate-100 transition-colors duration-100"
             data-status="{{ prod.status }}"
             data-name="{{ prod.name | lower }}">
-          
+          {%set info = prod.precios[0] if prod.precios else None%}
           <td class="px-6 py-3">
-            {% if prod.picture %}
-              <img src="{{ url_for('static', filename='img/products/' + prod.picture) }}" class="product-thumb" alt="{{ prod.name }}">
+            {% if info and info.picture %}
+              <img src="{{ url_for('static', filename='img/products/' + info.picture) }}" class="product-thumb" alt="{{ prod.name }}">
             {% else %}
               <div class="product-thumb bg-slate-100 flex items-center justify-center text-slate-400 text-[10px]">Sin foto</div>
             {% endif %}
