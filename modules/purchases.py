@@ -10,6 +10,14 @@ from decimal import Decimal
 
 module = 'purchases'
 
+# Factores de conversión a la unidad base
+CONVERSION_FACTORS = {
+    # (Desde_Unidad, Hacia_Unidad): Factor
+    (3, 2): 3.78541,  # Galones a Litros
+    (2, 3): 0.264172, # Litros a Galones
+    (1, 1): 1.0,      # Kilos a Kilos
+}
+
 purchases_bp = Blueprint(
     module, 
     __name__,
@@ -142,84 +150,70 @@ def analyze_demand(id):
 @roles_accepted('Administrador', 'Compras')
 def compare_suppliers(id):
     purchase = Purchase.query.get_or_404(id)
-
+    
     if request.method == 'POST':
         try:
-            # 1. PROCESAR CADA DETALLE DE LA COMPRA
-            purchase.generate_date = date.today()
             for detail in purchase.details:
-                # Obtener el ID del proveedor ganador desde el Radio Button
                 winner_id = request.form.get(f'winner_{detail.id}')
-                
-                if not winner_id:
-                    continue # Si no se seleccionó ganador para este item, saltar
+                if not winner_id: continue
                 
                 winner_id = int(winner_id)
-                # 2. ACTUALIZAR PRECIOS HISTÓRICOS DE TODOS LOS PROVEEDORES COTIZADOS
-                # Recorremos los inputs de precio para este material específico
-                for key, value in request.form.items():
-                    if key.startswith(f'price_{detail.id}_'):
-                        parts = key.split('_')
-                        sup_id = int(parts[2])
-                        nuevo_precio = float(value or 0)
+                # Buscamos la relación para saber en qué unidad nos vende el proveedor
+                rel_ganador = Raw_Material_Supplier.query.filter_by(
+                    id_material=detail.material_id, 
+                    id_supplier=winner_id
+                ).first()
 
-                        # Actualizar la tabla de relación (Catálogo)
-                        relacion = Raw_Material_Supplier.query.filter_by(
-                            id_material=detail.material_id, 
-                            id_supplier=sup_id
-                        ).first()
-                        
-                        if relacion:
-                            relacion.price = nuevo_precio
-
-                # 3. ASIGNAR DATOS FINALES AL GANADOR EN EL DETALLE DE COMPRA
-                # Tomamos los valores específicos del proveedor que marcaste como ganador
-                qty_ganador = float(request.form.get(f'qty_{detail.id}_{winner_id}', 0))
-                price_ganador = float(request.form.get(f'price_{detail.id}_{winner_id}', 0))
-                days_ganador = int(request.form.get(f'days_{detail.id}_{winner_id}', 3))
+                # --- LÓGICA DE CONVERSIÓN ---
+                raw_price = float(request.form.get(f'price_{detail.id}_{winner_id}', 0))
                 
+                # Si las unidades son diferentes, convertimos el precio a NUESTRA unidad
+                unidad_proveedor = rel_ganador.unidad_medida
+                unidad_sistema = detail.material.unidad_medida
+                
+                factor = CONVERSION_FACTORS.get((unidad_proveedor, unidad_sistema), 1.0)
+                
+                # Ejemplo: Si el galón cuesta $100 y 1 gal = 3.78L, el litro cuesta 100 / 3.78
+                final_unit_price = raw_price / factor 
+
                 detail.supplier_id = winner_id
-                detail.approved_quantity = qty_ganador
-                detail.unit_price = price_ganador
-                detail.delivery_days = days_ganador
-                detail.status = 2  # Estado: Aprobado / Listo para Orden
+                detail.approved_quantity = float(request.form.get(f'qty_{detail.id}_{winner_id}', 0))
+                detail.unit_price = final_unit_price # Guardamos el precio convertido a nuestra unidad
+                detail.delivery_days = int(request.form.get(f'days_{detail.id}_{winner_id}', 3))
+                detail.status = 2
 
-            # 4. ACTUALIZAR ESTADO GENERAL DE LA COMPRA
-            purchase.status = 4  # 4: Orden Generada
+            purchase.status = 4
             db.session.commit()
-            
-            flash(f"Orden de compra {purchase.folio} generada y precios actualizados.", "success")
+            flash("Orden generada con precios convertidos a unidad base.", "success")
             return redirect(url_for('purchases.index'))
-
         except Exception as e:
             db.session.rollback()
-            print(f"Error en Comparativa: {e}")
-            flash("Error al procesar la comparativa de precios.", "danger")
+            flash(f"Error: {str(e)}", "danger")
 
     # --- LÓGICA PARA EL GET ---
-    # Preparamos un diccionario con las ofertas de proveedores por cada material
     offers_by_detail = {}
     for detail in purchase.details:
-        # Buscamos en la tabla de relación materia_prima_proveedor
         suppliers_relation = Raw_Material_Supplier.query.filter_by(id_material=detail.material_id).all()
-        
         offers_list = []
+        
         for rel in suppliers_relation:
-            # Traemos el nombre del proveedor desde la tabla Proveedores
             prov = Supplier.query.get(rel.id_supplier)
+            
+            # Calculamos el factor para mostrar el precio convertido en la tabla
+            factor = CONVERSION_FACTORS.get((rel.unidad_medida, detail.material.unidad_medida), 1.0)
+            precio_en_mi_unidad = (float(rel.price) / float(rel.lot)) / factor
+
             offers_list.append({
                 'supplier_id': rel.id_supplier,
                 'supplier_name': prov.name if prov else "Desconocido",
-                'lot':rel.lot,
-                'price': rel.price # Este es el precio histórico de referencia
+                'supplier_unit': rel.nombre_unidad, # Unidad del proveedor (ej: Galón)
+                'system_unit': detail.material.nombre_unidad, # Tu unidad (ej: Litro)
+                'price_per_supplier_unit': float(rel.price) / float(rel.lot),
+                'price_per_system_unit': precio_en_mi_unidad
             })
-        
         offers_by_detail[detail.id] = offers_list
 
-    return render_template("purchases/compare.html", 
-                           purchase=purchase, 
-                           offers_by_detail=offers_by_detail)
-
+    return render_template("purchases/compare.html", purchase=purchase, offers_by_detail=offers_by_detail)
 # 5. FINALIZE ORDER Y Ponerla en transito (Paso 4: Generar Orden de Compra final y Paso 5: La mercancía ha sido despachada)
 @purchases_bp.route("/order/manage/<int:id>", methods=['GET', 'POST'])
 @roles_accepted('Administrador', 'Compras')

@@ -258,8 +258,8 @@ class PurchaseDetail(db.Model):
 
     def __repr__(self):
         return f'<PurchaseDetail ID:{self.id} Material:{self.material_id}>'
+    
 ##VENTAS##
-
 class Sales(db.Model):
     __tablename__ = 'Ventas'
     

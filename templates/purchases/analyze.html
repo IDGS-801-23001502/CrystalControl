@@ -52,7 +52,7 @@
             <tr>
               <td class="px-6 py-4 font-medium text-slate-800">{{ detail.material.name }}</td>
               <td class="px-6 py-4 text-center font-bold text-emerald-600">{{ detail.demand_quantity }}</td>
-              <td class="px-6 py-4 text-slate-500">{{ detail.unit.name if detail.unit else 'N/A' }}</td>
+              <td class="px-6 py-4 text-slate-500">{{ detail.material.nombre_unidad }}</td>
             </tr>
             {% endfor %}
           </tbody>
