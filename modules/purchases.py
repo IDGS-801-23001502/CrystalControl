@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, request, g, redirect, url_for, fla
 from flask_login import current_user
 from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier, InventoryMovementPT as RawMaterialMovement
 from utils.decorators import roles_accepted
+from utils.functions import register_log_auto
 from forms import PurchaseRequestForm, AnalysisForm
 from datetime import date, datetime
-
 import copy
 from decimal import Decimal
 
@@ -22,6 +22,7 @@ purchases_bp = Blueprint(
 @roles_accepted('Administrador','Compras')
 def index():
     purchases = Purchase.query.order_by(Purchase.request_date.desc()).all()
+    register_log_auto("Consulta", module, obj_puro_nuevo=purchases)
     return render_template("purchases/list.html", purchases=purchases)
 
 # 2. CREATE REQUEST (Paso 1: Solicitud inicial)
@@ -63,6 +64,28 @@ def demand():
                 db.session.add(detail)
             # Si todo salió bien, guardamos permanentemente
             db.session.commit()
+
+            #Registro de logs
+            detalles_audit = []
+            for d in new_purchase.details:
+                detalles_audit.append({
+                    "material": d.material.name, # ¡Incluso puedes guardar el nombre!
+                    "cantidad": float(d.demand_quantity),
+                    "status": d.status
+                })
+
+            datos_completos = {
+                "id": new_purchase.id,
+                "folio": new_purchase.folio,
+                "detalles_articulos": detalles_audit # Metemos la lista aquí
+            }
+
+            register_log_auto(
+                accion="Creación", 
+                modulo="Compras", 
+                obj_puro_nuevo=datos_completos
+            )
+
             flash("Solicitud de compra generada con éxito", "success")
             return redirect(url_for('purchases.index'))
         except Exception as e:
@@ -71,6 +94,7 @@ def demand():
             print(f"Error al registrar compra: {e}")
             flash("Hubo un error al procesar la solicitud. Verifica los datos.", "danger")
     return render_template('purchases/demand.html', form=form)
+
 
 @purchases_bp.route("/analyze/<int:id>", methods=['GET', 'POST'])
 @roles_accepted('Administrador', 'Compras')
@@ -83,6 +107,7 @@ def analyze_demand(id):
 
     if form.validate_on_submit():
         try:
+            purchase_original = copy.copy(purchase)
             # 1. Actualizar encabezado
             purchase.status = form.status.data
             # Si decides añadir el campo de notas al modelo Purchase en el futuro:
@@ -96,6 +121,12 @@ def analyze_demand(id):
                 detail.status = new_item_status
                 # Si se aprueba, la cantidad aprobada inicia igual a la solicitada
             db.session.commit()
+            register_log_auto(
+                accion="Actualización",
+                modulo="Análisis de Compras",
+                obj_puro_original=purchase_original,
+                obj_puro_nuevo=purchase
+            )
             flash(f"Dictamen guardado para el Folio: {purchase.folio}", "success")
             return redirect(url_for('purchases.index'))
             
@@ -258,8 +289,6 @@ def receive_purchase_view(id):
         return redirect(url_for('purchases.scheduled_deliveries'))
         
     return render_template("purchases/receive.html", purchase=purchase)
-
-
 
 @purchases_bp.route("/receive/confirm/<int:id>", methods=['POST'])
 @roles_accepted('Administrador', 'Almacenista')

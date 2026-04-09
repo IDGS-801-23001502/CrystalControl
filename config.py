@@ -34,11 +34,9 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    
     # --- Configuración MySQL (SQLAlchemy) ---
     SQLALCHEMY_DATABASE_URI = "mysql+pymysql://crystalcontrol:robloxianos@10.147.17.28:3306/crystalcontrol"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # --- Configuración PyMongo ---
-    # Agregamos la URI de conexión directa para PyMongo
-    MONGO_URI = "mongodb://crystalcontrol:robloxianos@10.147.17.28:27017/crystalcontrol"
+    MONGO_URI = "mongodb://crystalcontrol:robloxianos@10.147.17.28:27017/crystalcontrol?authSource=admin"

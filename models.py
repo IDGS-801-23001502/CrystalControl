@@ -191,7 +191,6 @@ class RecipeStep(db.Model):
         return procesos.get(self.process_type, 'Otro')
 
 ##PRODUCTOS##
-
 class Producto(db.Model):
     __tablename__ = 'productos'
 
@@ -217,6 +216,7 @@ class ProductoPresentacionPrecio(db.Model):
     cant_may = db.Column('cantidad_mayoreo', db.Integer, nullable = False)
     unit_size = db.Column('tamano_unidad', db.Numeric(10), nullable=True)
     unit_type = db.Column('tipo_unidad_base', db.Integer, default=1)
+    picture = db.Column('img', db.String(50), nullable = True)
 
 # Modelos de Compras
 class Purchase(db.Model):
@@ -462,6 +462,6 @@ class InventoryMovementPT(db.Model):
     resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=False)
     user_id = db.Column('id_usuario', db.Integer, db.ForeignKey('Usuarios.id_usuario'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+    status = db.Column('status', db.Integer, nullable=False)
     products = db.relationship('Producto', backref='product_movements')
     user = db.relationship('User', backref='user_inventory_actions')

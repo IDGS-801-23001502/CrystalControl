@@ -3,6 +3,7 @@ from flask_login import current_user, login_user
 from models import User, Cliente, Role, db
 import uuid
 from flask_security import verify_password, logout_user, hash_password
+from utils.functions import register_log_auto
 
 login_bp = Blueprint(
     'login', 
@@ -22,6 +23,7 @@ def login_employees():
         user = User.query.filter_by(username=username).first()
         if user and verify_password(password, user.password):
             login_user(user)
+            register_log_auto("Login","login",obj_puro_nuevo=user)
             return redirect(url_for('panel'))
     return render_template('login/login_employees.html')
 
@@ -37,6 +39,7 @@ def login_client():
         if user and verify_password(password, user.password):
             if user.is_client:
                 login_user(user, remember=remember)
+                register_log_auto("Login","Ecommerce",obj_puro_nuevo=user)
                 return redirect(url_for('home'))
             else:
                 flash("Esta cuenta no tiene perfil de cliente.", "warning")
@@ -71,7 +74,10 @@ def register():
             telefono = ''
         )
         db.session.add(client)
+        db.session.flush()
         db.session.commit()
+        register_log_auto("Creación","Usuario",obj_puro_nuevo=user_client)
+        register_log_auto("Creación","Ecommerce",obj_puro_nuevo=client)
         return redirect(url_for('login.login_client'))
     return render_template("login/register.html")
 
@@ -82,7 +88,6 @@ def logout():
     dest = url_for('login.login_employees')
     if current_user.is_authenticated and current_user.is_client:
         dest = url_for('login.login_client')
-    
     logout_user()
     session.clear()
     flash("Has cerrado sesión correctamente.", "info")

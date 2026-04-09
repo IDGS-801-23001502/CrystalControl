@@ -1,0 +1,141 @@
+{% extends "layout_employees.html" %} 
+{% block title %} Ventas {% endblock %}
+
+{% block content %}
+<style>
+  /* Estilos base Emerald */
+  .emerald-icon-bg { background-color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
+  .emerald-icon { color: #059669; }
+  .emerald-btn { background-color: #059669; color: #fff; }
+  .emerald-btn:hover { background-color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-thead { background-color: rgba(16, 185, 129, 0.05); }
+  .emerald-row:hover { background-color: rgba(16, 185, 129, 0.05); }
+  .emerald-link { color: #059669; }
+
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+    border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+    border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s ease;
+    background-color: #f1f5f9; color: #64748b; border-color: #e2e8f0;
+  }
+  .filter-pill.active-all { background-color: #1e293b; color: #fff; border-color: #1e293b; }
+
+  /* Estatus de Ventas (1:Solicitada, 2:Esperando pago, 3:Pagada, 4:En camino, 5:Entregada, 6:Cancelada) */
+  .status-1 { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; } /* Solicitada */
+  .status-2 { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; } /* Esperando Pago */
+  .status-3 { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } /* Pagada */
+  .status-4 { background-color: #fae8ff; color: #86198f; border: 1px solid #f5d0fe; } /* En Camino */
+  .status-5 { background-color: #f0fdf4; color: #15803d; border: 1px solid #86efac; } /* Entregada */
+  .status-6 { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; } /* Cancelada */
+
+  .badge-pos { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 10px; }
+</style>
+
+<div class="py-20 relative overflow-x-auto sm:rounded-lg">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Panel de Ventas</h1>
+        <p class="text-xs text-slate-500">Monitoreo de ingresos y expediciones de Crystal Control</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="emerald-border-top relative overflow-x-auto bg-white shadow-sm rounded-lg border border-slate-200">
+    <div class="p-4 flex flex-wrap items-center gap-4">
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+          </svg>
+        </div>
+        <input type="text" id="sales-search" class="block w-full max-w-72 ps-9 pe-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg" placeholder="Folio, cliente o rastreo...">
+      </div>
+      <div class="h-6 w-px bg-slate-200"></div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-400 font-medium me-1">Mostrar:</span>
+        <button class="filter-pill active-all" data-filter="all">Todas</button>
+        <button class="filter-pill" data-filter="1">Solicitadas</button>
+        <button class="filter-pill" data-filter="2">Pend. Pago</button>
+        <button class="filter-pill" data-filter="3">Pagadas</button>
+      </div>
+    </div>
+
+    <table class="w-full text-sm text-left text-slate-500">
+      <thead class="emerald-thead text-xs uppercase tracking-wider text-slate-500 border-b border-t border-slate-200">
+        <tr>
+          <th class="px-6 py-3 font-semibold">Folio</th>
+          <th class="px-6 py-3 font-semibold">Cliente / Origen</th>
+          <th class="px-6 py-3 font-semibold">Total</th>
+          <th class="px-6 py-3 font-semibold text-center">Estatus</th>
+          <th class="px-6 py-3 font-semibold text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="sales-tbody">
+        {% for sale in sales %}
+        <tr class="sale-row emerald-row bg-white border-b border-slate-100 transition-colors" 
+            data-status="{{ sale.status }}" 
+            data-folio="{{ sale.folio | lower }}">
+          
+          <td class="px-6 py-4">
+             <div class="flex flex-col">
+                <span class="font-bold text-emerald-600">{{ sale.folio }}</span>
+                <span class="text-[10px] text-slate-400">{{ sale.sale_date.strftime('%d/%m/%Y') }}</span>
+             </div>
+          </td>
+
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+                <span class="font-medium text-slate-800">
+                    {% if sale.id_client_sold in [0, 1] %}
+                        Tienda Física 
+                        <span class="badge-pos px-1.5 py-0.5 rounded ml-1 uppercase font-bold">POS</span>
+                    {% else %}
+                        {{ sale.client.nombre if sale.client else 'Cliente Externo' }}
+                    {% endif %}
+                </span>
+                <span class="text-[11px] text-slate-500">{{ sale.shipping_address or 'Entrega en mostrador' }}</span>
+            </div>
+          </td>
+
+          <td class="px-6 py-4 font-bold text-slate-700">
+            ${{ "{:,.2f}".format(sale.gross_total) }}
+          </td>
+
+          <td class="px-6 py-4 text-center">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold status-{{ sale.status }}">
+              {{ sale.value_status }}
+            </span>
+          </td>
+
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-center gap-3">
+              <a href="{{ url_for('sales.view_detail', id=sale.id) }}" class="emerald-link text-xs font-semibold">Ver Ticket</a>
+              {# 
+                {% if sale.status == 2 %}
+                    <a href="{{ url_for('sales.process_payment', id=sale.id) }}" class="text-blue-600 hover:text-blue-800 text-xs font-bold">Registrar Pago</a>
+                {% endif %}
+
+                {% if sale.status == 3 %}
+                    <a href="{{ url_for('sales.ship_order', id=sale.id) }}" class="text-purple-600 hover:text-purple-800 text-xs font-bold">Enviar</a>
+                {% endif %}
+            #}  
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="py-12 text-center text-slate-400 text-sm">No hay ventas registradas recientemente.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

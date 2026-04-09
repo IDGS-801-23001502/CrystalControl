@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for
-from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, CashBox, CashRegisters, User, Role, SalePayment, Sales, SaleDetail
+from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, CashBox, CashRegisters, User, Role, SalePayment, Sales, SaleDetail,Producto
 from decimal import Decimal
 from utils.decorators import roles_accepted
-from utils.functions import parse_gs1_128
+from utils.functions import parse_gs1_128, sale_out
 from sqlalchemy import func
 from flask_security import current_user
 from datetime import datetime
@@ -20,7 +20,37 @@ sales_bp = Blueprint(
 @sales_bp.route("/")
 @roles_accepted('Administrador','Gerente')
 def sales():
-    return render_template("sales/list.html")
+    sales = Sales.query.order_by(Sales.sale_date.desc()).all()
+    return render_template("sales/list.html", sales=sales)
+
+@sales_bp.route("/view/<int:id>")
+@roles_accepted('Administrador', 'Vendedor', 'Almacenista')
+def view_detail(id):
+    sale = Sales.query.get_or_404(id)
+    
+    # 1. Obtener detalles del producto
+    details = db.session.query(
+        SaleDetail, 
+        Producto.name.label('product_name'),
+        Producto.barcode.label('product_sku')
+    ).join(Producto, SaleDetail.id_product == Producto.id).filter(SaleDetail.id_sale == id).all()
+
+    # 2. Obtener el nombre del vendedor (si existe)
+    vendedor_nombre = "TIENDA ONLINE"
+    if sale.id_user and sale.id_user != 0:
+        vendedor = User.query.get(sale.id_user)
+        if vendedor:
+            vendedor_nombre = vendedor.nombre # O el campo donde guardes el nombre
+
+    payments = SalePayment.query.filter_by(id_sale=id).order_by(SalePayment.payment_date.desc()).all()
+
+    return render_template(
+        "sales/view_detail.html", 
+        sale=sale, 
+        details=details, 
+        payments=payments,
+        vendedor_nombre=vendedor_nombre # Pasamos la variable procesada
+    )
 
 @sales_bp.route("/")
 @roles_accepted('Administrador','Gerente')
@@ -58,7 +88,7 @@ def create_cash_box():
     return render_template('sales/cash_box_form.html', vendedores=vendedores)
 
 @sales_bp.route('/cajas/abrir', methods=['GET', 'POST'])
-@roles_accepted('Vendedor', 'Administrador')
+@roles_accepted('Vendedor', 'Administrador','Gerente')
 def open_cash_register():
     if request.method == 'POST':
         id_caja = request.form.get('id_caja')
@@ -130,7 +160,7 @@ def close_cash_register():
 
     if request.method == 'POST':
         try:
-            monto_real = float(request.form.get('real_close_amount', 0))
+            monto_real = Decimal(request.form.get('real_close_amount', 0))
             
             corte.close_date = db.func.now()
             corte.expected_close_amount = monto_esperado
@@ -145,6 +175,7 @@ def close_cash_register():
         except Exception as e:
             db.session.rollback()
             flash("Error al procesar el cierre de caja.", "danger")
+            print(f"Error: {e}")
 
     return render_template('sales/close_register_form.html', 
                            corte=corte, 
@@ -233,8 +264,8 @@ def procesar_venta_pos():
             paid_amount=nueva_venta.gross_total
         )
         db.session.add(pago)
-        
         db.session.commit()
+        sale_out(nueva_venta.id,status=1)
         return jsonify({"success": True, "folio": nueva_venta.folio})
 
     except Exception as e:
