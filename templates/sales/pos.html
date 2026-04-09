@@ -6,29 +6,22 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-  /* ══════════════════════════════════════
-     TODOS los estilos están ENCAPSULADOS
-     dentro de .pos-root para no pisar
-     las clases de Tailwind del layout.
-  ══════════════════════════════════════ */
-
   .pos-root {
-    --pos-blue:        #2563eb;
-    --pos-blue-light:  #3b82f6;
-    --pos-blue-bg:     #dbeafe;
-    --pos-blue-text:   #1e3a5f;
-    --pos-green:       #10b981;
-    --pos-green-bg:    #d1fae5;
-    --pos-green-text:  #065f46;
-    --pos-red:         #ef4444;
-    --pos-red-bg:      #fee2e2;
-    --pos-surface:     #ffffff;
-    --pos-surface-2:   #f8fafc;
-    --pos-border:      #e2e8f0;
-    --pos-border-2:    #f1f5f9;
-    --pos-text:        #0f172a;
-    --pos-text-2:      #64748b;
-    --pos-text-3:      #94a3b8;
+    --pos-green:        #16a34a;
+    --pos-green-light:  #22c55e;
+    --pos-green-dark:   #15803d;
+    --pos-green-bg:     #dcfce7;
+    --pos-green-text:   #14532d;
+    --pos-accent:       #4ade80;
+    --pos-surface:      #ffffff;
+    --pos-surface-2:    #f0fdf4;
+    --pos-border:       #bbf7d0;
+    --pos-border-2:     #dcfce7;
+    --pos-text:         #0a0a0a;
+    --pos-text-2:       #374151;
+    --pos-text-3:       #6b7280;
+    --pos-red:          #ef4444;
+    --pos-red-bg:       #fee2e2;
     --pos-mono: 'JetBrains Mono', monospace;
     --pos-sans: 'DM Sans', sans-serif;
 
@@ -41,8 +34,7 @@
 
   /* ── TOP BAR ── */
   .pos-root .pos-topbar {
-    background: var(--pos-surface);
-    border: 1px solid var(--pos-border);
+    background: linear-gradient(135deg, #14532d 0%, #15803d 45%, #16a34a 100%);
     border-radius: 18px;
     padding: 1rem 1.5rem;
     display: flex;
@@ -50,31 +42,38 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
+    box-shadow: 0 4px 24px rgba(22,163,74,.4);
   }
   .pos-root .topbar-left { display: flex; align-items: center; gap: 1rem; }
   .pos-root .pos-icon-wrap {
     width: 48px; height: 48px; border-radius: 14px;
-    background: linear-gradient(135deg, #eff6ff 0%, var(--pos-blue-bg) 100%);
-    border: 1px solid #bfdbfe;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.35);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .pos-root .pos-icon-wrap svg { width: 24px; height: 24px; color: var(--pos-blue); }
-  .pos-root .pos-title    { font-size: 1.25rem; font-weight: 800; color: var(--pos-text); }
-  .pos-root .pos-subtitle { font-size: .75rem; color: var(--pos-text-3); margin-top: 1px; }
+  .pos-root .pos-icon-wrap svg { width: 24px; height: 24px; color: #ffffff; }
+  .pos-root .pos-title    { font-size: 1.25rem; font-weight: 800; color: #ffffff; }
+  .pos-root .pos-subtitle { font-size: .75rem; color: rgba(255,255,255,.7); margin-top: 1px; }
 
   .pos-root .topbar-meta { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
   .pos-root .meta-chip {
     display: flex; align-items: center; gap: 6px;
-    font-size: .75rem; color: var(--pos-text-2); font-weight: 500;
+    font-size: .75rem; color: rgba(255,255,255,.8); font-weight: 500;
   }
-  .pos-root .meta-chip strong { color: var(--pos-text); font-weight: 700; }
+  .pos-root .meta-chip strong { color: #ffffff; font-weight: 700; }
   .pos-root .meta-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--pos-green); box-shadow: 0 0 0 2px var(--pos-green-bg);
+    background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,.3);
+    animation: pos-pulse 2s infinite;
   }
+  @keyframes pos-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(74,222,128,.3); }
+    50%       { box-shadow: 0 0 0 6px rgba(74,222,128,.08); }
+  }
+  .pos-root .pos-status-text { color: #4ade80; font-weight: 700; font-size: .75rem; }
   .pos-root .pos-clock {
     font-family: var(--pos-mono); font-size: 1rem; font-weight: 700;
-    color: var(--pos-blue); background: var(--pos-blue-bg);
+    color: #052e16; background: #4ade80;
     border-radius: 8px; padding: 4px 12px; letter-spacing: .04em;
   }
 
@@ -89,7 +88,7 @@
   /* ── CARD BASE ── */
   .pos-root .pos-card {
     background: var(--pos-surface);
-    border: 1px solid var(--pos-border);
+    border: 1.5px solid var(--pos-border);
     border-radius: 18px;
     overflow: hidden;
   }
@@ -97,14 +96,16 @@
     padding: .875rem 1.25rem;
     border-bottom: 1px solid var(--pos-border-2);
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: var(--pos-surface-2);
   }
   .pos-root .card-head-title {
     font-size: .6875rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .09em; color: var(--pos-text-3);
+    letter-spacing: .09em; color: #374151;
   }
   .pos-root .card-head-badge {
     font-family: var(--pos-mono); font-size: .625rem; font-weight: 700;
-    background: var(--pos-blue-bg); color: var(--pos-blue-text);
+    background: var(--pos-green-bg); color: #14532d;
+    border: 1px solid #86efac;
     border-radius: 999px; padding: 2px 9px;
   }
 
@@ -114,20 +115,21 @@
   .pos-root .scan-wrapper { position: relative; }
   .pos-root .scan-icon {
     position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    color: var(--pos-text-3); pointer-events: none; width: 16px; height: 16px;
+    color: #9ca3af; pointer-events: none; width: 16px; height: 16px;
   }
   .pos-root .scan-input {
-    width: 100%; background: var(--pos-surface-2);
-    border: 1.5px solid var(--pos-border); border-radius: 12px;
-    padding: 11px 14px 11px 38px; color: var(--pos-text);
+    width: 100%; background: #f9fafb;
+    border: 1.5px solid #86efac; border-radius: 12px;
+    padding: 11px 14px 11px 38px; color: #0a0a0a;
     font-family: var(--pos-mono); font-size: .9375rem; font-weight: 700;
     outline: none; transition: border-color .15s, box-shadow .15s;
   }
+  .pos-root .scan-input::placeholder { color: #9ca3af; font-weight: 500; }
   .pos-root .scan-input:focus {
-    border-color: var(--pos-blue);
-    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,.12);
   }
-  .pos-root .scan-hint { font-size: .6875rem; color: var(--pos-text-3); }
+  .pos-root .scan-hint { font-size: .6875rem; color: #9ca3af; }
 
   /* Recientes */
   .pos-root .recent-list { display: flex; flex-direction: column; }
@@ -140,25 +142,25 @@
   .pos-root .recent-item:hover { background: var(--pos-surface-2); }
   .pos-root .recent-info { min-width: 0; flex: 1; }
   .pos-root .recent-name {
-    font-size: .8125rem; font-weight: 600; color: var(--pos-text);
+    font-size: .8125rem; font-weight: 600; color: #0a0a0a;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .pos-root .recent-code { font-family: var(--pos-mono); font-size: .625rem; color: var(--pos-text-3); margin-top: 1px; }
-  .pos-root .recent-price { font-family: var(--pos-mono); font-size: .8125rem; font-weight: 700; color: var(--pos-blue); white-space: nowrap; }
+  .pos-root .recent-code { font-family: var(--pos-mono); font-size: .625rem; color: #9ca3af; margin-top: 1px; }
+  .pos-root .recent-price { font-family: var(--pos-mono); font-size: .8125rem; font-weight: 700; color: #15803d; white-space: nowrap; }
   .pos-root .recent-add {
     width: 22px; height: 22px; border-radius: 6px;
-    background: var(--pos-blue-bg); border: none; cursor: pointer;
-    color: var(--pos-blue); font-size: 15px; font-weight: 700;
+    background: var(--pos-green-bg); border: none; cursor: pointer;
+    color: #14532d; font-size: 15px; font-weight: 700;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     transition: background .12s;
   }
-  .pos-root .recent-add:hover { background: #bfdbfe; }
+  .pos-root .recent-add:hover { background: #86efac; }
 
   /* Sistema */
   .pos-root .sys-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 6px; }
   .pos-root .sys-row  { display: flex; align-items: center; justify-content: space-between; font-size: .75rem; }
-  .pos-root .sys-label { color: var(--pos-text-2); font-weight: 500; }
-  .pos-root .sys-ok  { color: var(--pos-green); font-weight: 700; font-family: var(--pos-mono); font-size: .6875rem; }
+  .pos-root .sys-label { color: #374151; font-weight: 500; }
+  .pos-root .sys-ok  { color: #15803d; font-weight: 700; font-family: var(--pos-mono); font-size: .6875rem; }
 
   /* ── PANEL CARRITO ── */
   .pos-root .panel-cart { display: flex; flex-direction: column; }
@@ -167,7 +169,7 @@
     gap: 8px; padding: .625rem 1.25rem;
     background: var(--pos-surface-2); border-bottom: 1px solid var(--pos-border);
     font-size: .625rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .09em; color: var(--pos-text-3);
+    letter-spacing: .09em; color: #374151;
   }
   .pos-root .col-r { text-align: right; }
   .pos-root .col-c { text-align: center; }
@@ -175,7 +177,7 @@
   .pos-root .cart-rows { min-height: 340px; max-height: 440px; overflow-y: auto; }
   .pos-root .cart-rows::-webkit-scrollbar { width: 4px; }
   .pos-root .cart-rows::-webkit-scrollbar-track { background: transparent; }
-  .pos-root .cart-rows::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 99px; }
+  .pos-root .cart-rows::-webkit-scrollbar-thumb { background: #bbf7d0; border-radius: 99px; }
 
   .pos-root .cart-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -183,12 +185,12 @@
   }
   .pos-root .cart-empty-icon {
     width: 56px; height: 56px; border-radius: 16px;
-    background: var(--pos-surface-2); border: 1px solid var(--pos-border);
+    background: var(--pos-surface-2); border: 1.5px solid var(--pos-border);
     display: flex; align-items: center; justify-content: center;
   }
-  .pos-root .cart-empty-icon svg { width: 26px; height: 26px; color: var(--pos-text-3); }
-  .pos-root .cart-empty-title { font-size: .9375rem; font-weight: 700; color: var(--pos-text); }
-  .pos-root .cart-empty-sub   { font-size: .75rem; color: var(--pos-text-3); }
+  .pos-root .cart-empty-icon svg { width: 26px; height: 26px; color: #9ca3af; }
+  .pos-root .cart-empty-title { font-size: .9375rem; font-weight: 700; color: #0a0a0a; }
+  .pos-root .cart-empty-sub   { font-size: .75rem; color: #9ca3af; }
 
   .pos-root .cart-row {
     display: grid; grid-template-columns: 1fr 100px 100px 100px 36px;
@@ -198,36 +200,36 @@
   .pos-root .cart-row:hover { background: var(--pos-surface-2); }
   .pos-root .cart-row.flash { animation: pos-flash .4s ease; }
   @keyframes pos-flash {
-    0%   { background: #dbeafe; }
+    0%   { background: #dcfce7; }
     100% { background: transparent; }
   }
 
-  .pos-root .prod-name { font-size: .875rem; font-weight: 600; color: var(--pos-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pos-root .prod-pres { font-size: .6875rem; color: var(--pos-text-3); margin-top: 1px; }
+  .pos-root .prod-name { font-size: .875rem; font-weight: 600; color: #0a0a0a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pos-root .prod-pres { font-size: .6875rem; color: #9ca3af; margin-top: 1px; }
 
   .pos-root .qty-ctrl { display: flex; align-items: center; gap: 4px; justify-content: center; }
   .pos-root .qty-btn {
     width: 26px; height: 26px; border-radius: 7px;
-    background: var(--pos-surface-2); border: 1px solid var(--pos-border);
-    color: var(--pos-text); font-size: 16px; font-weight: 600;
+    background: #f9fafb; border: 1px solid #86efac;
+    color: #0a0a0a; font-size: 16px; font-weight: 600;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: background .1s; line-height: 1;
   }
-  .pos-root .qty-btn:hover { background: var(--pos-blue-bg); border-color: #bfdbfe; color: var(--pos-blue); }
+  .pos-root .qty-btn:hover { background: #dcfce7; border-color: #4ade80; color: #14532d; }
   .pos-root .qty-val {
     font-family: var(--pos-mono); font-size: .875rem; font-weight: 700;
     min-width: 28px; text-align: center;
-    background: transparent; border: none; color: var(--pos-text);
+    background: transparent; border: none; color: #0a0a0a;
     -moz-appearance: textfield;
   }
   .pos-root .qty-val::-webkit-inner-spin-button { display: none; }
 
-  .pos-root .price-unit { font-family: var(--pos-mono); font-size: .8125rem; font-weight: 500; color: var(--pos-text-2); text-align: right; }
-  .pos-root .price-sub  { font-family: var(--pos-mono); font-size: .9375rem; font-weight: 700; color: var(--pos-text); text-align: right; }
+  .pos-root .price-unit { font-family: var(--pos-mono); font-size: .8125rem; font-weight: 500; color: #6b7280; text-align: right; }
+  .pos-root .price-sub  { font-family: var(--pos-mono); font-size: .9375rem; font-weight: 700; color: #0a0a0a; text-align: right; }
   .pos-root .row-del {
     width: 30px; height: 30px; border-radius: 8px;
     background: transparent; border: 1px solid transparent;
-    color: var(--pos-text-3); cursor: pointer; font-size: 14px;
+    color: #9ca3af; cursor: pointer; font-size: 14px;
     display: flex; align-items: center; justify-content: center;
     transition: all .12s; margin: auto;
   }
@@ -242,54 +244,57 @@
     padding: .5rem 0; border-bottom: 1px solid var(--pos-border-2); font-size: .8125rem;
   }
   .pos-root .tot-row:last-child { border-bottom: none; }
-  .pos-root .tot-lbl { color: var(--pos-text-2); font-weight: 500; }
-  .pos-root .tot-val { font-family: var(--pos-mono); font-weight: 700; color: var(--pos-text); }
-  .pos-root .tot-desc { color: var(--pos-green); }
+  .pos-root .tot-lbl { color: #374151; font-weight: 500; }
+  .pos-root .tot-val { font-family: var(--pos-mono); font-weight: 700; color: #0a0a0a; }
+  .pos-root .tot-desc { color: #16a34a; }
 
   .pos-root .grand-section {
     padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-top: 1px solid #bfdbfe;
+    background: linear-gradient(135deg, #14532d 0%, #15803d 60%, #16a34a 100%);
+    border-top: 1px solid #86efac;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .pos-root .grand-lbl  { font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--pos-blue-text); }
-  .pos-root .grand-items { font-size: .6875rem; color: #3b82f6; margin-top: 2px; font-weight: 600; }
-  .pos-root .grand-val  { font-family: var(--pos-mono); font-size: 1.75rem; font-weight: 700; color: var(--pos-blue); letter-spacing: -.02em; }
+  .pos-root .grand-lbl  { font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.75); }
+  .pos-root .grand-items { font-size: .6875rem; color: #4ade80; margin-top: 2px; font-weight: 600; }
+  .pos-root .grand-val  { font-family: var(--pos-mono); font-size: 1.75rem; font-weight: 700; color: #ffffff; letter-spacing: -.02em; }
 
   /* Métodos de pago */
   .pos-root .pay-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
   .pos-root .pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
   .pos-root .pay-btn {
-    padding: .625rem .5rem; background: var(--pos-surface-2);
-    border: 1.5px solid var(--pos-border); border-radius: 10px;
-    color: var(--pos-text-2); font-family: var(--pos-sans); font-size: .75rem; font-weight: 600;
+    padding: .625rem .5rem; background: #f9fafb;
+    border: 1.5px solid #86efac; border-radius: 10px;
+    color: #374151; font-family: var(--pos-sans); font-size: .75rem; font-weight: 600;
     cursor: pointer; text-align: center; transition: all .15s;
     display: flex; align-items: center; justify-content: center; gap: 5px;
   }
-  .pos-root .pay-btn:hover { border-color: var(--pos-blue-light); color: var(--pos-blue); background: #eff6ff; }
-  .pos-root .pay-btn.active { border-color: var(--pos-blue); background: var(--pos-blue-bg); color: var(--pos-blue-text); }
+  .pos-root .pay-btn:hover { border-color: #16a34a; color: #14532d; background: #dcfce7; }
+  .pos-root .pay-btn.active {
+    border-color: #15803d; background: #dcfce7; color: #14532d;
+    box-shadow: 0 0 0 3px rgba(22,163,74,.15);
+  }
   .pos-root .pay-btn svg { width: 14px; height: 14px; }
 
   /* Acciones */
   .pos-root .action-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .625rem; }
   .pos-root .btn-checkout {
     width: 100%; padding: .875rem;
-    background: linear-gradient(135deg, #1d4ed8 0%, var(--pos-blue-light) 100%);
-    border: none; border-radius: 14px; color: #fff;
+    background: linear-gradient(135deg, #14532d 0%, #15803d 50%, #22c55e 100%);
+    border: none; border-radius: 14px; color: #ffffff;
     font-family: var(--pos-sans); font-size: .9375rem; font-weight: 800;
     cursor: pointer; letter-spacing: .02em;
-    box-shadow: 0 4px 14px rgba(37,99,235,.35);
+    box-shadow: 0 4px 16px rgba(22,163,74,.4);
     transition: transform .15s, box-shadow .15s, opacity .15s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .pos-root .btn-checkout:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
+  .pos-root .btn-checkout:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(22,163,74,.5); }
   .pos-root .btn-checkout:active:not(:disabled) { transform: scale(.98); }
   .pos-root .btn-checkout:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
   .pos-root .btn-checkout svg { width: 18px; height: 18px; }
   .pos-root .btn-cancel {
     width: 100%; padding: .625rem; background: transparent;
-    border: 1.5px solid var(--pos-border); border-radius: 10px;
-    color: var(--pos-text-3); font-family: var(--pos-sans); font-size: .8125rem; font-weight: 600;
+    border: 1.5px solid #bbf7d0; border-radius: 10px;
+    color: #6b7280; font-family: var(--pos-sans); font-size: .8125rem; font-weight: 600;
     cursor: pointer; transition: all .15s;
   }
   .pos-root .btn-cancel:hover { border-color: var(--pos-red); color: var(--pos-red); background: var(--pos-red-bg); }
@@ -297,9 +302,9 @@
   /* Toast */
   .pos-toast {
     position: fixed; bottom: 1.5rem; right: 1.5rem;
-    background: #0f172a; color: #fff; border-radius: 12px;
+    background: #0a0a0a; color: #fff; border-radius: 12px;
     padding: .625rem 1rem; font-size: .8125rem; font-weight: 600;
-    box-shadow: 0 8px 24px rgba(15,23,42,.2);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
     opacity: 0; transform: translateY(6px);
     transition: opacity .2s, transform .2s;
     pointer-events: none; z-index: 9999;
@@ -307,7 +312,7 @@
     font-family: 'DM Sans', sans-serif;
   }
   .pos-toast.show { opacity: 1; transform: translateY(0); }
-  .pos-toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; flex-shrink: 0; }
+  .pos-toast-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
   .pos-toast-dot.err { background: #ef4444; }
 </style>
 
@@ -315,38 +320,38 @@
 
   <!-- TOP BAR -->
   <div class="pos-topbar">
-  <div class="topbar-left">
-    <div class="pos-icon-wrap">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-      </svg>
-    </div>
-    <div>
-      <div class="pos-title">{{ caja.name }}</div>
-      <div class="pos-subtitle">
-        Corte #{{ corte.id }} — Abierto: {{ corte.open_date.strftime('%H:%M') }} hrs
+    <div class="topbar-left">
+      <div class="pos-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="pos-title">{{ caja.name }}</div>
+        <div class="pos-subtitle">
+          Corte #{{ corte.id }} — Abierto: {{ corte.open_date.strftime('%H:%M') }} hrs
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="topbar-meta">
-    <div class="meta-chip">
-      <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-      </svg>
-      Cajero: <strong>{{ vendedor.nombre }}</strong>
+    <div class="topbar-meta">
+      <div class="meta-chip">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Cajero: <strong>{{ vendedor.nombre }}</strong>
+      </div>
+
+      <div class="meta-chip">
+        <div class="meta-dot"></div>
+        <span class="pos-status-text">{{ corte.value_status }}</span>
+      </div>
+
+      <div id="pos_clock" class="pos-clock">--:--:--</div>
     </div>
-
-    <div class="meta-chip">
-      <div class="meta-dot bg-emerald-500 animate-pulse"></div>
-      <strong class="text-emerald-600">{{ corte.value_status }}</strong>
-    </div>
-
-    <div id="pos_clock" class="pos-clock">--:--:--</div>
   </div>
-</div>
 
   <!-- BODY 3 COLUMNAS -->
   <div class="pos-body">
@@ -376,7 +381,7 @@
           <span class="card-head-badge" id="recent_count">0</span>
         </div>
         <div class="recent-list" id="recent_list">
-          <div style="padding:1.5rem;text-align:center;font-size:.75rem;color:#94a3b8">
+          <div style="padding:1.5rem;text-align:center;font-size:.75rem;color:#9ca3af">
             Sin artículos recientes
           </div>
         </div>
@@ -493,7 +498,7 @@
   </div>
 </div>
 
-<!-- TOAST (fuera del pos-root para que el fixed funcione bien) -->
+<!-- TOAST -->
 <div class="pos-toast" id="pos_toast">
   <div class="pos-toast-dot" id="toast_dot"></div>
   <span id="toast_msg"></span>
@@ -526,80 +531,63 @@ barcodeInput.addEventListener('keypress', function(e) {
 });
 
 async function fetchProduct(barcode) {
-    // Usamos tu ruta de GS1-128
-    try {
-        const response = await fetch(`/api/pos/procesar_codigo/${barcode}`);
-        const data = await response.json();
-
-        if (data.success) {
-            const item = data.item;
-            // Estructuramos el item para que sea compatible con el carrito
-            const cartItem = {
-                id_producto: item.id_producto,
-                id_presentacion: item.id_presentacion,
-                nombre: item.nombre,
-                precio_unitario: item.precio_men,
-                lote: item.lote
-            };
-            addToCart(cartItem);
-            addRecent(cartItem);
-            showToast('Agregado: ' + item.nombre, false);
-        } else {
-            showToast(data.message || 'Código no reconocido', true);
-        }
-    } catch (err) {
-        console.error(err);
-        showToast('Error al leer código GS1-128', true);
+  try {
+    const response = await fetch(`/api/pos/procesar_codigo/${barcode}`);
+    const data = await response.json();
+    if (data.success) {
+      const item = data.item;
+      const cartItem = {
+        id_producto:      item.id_producto,
+        id_presentacion:  item.id_presentacion,
+        nombre:           item.nombre,
+        precio_unitario:  item.precio_men,
+        lote:             item.lote
+      };
+      addToCart(cartItem);
+      addRecent(cartItem);
+      showToast('Agregado: ' + item.nombre, false);
+    } else {
+      showToast(data.message || 'Código no reconocido', true);
     }
+  } catch (err) {
+    console.error(err);
+    showToast('Error al leer código GS1-128', true);
+  }
 }
 
 async function procesarPago() {
-    if (!cart.length) return;
-    
-    // Obtenemos el total limpio
-    const totalRaw = document.getElementById('t_total').textContent.replace('$', '').replace(',', '');
-    
-    const payload = {
-        items: cart,
-        metodo_pago: selectedPayment,
-        total: parseFloat(totalRaw)
-    };
+  if (!cart.length) return;
+  const totalRaw = document.getElementById('t_total').textContent.replace('$', '').replace(',', '');
+  const payload  = { items: cart, metodo_pago: selectedPayment, total: parseFloat(totalRaw) };
 
-    // Bloqueamos botón para evitar doble clic
-    checkoutBtn.disabled = true;
-    checkoutBtn.textContent = 'Procesando...';
+  checkoutBtn.disabled    = true;
+  checkoutBtn.textContent = 'Procesando...';
 
-    try {
-        const response = await fetch("{{ url_for('sales.procesar_venta_pos') }}", {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'X-CSRFToken': "{{ csrf_token() }}" 
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showToast('Venta Exitosa! Folio: ' + result.folio, false);
-            // Limpieza y reset
-            cart = [];
-            renderCart();
-            barcodeInput.focus();
-        } else {
-            showToast('Error: ' + result.message, true);
-        }
-    } catch (err) {
-        showToast('Error crítico en el servidor', true);
-    } finally {
-        checkoutBtn.disabled = false;
-        checkoutBtn.innerHTML = `
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg> Cobrar`;
+  try {
+    const response = await fetch("{{ url_for('sales.procesar_venta_pos') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': "{{ csrf_token() }}" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast('Venta Exitosa! Folio: ' + result.folio, false);
+      cart = [];
+      renderCart();
+      barcodeInput.focus();
+    } else {
+      showToast('Error: ' + result.message, true);
     }
+  } catch (err) {
+    showToast('Error crítico en el servidor', true);
+  } finally {
+    checkoutBtn.disabled = false;
+    checkoutBtn.innerHTML = `
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg> Cobrar`;
+  }
 }
 
 /* ── RECIENTES ── */
@@ -614,7 +602,7 @@ function renderRecent() {
   const el = document.getElementById('recent_list');
   document.getElementById('recent_count').textContent = recentScanned.length;
   if (!recentScanned.length) {
-    el.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.75rem;color:#94a3b8">Sin artículos recientes</div>';
+    el.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.75rem;color:#9ca3af">Sin artículos recientes</div>';
     return;
   }
   el.innerHTML = recentScanned.map(i => `
@@ -622,7 +610,7 @@ function renderRecent() {
       <div class="recent-info">
         <div class="recent-name">${i.nombre}</div>
         <div class="recent-code">${i.barcode || ''}</div>
-        <div class="prod-pres">${item.presentacion || ''} ${item.lote ? `<small class="text-slate-400">| Lote: ${item.lote}</small>` : ''}</div>
+        <div class="prod-pres">${i.presentacion || ''}${i.lote ? ` <small style="color:#9ca3af">| Lote: ${i.lote}</small>` : ''}</div>
       </div>
       <div class="recent-price">$${parseFloat(i.precio_unitario).toFixed(2)}</div>
       <button class="recent-add" title="Agregar">+</button>
