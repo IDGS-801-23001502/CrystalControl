@@ -74,6 +74,7 @@
     <form action="{{ url_for('products.edit_product', id=producto.id) }}" method="post" enctype="multipart/form-data">
       {{ form.csrf_token }}
       {{ form.id }}
+      {{ form.hidden_tag()}}
 
       <div class="relative z-0 w-full mb-8 group">
         {{ form.name(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2

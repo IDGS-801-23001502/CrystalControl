@@ -107,8 +107,8 @@
           
           <th scope="row" class="px-6 py-4">
             <div class="flex items-center gap-3">
-                {% if prod.picture %}
-                    <img src="{{ url_for('static', filename='img/products/' + prod.picture) }}" class="product-thumb" alt="">
+                {% if info and info.picture %}
+                    <img src="{{ url_for('static', filename='img/products/' + info.picture) }}" class="product-thumb" alt="">
                 {% else %}
                     <div class="product-thumb bg-slate-100 flex items-center justify-center text-slate-400 text-[10px]">PT</div>
                 {% endif %}
