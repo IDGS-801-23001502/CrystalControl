@@ -1,7 +1,5 @@
-{% extends "layout_employees.html" %} 
-{% block title %} Ticket {{ sale.folio }} {% endblock %} 
-
-{% block content %}
+{% extends "layout_employees.html" %} {% block title %} Ticket {{ sale.folio }}
+{% endblock %} {% block content %}
 <style>
   /* Estilo Papel Ticket Realista */
   .ticket-container {
@@ -23,12 +21,18 @@
     left: 0;
     width: 100%;
     height: 10px;
-    background: linear-gradient(-45deg, #f1f5f9 5px, transparent 0),
-                linear-gradient(45deg, #f1f5f9 5px, transparent 0);
+    background:
+      linear-gradient(-45deg, #f1f5f9 5px, transparent 0),
+      linear-gradient(45deg, #f1f5f9 5px, transparent 0);
     background-size: 10px 10px;
   }
-  .ticket-container::before { top: -10px; transform: rotate(180deg); }
-  .ticket-container::after { bottom: -10px; }
+  .ticket-container::before {
+    top: -10px;
+    transform: rotate(180deg);
+  }
+  .ticket-container::after {
+    bottom: -10px;
+  }
 
   .ticket-header {
     text-align: center;
@@ -55,15 +59,32 @@
     margin: 12px 0;
   }
 
-  .text-emerald { color: #059669; }
-  .bg-emerald-subtle { background-color: #ecfdf5; }
+  .text-emerald {
+    color: #059669;
+  }
+  .bg-emerald-subtle {
+    background-color: #ecfdf5;
+  }
 </style>
 
 <div class="py-10 px-4 bg-slate-100 min-h-screen">
   <div class="max-w-md mx-auto mb-4 no-print">
-    <a href="{{ url_for('sales.sales') }}" class="group text-slate-500 hover:text-emerald-600 flex items-center gap-2 text-sm transition-colors">
-      <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <a
+      href="{{ url_for('sales.sales') }}"
+      class="group text-slate-500 hover:text-emerald-600 flex items-center gap-2 text-sm transition-colors"
+    >
+      <svg
+        class="w-4 h-4 transition-transform group-hover:-translate-x-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
       Regresar al Panel de Ventas
     </a>
@@ -73,20 +94,22 @@
     <div class="ticket-header">
       <div class="logo-placeholder">
         <img
-              class=""
-              src="{{url_for('static',filename='img/icons/logo.png')}}"
-              alt=""
-              srcset=""
-            />
+          class=""
+          src="{{url_for('static',filename='img/icons/logo.png')}}"
+          alt=""
+          srcset=""
+        />
       </div>
-      
-      <h1 class="text-xl font-black uppercase tracking-widest text-emerald">Express and Clean</h1>
+
+      <h1 class="text-xl font-black uppercase tracking-widest text-emerald">
+        Express and Clean
+      </h1>
       <p class="text-[9px] font-bold text-slate-500 leading-tight">
-        SOLUCIONES INTEGRALES DE LIMPIEZA<br>
-        RFC: CCX-000000-XX0<br>
+        SOLUCIONES INTEGRALES DE LIMPIEZA<br />
+        RFC: CCX-000000-XX0<br />
         LEÓN, GUANAJUATO, MÉXICO
       </p>
-      
+
       <div class="mt-4 py-1 bg-emerald-subtle border-y border-emerald-100">
         <p class="text-xs font-bold text-emerald-800">{{ sale.folio }}</p>
       </div>
@@ -99,22 +122,17 @@
       <div class="flex justify-between">
         <span class="text-slate-500 text-[10px]">ATENDIÓ:</span>
         <span class="font-bold">
-          {% if not sale.id_user or sale.id_user == 0 %} 
-            ONLINE STORE 
-          {% else %} 
-            {{ vendedor_nombre|upper }} 
-          {% endif %}
+          {% if not sale.id_user or sale.id_user == 0 %} ONLINE STORE {% else %}
+          {{ vendedor_nombre|upper }} {% endif %}
         </span>
       </div>
 
       <div class="flex justify-between">
         <span class="text-slate-500 text-[10px]">CLIENTE:</span>
         <span class="font-bold">
-          {% if sale.id_client_sold in [0, 1] %} 
-            MOSTRADOR 
-          {% else %} 
-            {{ sale.client.nombre|upper if sale.client else 'PÚBLICO GENERAL' }} 
-          {% endif %}
+          {% if sale.id_client_sold in [0, 1] %} MOSTRADOR {% else %} {{
+          sale.client.nombre|upper if sale.client else 'PÚBLICO GENERAL' }} {%
+          endif %}
         </span>
       </div>
 
@@ -129,19 +147,24 @@
     <div class="dashed-line"></div>
 
     <div class="text-[11px]">
-      <div class="flex font-bold text-emerald-700 mb-2 border-b border-emerald-50 pb-1">
+      <div
+        class="flex font-bold text-emerald-700 mb-2 border-b border-emerald-50 pb-1"
+      >
         <span class="w-1/2">PRODUCTO</span>
         <span class="w-1/4 text-center">CANT</span>
         <span class="w-1/4 text-right">TOTAL</span>
       </div>
-      
+
       {% for item, p_name, p_sku in details %}
       <div class="mb-3">
-        <p class="uppercase font-bold leading-none text-slate-800">{{ p_name }}</p>
+        <p class="uppercase font-bold leading-none text-slate-800">
+          {{ p_name }}
+        </p>
         <p class="text-[9px] text-slate-400 mb-1">SKU: {{ p_sku }}</p>
         <div class="flex justify-between items-center">
           <span class="w-1/2 text-[10px] text-slate-500">
-             {{ item.lot }} Unid. x ${{ "{:,.2f}".format(item.unit_price_moment) }}
+            {{ item.lot }} Unid. x ${{ "{:,.2f}".format(item.unit_price_moment)
+            }}
           </span>
           <span class="w-1/2 text-right font-bold">
             ${{ "{:,.2f}".format(item.lot * item.unit_price_moment) }}
@@ -163,28 +186,38 @@
     <div class="dashed-line"></div>
 
     <div class="text-[10px] mt-4 bg-slate-50 p-2 rounded">
-      <p class="font-black text-center mb-2 text-slate-400 tracking-widest">DETALLE DE PAGO</p>
-      {% if payments %} 
-        {% for payment in payments %}
-        <div class="flex justify-between py-1 border-b border-slate-200 last:border-0">
-          <span class="uppercase">{{ payment.methods }}</span>
-          <span class="font-bold text-slate-700">${{ "{:,.2f}".format(payment.paid_amount) }}</span>
-        </div>
-        {% endfor %} 
-      {% else %}
-        <p class="text-center italic text-red-400">PAGO PENDIENTE DE VALIDACIÓN</p>
+      <p class="font-black text-center mb-2 text-slate-400 tracking-widest">
+        DETALLE DE PAGO
+      </p>
+      {% if payments %} {% for payment in payments %}
+      <div
+        class="flex justify-between py-1 border-b border-slate-200 last:border-0"
+      >
+        <span class="uppercase">{{ payment.methods }}</span>
+        <span class="font-bold text-slate-700"
+          >${{ "{:,.2f}".format(payment.paid_amount) }}</span
+        >
+      </div>
+      {% endfor %} {% else %}
+      <p class="text-center italic text-red-400">
+        PAGO PENDIENTE DE VALIDACIÓN
+      </p>
       {% endif %}
     </div>
 
     <div class="mt-8 text-center">
-      <p class="text-[10px] font-black tracking-widest text-emerald-600">¡GRACIAS POR TU PREFERENCIA!</p>
+      <p class="text-[10px] font-black tracking-widest text-emerald-600">
+        ¡GRACIAS POR TU PREFERENCIA!
+      </p>
       <p class="text-[8px] text-slate-400 mt-2 uppercase tracking-tighter">
-        Visítanos en: crystalcontrol.mx<br>
+        Visítanos en: crystalcontrol.mx<br />
         Conserva este ticket para cualquier aclaración
       </p>
 
       {% if sale.status == 6 %}
-      <div class="mt-4 border-4 border-red-600 text-red-600 font-black py-2 rotate-[-3deg] uppercase text-lg">
+      <div
+        class="mt-4 border-4 border-red-600 text-red-600 font-black py-2 rotate-[-3deg] uppercase text-lg"
+      >
         CANCELADO
       </div>
       {% endif %}
@@ -192,9 +225,20 @@
   </div>
 
   <div class="max-w-md mx-auto mt-6 flex gap-4 no-print">
-    <button onclick="window.print()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all active:scale-95">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-width="2"/>
+    <button
+      onclick="window.print()"
+      class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all active:scale-95"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+          stroke-width="2"
+        />
       </svg>
       Imprimir Comprobante
     </button>
@@ -202,8 +246,14 @@
 </div>
 
 <style type="text/css" media="print">
-  .no-print { display: none !important; }
-  body { background: white !important; margin: 0; padding: 0; }
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    margin: 0;
+    padding: 0;
+  }
   .ticket-container {
     box-shadow: none !important;
     margin: 0 !important;
@@ -211,6 +261,9 @@
     width: 100% !important;
     max-width: none !important;
   }
-  .ticket-container::before, .ticket-container::after { display: none; }
+  .ticket-container::before,
+  .ticket-container::after {
+    display: none;
+  }
 </style>
 {% endblock %}
