@@ -37,18 +37,6 @@ def add_product():
                 status='Activo'
             )
 
-            #Manejo de la Imagen
-            if form.picture.data:
-                file = form.picture.data
-                filename = secure_filename(file.filename)
-                upload_path = os.path.join(current_app.root_path, 'static/img/products')
-                
-                if not os.path.exists(upload_path):
-                    os.makedirs(upload_path)
-                
-                file.save(os.path.join(upload_path, filename))
-                new_product.picture = filename
-
             #Guardamos primero el producto para generar el ID
             db.session.add(new_product)
             db.session.flush() # Flush envía a la base de datos sin cerrar la transacción
@@ -69,6 +57,18 @@ def add_product():
                 unit_size=form.unit_size.data,
                 unit_type=form.unit_type.data
             )
+
+            #Manejo de la Imagen
+            if form.picture.data:
+                file = form.picture.data
+                filename = secure_filename(file.filename)
+                upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                
+                if not os.path.exists(upload_path):
+                    os.makedirs(upload_path)
+                
+                file.save(os.path.join(upload_path, filename))
+                new_pricing.picture = filename
             
             db.session.add(new_pricing)
             db.session.commit()
@@ -107,16 +107,6 @@ def edit_product(id):
             producto.status = form.status.data
             producto.name = form.name.data
             producto.category = form.category.data
-            
-            # Lógica de imagen (se activa solo si hay un archivo nuevo)
-            if form.picture.data:
-                file = form.picture.data
-                if file and file.filename != '':
-                    filename = secure_filename(file.filename)
-                    upload_path = os.path.join(current_app.root_path, 'static/img/products')
-                    os.makedirs(upload_path, exist_ok=True)
-                    file.save(os.path.join(upload_path, filename))
-                    producto.picture = filename
 
             #Actualizar datos de la tabla Precios
             if precios:
@@ -126,6 +116,17 @@ def edit_product(id):
                 precios.cant_may = form.cant_may.data
                 precios.unit_size = form.unit_size.data
                 precios.unit_type = form.unit_type.data
+
+                # Lógica de imagen (se activa solo si hay un archivo nuevo)
+            if form.picture.data:
+                file = form.picture.data
+                if file and file.filename != '':
+                    filename = secure_filename(file.filename)
+                    upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                    os.makedirs(upload_path, exist_ok=True)
+                    file.save(os.path.join(upload_path, filename))
+                    precios.picture = filename
+
             else:
                 nuevos_precios = ProductoPresentacionPrecio(
                     id_producto=id,

@@ -200,7 +200,6 @@ class Producto(db.Model):
     name = db.Column('nombre', db.String(100), nullable=False)
     category = db.Column('categoria', db.String(50), nullable=False)
     stock = db.Column('stock_disponible', db.Integer, default=0)
-    picture = db.Column('foto', db.String(255), nullable=True) 
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
     #stock_real = db.Column('stock_real', db.Integer)
 
@@ -217,6 +216,7 @@ class ProductoPresentacionPrecio(db.Model):
     cant_may = db.Column('cantidad_mayoreo', db.Integer, nullable = False)
     unit_size = db.Column('tamano_unidad', db.Numeric(10), nullable=True)
     unit_type = db.Column('tipo_unidad_base', db.Integer, default=1)
+    picture = db.Column('foto', db.String(255), nullable=True) 
 
 # Modelos de Compras
 class Purchase(db.Model):

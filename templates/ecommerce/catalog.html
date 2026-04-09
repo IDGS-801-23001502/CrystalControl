@@ -119,7 +119,7 @@ endblock %} {% block content %}
             class="bg-[#f4faf5] rounded-3xl h-48 mb-6 flex items-center justify-center relative overflow-hidden"
           >
             <img
-              src="{{ url_for('static', filename='img/productos/' + (producto.picture if producto.picture else 'default.png')) }}"
+              src="{{ url_for('static', filename='img/products/' + (producto.picture if producto.picture else 'default.png')) }}"
               class="w-32 h-32 object-contain group-hover:scale-110 transition-transform duration-500"
             />
           </div>
