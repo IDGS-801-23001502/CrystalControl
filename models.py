@@ -83,8 +83,10 @@ class Cliente(db.Model):
     id_usuario = db.Column(db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
     
     # Datos específicos del negocio
-    direccion_envio = db.Column(db.Text)
+    direccion_envio = db.Column(db.Integer, db.ForeignKey('Direcciones.id_direccion'), nullable=False)
     telefono = db.Column(db.String(20))
+    
+    favoritos = db.relationship('FavoriteSale', backref='cliente_favorito', lazy=True)
     
 ##MATERIAS PRIMAS###
 class Raw_Material(db.Model):
@@ -205,6 +207,8 @@ class Producto(db.Model):
     #stock_real = db.Column('stock_real', db.Integer)
 
     precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
+    
+    favoritos = db.relationship('FavoriteSale', backref='producto_favorito', lazy=True)
 
 class ProductoPresentacionPrecio(db.Model):
     __tablename__ = 'producto_presentación_precio'
@@ -305,7 +309,22 @@ class SalePayment(db.Model):
     def methods(self):
         values = {1: 'Efectivo', 2: 'Tarjeta Debito', 3: 'Tarjeta Credito', 4: 'Transferencia', 5:'Clip/Terminal', 6:'Credito tienda'}
         return values.get(self.payment_method)
+
+class address(db.Model):
+    __tablename__ = 'Direcciones'
+
+    id = db.Column('id_direccion', db.Integer, primary_key=True)
+    address = db.Column('direccion', db.String(100), nullable=False)
+    id_client = db.Column('id_client', db.Integer, db.ForeignKey('Clientes.id_cliente'))
+
+class FavoriteSale(db.Model):
+    __tablename__ = 'Favoritos'
     
+    id = db.Column('id_favorito', db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'))
+    id_client = db.Column('id_cliente', db.Integer, db.ForeignKey('Clientes.id_cliente'))
+
+
 class CashRegisters(db.Model):
     __tablename__ = 'cortes_cajas'
     
