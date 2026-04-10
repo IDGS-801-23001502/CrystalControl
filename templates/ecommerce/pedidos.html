@@ -1,70 +1,222 @@
-{% extends "layout_clients.html" %} 
+{% extends "layout_clients.html" %}
 {% block title %}Mis Pedidos{% endblock %}
 {% block content %}
-<div class="max-w-7xl mx-auto">
-  <div class="space-y-6">
-    {% if mis_ventas %}
-      {% for venta in mis_ventas %}
+
+<div class="max-w-5xl mx-auto">
+
+  <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-[#243c60] uppercase tracking-tighter">
+        Mis <span class="text-[#9ec946]">Pedidos</span>
+      </h1>
+      <p class="text-slate-500 text-sm font-medium mt-1">Historial completo de tus órdenes</p>
+    </div>
+    <a href="{{ url_for('e-commerce.catalog') }}"
+       class="inline-flex items-center gap-2 px-5 py-3 bg-[#9ec946] text-[#243c60] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#8bb33d] transition-all shadow-lg shadow-[#9ec946]/20">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Nuevo Pedido
+    </a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="mb-4 px-4 py-3 rounded-xl text-sm font-bold
+        {% if category == 'success' %}bg-[#9ec946]/10 text-[#243c60] border border-[#9ec946]/30
+        {% elif category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+        {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- TABS DE FILTRO -->
+  {% set filtro = request.args.get('filtro', 'todos') %}
+  <div class="flex flex-wrap gap-2 mb-8 bg-white rounded-2xl p-2 shadow-sm border border-slate-100">
+
+    {% set tabs = [
+      ('todos',      'Todos',           mis_ventas|length,         'bg-[#243c60] text-white', 'text-slate-500 hover:text-[#243c60]'),
+      ('por_pagar',  'Por Pagar',       mis_ventas|selectattr('status','eq',2)|list|length, 'bg-amber-500 text-white', 'text-slate-500 hover:text-amber-600'),
+      ('pagadas',    'Pagadas',         mis_ventas|selectattr('status','eq',3)|list|length, 'bg-[#7dc6e9] text-white', 'text-slate-500 hover:text-[#7dc6e9]'),
+      ('en_camino',  'En Camino',       mis_ventas|selectattr('status','eq',4)|list|length, 'bg-[#9ec946] text-[#243c60]', 'text-slate-500 hover:text-[#9ec946]'),
+      ('canceladas', 'Canceladas',      mis_ventas|selectattr('status','eq',6)|list|length, 'bg-red-500 text-white', 'text-slate-500 hover:text-red-500'),
+    ] %}
+
+    {% for val, label, count, active_cls, inactive_cls in tabs %}
+    <a href="{{ url_for('e-commerce.pedidos', filtro=val) }}"
+       class="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+              {% if filtro == val %}{{ active_cls }}{% else %}{{ inactive_cls }} bg-transparent{% endif %}">
+      {{ label }}
+      <span class="{% if filtro == val %}bg-white/20{% else %}bg-slate-100{% endif %} text-[9px] font-black px-1.5 py-0.5 rounded-full">
+        {{ count }}
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- LISTA DE PEDIDOS -->
+  <div class="space-y-4">
+    {% set ns = namespace(found=0) %}
+    {% for venta in mis_ventas %}
+
+      {# Aplicar filtro #}
+      {% if filtro == 'todos'
+          or (filtro == 'por_pagar'  and venta.status == 2)
+          or (filtro == 'pagadas'    and venta.status == 3)
+          or (filtro == 'en_camino'  and venta.status == 4)
+          or (filtro == 'canceladas' and venta.status == 6) %}
+      {% set ns.found = ns.found + 1 %}
+
       <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:shadow-md">
-        <div class="bg-[#f4faf5] px-8 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
-          <div class="flex gap-8">
+
+        <!-- Cabecera del pedido -->
+        <div class="px-8 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4
+          {% if venta.status == 6 %}bg-red-50{% elif venta.status == 4 %}bg-[#f4faf5]{% else %}bg-slate-50{% endif %}">
+          <div class="flex flex-wrap gap-6">
             <div>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pedido Realizado</p>
-              <p class="text-xs font-black text-[#243c60]">{{ venta.sale_date.strftime('%d de %B, %Y') }}</p>
+              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fecha</p>
+              <p class="text-xs font-black text-[#243c60]">{{ venta.sale_date.strftime('%d/%m/%Y %H:%M') }}</p>
             </div>
             <div>
               <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p>
               <p class="text-xs font-black text-[#243c60]">${{ "{:,.2f}".format(venta.gross_total) }}</p>
             </div>
             <div>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">ID Orden</p>
+              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Folio</p>
               <p class="text-xs font-black text-[#7dc6e9]">#{{ venta.folio }}</p>
             </div>
           </div>
-          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full 
-            {% if venta.status == 4 %}bg-[#9ec946]/10 text-[#9ec946]
-            {% elif venta.status == 2 %}bg-amber-100 text-amber-600
+
+          <!-- Badge de estatus -->
+          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter
+            {% if venta.status == 2 %}bg-amber-100 text-amber-700
+            {% elif venta.status == 3 %}bg-[#7dc6e9]/20 text-[#1a7aa0]
+            {% elif venta.status == 4 %}bg-[#9ec946]/15 text-[#4a7a00]
+            {% elif venta.status == 5 %}bg-emerald-100 text-emerald-700
+            {% elif venta.status == 6 %}bg-red-100 text-red-600
             {% else %}bg-slate-100 text-slate-500{% endif %}">
-            <span class="w-2 h-2 rounded-full {% if venta.status == 4 %}bg-[#9ec946] animate-pulse{% else %}bg-current{% endif %}"></span>
-            <span class="text-[10px] font-black uppercase tracking-tighter">
-              {{ venta.value_status }}
-            </span>
+            <span class="w-2 h-2 rounded-full
+              {% if venta.status == 4 %}bg-[#9ec946] animate-pulse
+              {% elif venta.status == 2 %}bg-amber-500 animate-pulse
+              {% elif venta.status == 3 %}bg-[#7dc6e9]
+              {% elif venta.status == 5 %}bg-emerald-500
+              {% elif venta.status == 6 %}bg-red-500
+              {% else %}bg-slate-400{% endif %}"></span>
+            {{ venta.value_status }}
           </div>
         </div>
-        <div class="p-8 flex flex-col md:flex-row gap-8 items-center">
-          <div class="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
-            <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+
+        <!-- Cuerpo del pedido -->
+        <div class="p-8 flex flex-col md:flex-row gap-6 items-center">
+          <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 flex-shrink-0">
+            {% if venta.status == 4 %}
+            <svg class="w-8 h-8 text-[#9ec946]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12h12L19 8M10 12v4m4-4v4"/>
             </svg>
+            {% elif venta.status == 6 %}
+            <svg class="w-8 h-8 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {% elif venta.status == 3 %}
+            <svg class="w-8 h-8 text-[#7dc6e9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {% else %}
+            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            {% endif %}
           </div>
+
           <div class="flex-grow text-center md:text-left">
             <h4 class="text-sm font-black text-[#243c60] uppercase leading-tight">
               Pedido #{{ venta.folio }}
             </h4>
-            <p class="text-xs text-slate-500 mt-1 font-medium italic">
-              Enviado a: {{ venta.shipping_address }}
+            <p class="text-xs text-slate-500 mt-1 font-medium">
+              Envío a: {{ venta.shipping_address }}
             </p>
+
+            <!-- Barra de progreso visual para pedidos activos -->
+            {% if venta.status in [2, 3, 4, 5] %}
+            <div class="mt-4 flex items-center gap-1 max-w-xs">
+              {% set steps = [
+                (2, 'Pendiente pago'),
+                (3, 'Pagada'),
+                (4, 'En camino'),
+                (5, 'Entregada')
+              ] %}
+              {% for s_val, s_label in steps %}
+              <div class="flex-1 h-1.5 rounded-full
+                {% if venta.status >= s_val %}
+                  {% if s_val == 5 %}bg-emerald-400
+                  {% elif s_val == 4 %}bg-[#9ec946]
+                  {% elif s_val == 3 %}bg-[#7dc6e9]
+                  {% else %}bg-amber-400{% endif %}
+                {% else %}bg-slate-200{% endif %}"></div>
+              {% endfor %}
+            </div>
+            <div class="flex gap-1 mt-1 max-w-xs">
+              {% for s_val, s_label in steps %}
+              <div class="flex-1 text-[7px] font-black uppercase text-center
+                {% if venta.status >= s_val %}text-[#243c60]{% else %}text-slate-300{% endif %}">
+                {{ s_label }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if venta.status == 6 %}
+            <p class="mt-2 text-[10px] text-red-500 font-bold uppercase tracking-wide">
+              ⚠ Cancelado automáticamente por falta de pago
+            </p>
+            {% endif %}
           </div>
-          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+
+          <!-- Acciones -->
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
             {% if venta.status == 2 %}
-            <a href="{{ url_for('e-commerce.pasarela_pago', id_venta=venta.id) }}" 
-               class="px-6 py-3 bg-[#7dc6e9] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#5db4dd] transition-all text-center">
-               Pagar Ahora
+            <a href="{{ url_for('e-commerce.pagar_venta', id_venta=venta.id) }}"
+               class="px-6 py-3 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all text-center flex items-center gap-2 justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+              </svg>
+              Pagar Ahora
             </a>
             {% endif %}
-            <button class="px-6 py-3 border-2 border-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
-              Ver Detalles
-            </button>
+            {% if venta.status == 4 and venta.tracking %}
+            <div class="px-6 py-3 bg-[#f4faf5] rounded-2xl text-[10px] font-black uppercase tracking-widest text-[#243c60] text-center">
+              📦 {{ venta.tracking }}
+            </div>
+            {% endif %}
           </div>
         </div>
+
       </div>
-      {% endfor %}
-    {% else %}
-      <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-        <p class="text-slate-400 font-bold uppercase tracking-widest">No tienes pedidos registrados aún.</p>
-        <a href="{{ url_for('e-commerce.catalog') }}" class="text-[#7dc6e9] text-xs font-black uppercase mt-4 inline-block">Ir al catálogo</a>
-      </div>
+      {% endif %}
+    {% endfor %}
+
+    {% if ns.found == 0 %}
+    <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+      <svg class="w-14 h-14 text-slate-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      <p class="text-slate-400 font-bold uppercase tracking-widest text-sm">
+        No tienes pedidos en esta categoría
+      </p>
+      {% if filtro != 'todos' %}
+      <a href="{{ url_for('e-commerce.pedidos') }}" class="text-[#7dc6e9] text-xs font-black uppercase mt-3 inline-block">
+        Ver todos los pedidos
+      </a>
+      {% else %}
+      <a href="{{ url_for('e-commerce.catalog') }}" class="text-[#7dc6e9] text-xs font-black uppercase mt-3 inline-block">
+        Ir al catálogo
+      </a>
+      {% endif %}
+    </div>
     {% endif %}
   </div>
+
 </div>
 {% endblock %}

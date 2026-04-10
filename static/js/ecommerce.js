@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search-input");
   const resultsContainer = document.getElementById("search-results");
+  const btn = document.getElementById('profile-menu-button');
+  const dropdown = document.getElementById('profile-dropdown');
 
   searchInput.addEventListener("input", async (e) => {
     const query = e.target.value.trim();
@@ -50,4 +52,17 @@ document.addEventListener("DOMContentLoaded", () => {
       resultsContainer.classList.add("hidden");
     }
   });
+  btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('invisible');
+        dropdown.classList.toggle('opacity-0');
+        dropdown.classList.toggle('translate-y-2');
+    });
+
+    // Cerrar si se hace click fuera
+    document.addEventListener('click', () => {
+        dropdown.classList.add('invisible');
+        dropdown.classList.add('opacity-0');
+        dropdown.classList.add('translate-y-2');
+    });
 });

@@ -1,0 +1,185 @@
+{% extends "layout_clients.html" %}
+{% block title %}Dirección de Envío{% endblock %}
+{% block content %}
+
+<!-- Barra de progreso -->
+<div class="max-w-3xl mx-auto mb-10">
+  <div class="flex items-center justify-center gap-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-[#9ec946] text-[#243c60] flex items-center justify-center text-xs font-black">1</div>
+      <span class="text-xs font-black text-[#243c60] uppercase tracking-widest hidden sm:block">Carrito</span>
+    </div>
+    <div class="w-16 h-0.5 bg-[#9ec946] mx-2"></div>
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-[#243c60] text-white flex items-center justify-center text-xs font-black ring-4 ring-[#243c60]/20">2</div>
+      <span class="text-xs font-black text-[#243c60] uppercase tracking-widest hidden sm:block">Dirección</span>
+    </div>
+    <div class="w-16 h-0.5 bg-slate-200 mx-2"></div>
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-xs font-black">3</div>
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Pago</span>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+  <!-- COLUMNA PRINCIPAL -->
+  <div class="lg:col-span-2 space-y-6">
+    <div>
+      <h1 class="text-3xl font-black text-[#243c60] uppercase tracking-tighter">
+        Dirección de <span class="text-[#9ec946]">Envío</span>
+      </h1>
+      <p class="text-slate-500 text-sm font-medium mt-1">¿A dónde enviamos tu pedido?</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="px-4 py-3 rounded-xl text-sm font-bold
+          {% if category == 'success' %}bg-[#9ec946]/10 text-[#243c60] border border-[#9ec946]/30
+          {% elif category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+          {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- SECCIÓN: DIRECCIONES GUARDADAS -->
+    {% if mis_direcciones %}
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <h2 class="text-sm font-black text-[#243c60] uppercase tracking-widest mb-6 flex items-center gap-2">
+        <svg class="w-4 h-4 text-[#7dc6e9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Mis Direcciones Guardadas
+      </h2>
+
+      <form action="{{ url_for('e-commerce.checkout_direccion') }}" method="POST" id="form-existente">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="accion" value="usar_existente">
+
+        <div class="space-y-3 mb-6">
+          {% for dir in mis_direcciones %}
+          <label class="flex items-center gap-4 p-4 rounded-2xl border-2 border-transparent hover:border-[#7dc6e9] cursor-pointer transition-all has-[:checked]:border-[#9ec946] has-[:checked]:bg-[#f4faf5]">
+            <input type="radio" name="id_direccion" value="{{ dir.id }}"
+                   class="w-4 h-4 accent-[#9ec946]"
+                   {% if loop.first %}checked{% endif %}>
+            <div class="flex-grow">
+              <p class="text-sm font-black text-[#243c60]">{{ dir.address }}</p>
+            </div>
+            <svg class="w-5 h-5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            </svg>
+          </label>
+          {% endfor %}
+        </div>
+
+        <button type="submit"
+          class="w-full py-4 bg-[#243c60] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#1a2d4a] transition-all">
+          Usar esta Dirección →
+        </button>
+      </form>
+    </div>
+
+    <!-- Separador -->
+    <div class="flex items-center gap-4">
+      <div class="flex-grow h-px bg-slate-200"></div>
+      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">O registra una nueva</span>
+      <div class="flex-grow h-px bg-slate-200"></div>
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN: NUEVA DIRECCIÓN -->
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <h2 class="text-sm font-black text-[#243c60] uppercase tracking-widest mb-6 flex items-center gap-2">
+        <svg class="w-4 h-4 text-[#9ec946]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        {% if mis_direcciones %}Agregar Nueva Dirección{% else %}Registrar Dirección de Envío{% endif %}
+      </h2>
+
+      <form action="{{ url_for('e-commerce.checkout_direccion') }}" method="POST" class="space-y-5">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="accion" value="nueva_direccion">
+
+        <div>
+          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+            Dirección Completa *
+          </label>
+          {{ form_nueva.direccion(
+            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-5 text-sm font-bold text-[#243c60] outline-none transition-all",
+            placeholder="Calle, Número, Colonia, Ciudad, CP"
+          ) }}
+          {% if form_nueva.direccion.errors %}
+            <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ form_nueva.direccion.errors[0] }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+            Teléfono de Contacto (opcional)
+          </label>
+          {{ form_nueva.telefono(
+            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-5 text-sm font-bold text-[#243c60] outline-none transition-all",
+            placeholder="Ej. 477 123 4567"
+          ) }}
+        </div>
+
+        <button type="submit"
+          class="w-full py-4 bg-[#9ec946] text-[#243c60] rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#8bb33d] transition-all shadow-lg shadow-[#9ec946]/20">
+          Guardar y Continuar →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- RESUMEN DEL PEDIDO -->
+  <div class="lg:col-span-1">
+    <div class="bg-[#243c60] rounded-3xl p-8 text-white sticky top-32">
+      <h2 class="text-base font-black uppercase tracking-tighter mb-6 italic">
+        Resumen del <span class="text-[#9ec946]">Pedido</span>
+      </h2>
+
+      <div class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-1">
+        {% for key, item in cart.items() %}
+        <div class="flex justify-between items-center text-xs">
+          <div class="flex-grow mr-2">
+            <p class="font-black truncate">{{ item.nombre }}</p>
+            <p class="text-slate-400 text-[10px]">{{ item.presentacion }} × {{ item.cantidad }}</p>
+          </div>
+          <span class="font-bold text-[#9ec946] whitespace-nowrap">${{ "{:,.2f}".format(item.precio * item.cantidad) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="border-t border-white/10 pt-4 space-y-2">
+        <div class="flex justify-between text-xs font-bold text-slate-400">
+          <span>Subtotal</span>
+          <span class="text-white">${{ "{:,.2f}".format(subtotal) }}</span>
+        </div>
+        <div class="flex justify-between text-xs font-bold text-slate-400">
+          <span>IVA (16%)</span>
+          <span class="text-white">${{ "{:,.2f}".format(iva) }}</span>
+        </div>
+        <div class="flex justify-between text-xs font-bold text-slate-400">
+          <span>Envío</span>
+          <span class="text-[#9ec946]">Gratis</span>
+        </div>
+        <div class="flex justify-between items-end pt-2 border-t border-white/10">
+          <span class="text-[10px] font-black uppercase tracking-widest">Total</span>
+          <span class="text-2xl font-black text-[#9ec946]">${{ "{:,.2f}".format(total) }}</span>
+        </div>
+      </div>
+
+      <a href="{{ url_for('e-commerce.carrito') }}"
+         class="mt-6 flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-white uppercase tracking-widest transition-colors">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver al carrito
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
