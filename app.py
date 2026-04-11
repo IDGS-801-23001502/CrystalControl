@@ -21,7 +21,6 @@ user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 csrf = CSRFProtect()
 migrate = Migrate(app, db)
-csrf.init_app(app)
 
 # Registro de Blueprints
 app.register_blueprint(users_bp, url_prefix='/panel/users')
@@ -68,4 +67,5 @@ def panel():
     return render_template("index.html")
 
 if __name__ == '__main__':
+	csrf.init_app(app)
 	app.run()
