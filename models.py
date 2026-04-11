@@ -180,15 +180,29 @@ class RecipeStep(db.Model):
     id = db.Column('id_paso', db.Integer, primary_key=True)
     recipe_id = db.Column('id_receta', db.Integer, db.ForeignKey('recetas.id_receta'), nullable=False)
     step_order = db.Column('orden_paso', db.Integer, nullable=False)
-    stage_name = db.Column('nombre_etapa', db.String(50), nullable=False)
+    stage_name = db.Column('nombre_etapa', db.String(100), nullable=False)
     description = db.Column('descripcion_especifica', db.Text)
     estimated_time = db.Column('tiempo_estimado_paso', db.Integer, nullable=False)
     process_type = db.Column('tipo_proceso', db.Integer, nullable=False)
 
     @property
     def nombre_proceso(self):
-        procesos = {1: 'Mezclado', 2: 'Envasado', 3: 'Reposo'}
+        procesos = {
+        1:  'Mezclado / Homogeneización',
+        2:  'Disolución (Sólido a Líquido)',
+        3:  'Reacción Química (Control de Temp/pH)',
+        4:  'Emulsificación',
+        5:  'Reposo / Desaireación',
+        6:  'Filtrado',
+        7:  'Control de Calidad (Muestreo)',
+        8:  'Envasado',
+        9:  'Etiquetado y Codificado',
+        10: 'Paletizado / Emplayado',
+        11: 'Dilución de Concentrados',
+        12: 'Neutralización',
+    }
         return procesos.get(self.process_type, 'Otro')
+
 
 ##PRODUCTOS##
 class Producto(db.Model):

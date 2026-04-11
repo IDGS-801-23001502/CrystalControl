@@ -25,6 +25,7 @@ class FormUsuarios(FlaskForm):
         ('Inactivo', 'Inactive')
     ], default='Activo')
 
+
 class FormSupplier(FlaskForm):
     id = HiddenField('id')
         
@@ -81,7 +82,6 @@ class FormRaw_Materials(FlaskForm):
         ('Inactivo', 'Inactive')
     ], default='Activo')
 
-
 class FormRaw_Materials_Supplier(FlaskForm):
     id_material = HiddenField('ID Material', validators=[
             validators.DataRequired()
@@ -111,7 +111,6 @@ class FormRaw_Materials_Supplier(FlaskForm):
         validators.DataRequired(message="La unidad de medida es obligatoria")
     ])
 
-
 class FormProduct(FlaskForm):
     id = HiddenField('id')
     
@@ -126,23 +125,18 @@ class FormProduct(FlaskForm):
         ('Cocina', 'Cocina'),
         ('Cuidado Personal', 'Cuidado Personal')
     ])
-
     cant_may = IntegerField('Pzas para Mayoreo', [
         validators.Optional(),
         validators.NumberRange(min=0, message="Las piezas para venta a mayoreo debe ser positiva")  
     ])
-
     stock = IntegerField('Stock disponible', [
         validators.Optional(),
         validators.Disabled()
     ], default=0)
-
     picture = FileField('Foto del producto', [
         validators.Optional()
     ])
-
     status = HiddenField('Estatus', default='Activo')
-
     price_men = DecimalField('Precio de menudeo', [
         validators.DataRequired(message="El precio de menudeo es requerido"),
         validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
@@ -152,39 +146,32 @@ class FormProduct(FlaskForm):
         validators.DataRequired(message="El precio de mayoreo es requerido"),
         validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
     ], places=2)
-
     presentation = StringField('Presentación (Ej: Botella, Caja)', [
         validators.DataRequired(message="La presentación es requerida"),
         validators.Length(max=50)
     ])
-
     unit_size = DecimalField('Tamaño por Unidad', [
         validators.DataRequired(message="El tamaño por unidad es requerido"),
         validators.NumberRange(min = 0, message="La cantidad no puede ser negativa")
         ])
-
     unit_type = SelectField('Unidad Base', choices=[
             (1, 'Mililitros (ml) — líquidos'),
             (2, 'Gramos (g) — sólidos')
         ], coerce=int
     )
-
 class PurchaseItemForm(FlaskForm):
     material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
     quantity = DecimalField('Cantidad', validators=[validators.DataRequired()])
     class Meta:
         csrf = False
-
 # Este es el formulario principal
 class PurchaseRequestForm(FlaskForm):
     items = FieldList(FormField(PurchaseItemForm), min_entries=1)
     admin_notes = TextAreaField('Notas')
-
 class AnalysisForm(FlaskForm):
     status = SelectField('Decisión Final', coerce=int, validators=[validators.DataRequired()])
     analysis_notes = TextAreaField('Notas de Análisis')
 # --- SUB-FORMULARIOS PARA FILAS DINÁMICAS ---
-
 class FormRecipeDetail(FlaskForm):
     """Formulario para una fila de material/insumo"""
     material_id = SelectField('Material', coerce=int, validators=[
@@ -194,21 +181,31 @@ class FormRecipeDetail(FlaskForm):
         validators.InputRequired(message="Requerido")
     ], places=2)
     # unit_med ha sido eliminado de aquí porque se traerá del modelo MateriaPrima
-
 class FormRecipeStep(FlaskForm):
     """Formulario para una fila de pasos de la receta"""
     step_order = IntegerField('Orden', [validators.Optional()])
-    stage_name = StringField('Etapa', [validators.Length(max=50)])
+    stage_name = StringField('Etapa', [validators.Length(max=100)])
     step_description = TextAreaField('Descripción')
     estimated_time = IntegerField('Minutos', [validators.NumberRange(min=1)])
     process_type = SelectField('Tipo Proceso', coerce=int, choices=[
-        (1, 'Mezclado'),
-        (2, 'Envasado'),
-        (3, 'Reposo')
+        # PREPARACIÓN Y MEZCLA
+        (1,  'Mezclado / Homogeneización'),
+        (2,  'Disolución (Sólido a Líquido)'),
+        (3,  'Reacción Química (Control de Temp/pH)'),
+        (4,  'Emulsificación'),
+        # ACABADO
+        (5,  'Reposo / Desaireación'),
+        (6,  'Filtrado'),
+        (7,  'Control de Calidad (Muestreo)'),
+        # ACONDICIONAMIENTO
+        (8,  'Envasado'),
+        (9,  'Etiquetado y Codificado'),
+        (10, 'Paletizado / Emplayado'),
+        # ESPECIALES
+        (11, 'Dilución de Concentrados'),
+        (12, 'Neutralización'),
     ])
-
 # --- FORMULARIO PRINCIPAL ---
-
 class FormRecipe(FlaskForm):
     id = HiddenField('id')
     
@@ -231,7 +228,6 @@ class FormRecipe(FlaskForm):
     estimated_waste = DecimalField('Merma Estimada (%)', [validators.Optional()], places=2)
     
     produced_quantity = IntegerField('Cantidad a Producir (Lote)', [validators.Optional()])
-
     unit_med = SelectField('Unidad de Medida del Lote', coerce=int, choices=[
         (1, 'Kilos'),
         (2, 'Litros'),
@@ -240,12 +236,10 @@ class FormRecipe(FlaskForm):
     ])
     
     status = HiddenField('Estatus', default=1)
-
     # Listas dinámicas
     # min_entries=1 asegura que al menos aparezca una fila al cargar
     materials = FieldList(FormField(FormRecipeDetail), min_entries=0)
     steps = FieldList(FormField(FormRecipeStep), min_entries=1)
-
 
 class FormInventoryMovementItem(FlaskForm):
     material_id = SelectField('Materia Prima', coerce=int, validators=[
@@ -263,14 +257,11 @@ class FormInventoryMovementItem(FlaskForm):
         validators.InputRequired(message="Requerido"),
         validators.NumberRange(min=0.01)
     ], places=2)
-
     class Meta:
         csrf = False # se deshabilita CSRF interno para las filas de la lista
-
 class FormBulkInventoryMovement(FlaskForm):
     # Lista dinámica de movimientos
     movements = FieldList(FormField(FormInventoryMovementItem), min_entries=1)
-
 class FormProductionOrder(FlaskForm):
     id = HiddenField('id')
     
@@ -293,9 +284,7 @@ class FormProductionOrder(FlaskForm):
         format='%Y-%m-%dT%H:%M',
         validators=[validators.Optional()]
     )
-
     status = HiddenField('Estatus', default=2)
-
 class FormCloseProductionOrder(FlaskForm):
     # Campos informativos (Readonly) para que el operador compare
     requested_quantity = DecimalField('Cantidad Programada', render_kw={'readonly': True})
@@ -305,25 +294,20 @@ class FormCloseProductionOrder(FlaskForm):
         validators.DataRequired(message="Debe ingresar la cantidad resultante"),
         validators.NumberRange(min=0, message="La cantidad no puede ser negativa")
     ], places=2)
-
     real_waste = DecimalField('Merma Real Detectada', [
         validators.DataRequired(message="Ingrese la merma (puede ser 0)"),
         validators.NumberRange(min=0, message="La merma no puede ser negativa")
     ], places=2, default=0.00)
-
     # --- DATOS DEL LOTE (TRAZABILIDAD) ---
     expiry_date = DateField('Fecha de Caducidad', 
         format='%Y-%m-%d',
         validators=[validators.DataRequired(message="Indique la fecha de vencimiento")]
     )
-
     location = StringField('Ubicación en Almacén', [
         validators.DataRequired(message="Indique el pasillo o estante"),
         validators.Length(max=50)
     ], default="Almacén de Cuarentena")
-
     notes = TextAreaField('Observaciones de la Producción')
-
 class FormQualityCheck(FlaskForm):
     # El ID del lote es oculto
     lot_id = HiddenField('lot_id')
@@ -344,22 +328,18 @@ class FormQualityCheck(FlaskForm):
     ])
     
     comments = TextAreaField('Notas de Laboratorio')
-
 # --- VENTAS ONLINE --- #
-
 class AddToCartForm(FlaskForm):
     id_product = HiddenField('ID Producto', validators=[validators.DataRequired()])
     # Ahora el precio y presentación vendrán de esta selección
     id_presentacion_precio = SelectField('Selecciona Presentación', coerce=int, validators=[validators.DataRequired()])
     quantity = IntegerField('Cantidad', validators=[validators.DataRequired(), validators.NumberRange(min=1)], default=1)
     submit = SubmitField('Añadir al Carrito')
-
 class CheckoutForm(FlaskForm):
     # Para la dirección de envío y completar la tabla 'Ventas'
     shipping_address = StringField('Dirección de Envío', validators=[validators.DataRequired(), validators.Length(max=50)])
     # El status se manejará internamente (1: Solicitada / 2: Esperando pago)
     submit = SubmitField('Confirmar Pedido')
-
 class PaymentForm(FlaskForm):
     # Para la tabla 'ventas_pagos'
     id_sale = HiddenField('ID Venta')
@@ -370,7 +350,6 @@ class PaymentForm(FlaskForm):
     paid_amount = DecimalField('Monto a Pagar', validators=[validators.DataRequired()])
     reference = StringField('Referencia (opcional)')
     submit = SubmitField('Finalizar Pago')
-
 class FormInventoryAdjustment(FlaskForm):
     product_id = SelectField('Producto', coerce=int, validators=[
         validators.DataRequired(message="Debe seleccionar un producto")
@@ -394,14 +373,15 @@ class FormInventoryAdjustment(FlaskForm):
         validators.Optional(),
         validators.Length(max=255)
     ])
-
 class AddressForm(FlaskForm):
-    direccion = StringField('Dirección', validators=[
+    direccion = StringField('Dirección Completa', validators=[
         validators.DataRequired(message="La dirección es obligatoria"),
-        validators.Length(min=10, max=100, message="La dirección debe tener entre 10 y 100 caracteres")
+        validators.Length(min=10, max=255)
     ])
-    telefono = StringField('Teléfono (opcional)', validators=[
+    telefono = StringField('Teléfono de contacto', validators=[
         validators.Optional(),
         validators.Length(max=20)
     ])
-    submit = SubmitField('Guardar Dirección')
+    submit = SubmitField('Guardar y continuar')
+
+

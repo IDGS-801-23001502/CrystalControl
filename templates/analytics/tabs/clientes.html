@@ -1,0 +1,103 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Clientes Activos</p>
+        <h3 class="text-2xl font-black text-slate-800">{{ data.stats.clientes_activos or 0 }}</h3>
+        <p class="text-xs text-slate-500">Compraron en este periodo</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ticket Promedio Global</p>
+        <h3 class="text-2xl font-black text-emerald-600">${{ "{:,.2f}".format(data.stats.promedio_venta or 0) }}</h3>
+        <p class="text-xs text-slate-500">Gasto medio por cliente</p>
+    </div>
+    <div class="bg-emerald-600 p-6 rounded-xl shadow-md shadow-emerald-100">
+        <p class="text-[10px] font-bold text-emerald-100 uppercase tracking-widest">Cliente Estrella</p>
+        <h3 class="text-xl font-black text-white truncate">
+            {{ data.top_comprador.username if data.top_comprador else 'Sin datos' }}
+        </h3>
+        <p class="text-xs text-emerald-100 font-medium">Mayor volumen de compra</p>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            Ranking de Clientes (Análisis de Valor)
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-[10px] text-slate-400 uppercase border-b border-slate-100">
+                        <th class="pb-3 px-2">Cliente</th>
+                        <th class="pb-3 px-2 text-center">Pedidos</th>
+                        <th class="pb-3 px-2 text-right">Total Comprado</th>
+                        <th class="pb-3 px-2 text-right">Participación</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for cliente in data.pareto %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-2">
+                            <span class="text-sm font-bold text-slate-700">{{ cliente.username }}</span>
+                        </td>
+                        <td class="py-4 px-2 text-center text-sm text-slate-600">
+                            {{ cliente.numero_pedidos }}
+                        </td>
+                        <td class="py-4 px-2 text-right text-sm font-black text-slate-800">
+                            ${{ "{:,.2f}".format(cliente.total_comprado) }}
+                        </td>
+                        <td class="py-4 px-2 text-right">
+                            {% set porc = (cliente.total_comprado / (data.stats.promedio_venta * data.stats.clientes_activos) * 100) if data.stats.clientes_activos else 0 %}
+                            <span class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-50 text-emerald-700">
+                                {{ "{:,.1f}".format(porc) }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="py-10 text-center text-slate-400 italic">No hay datos de clientes en este rango.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-6 text-center">Distribución de Ventas</h2>
+        <div class="h-[250px]">
+            <canvas id="clientesParticipacionChart"></canvas>
+        </div>
+        <p class="text-[10px] text-slate-400 text-center mt-6 italic">
+            Muestra el peso de los 10 clientes principales sobre la venta total del periodo.
+        </p>
+    </div>
+</div>
+
+<script>
+    const ctxClientes = document.getElementById('clientesParticipacionChart').getContext('2d');
+    new Chart(ctxClientes, {
+        type: 'pie',
+        data: {
+            labels: [{% for c in data.pareto %}'{{ c.username }}',{% endfor %}],
+            datasets: [{
+                data: [{% for c in data.pareto %}{{ c.total_comprado }},{% endfor %}],
+                backgroundColor: [
+                    '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
+                    '#064e3b', '#065f46', '#047857', '#059669', '#10b981'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>

@@ -1,0 +1,93 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+    <div class="bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-10">
+            <svg class="w-16 h-16 text-slate-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Valor Almacén Materia Prima</p>
+        <h3 class="text-3xl font-black text-slate-800">
+            ${{ "%.2f"|format(data.get('valor_mp', 0) or 0) }}
+        </h3>
+        <p class="text-xs text-slate-400 mt-2 italic">Insumos y químicos base</p>
+    </div>
+
+    <div class="bg-gradient-to-br from-white to-emerald-50 p-6 rounded-2xl border border-emerald-100 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-10 text-emerald-600">
+            <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.09-.36.14-.57.14s-.41-.05-.57-.14l-7.9-4.44c-.31-.17-.53-.5-.53-.88v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.09.36-.14.57-.14s.41.05.57.14l7.9 4.44c.31.17.53.5.53.88v9z"/></svg>
+        </div>
+        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Valor Almacén Producto Terminado</p>
+        <h3 class="text-3xl font-black text-slate-800">
+            ${{ "%.2f"|format(data.get('valor_pt', 0) or 0) }}
+        </h3>
+        <p class="text-xs text-emerald-600 font-medium mt-2 italic">Productos listos para venta</p>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-8">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-sm font-black text-slate-800 mb-4 uppercase">Mayor Stock: Materia Prima</h2>
+        <div class="space-y-4">
+            {% for mp in data.top_mp %}
+            <div>
+                <div class="flex justify-between text-xs mb-1 font-bold">
+                    <span>{{ mp.name }}</span>
+                    <span>{{ mp.real_stock }} {{ mp.unit }}</span>
+                </div>
+                <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                    {% set per_mp = (mp.real_stock / (mp.stock_min * 5) * 100) if mp.stock_min > 0 else 50 %}
+                    <div class="bg-slate-600 h-full" style="width: {{ per_mp if per_mp <= 100 else 100 }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-sm font-black text-slate-800 mb-4 uppercase">Mayor Stock: Producto Terminado</h2>
+        <div class="space-y-4">
+            {% for pt in data.top_pt %}
+            <div>
+                <div class="flex justify-between text-xs mb-1 font-bold">
+                    <span>{{ pt.final_name }}</span>
+                    <span>{{ pt.total }} pz</span>
+                </div>
+                <div class="w-full bg-emerald-50 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-emerald-500 h-full" style="width: 70%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="mt-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+    <h2 class="text-lg font-bold text-slate-800 mb-4">Balance de Capital en Inventario</h2>
+    <div class="h-[200px]">
+        <canvas id="balanceInventarioChart"></canvas>
+    </div>
+</div>
+
+<script>
+    new Chart(document.getElementById('balanceInventarioChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Materia Prima', 'Producto Terminado'],
+            datasets: [{
+                label: 'Capital Detenido ($)',
+                data: [{{ data.valor_mp }}, {{ data.valor_pt }}],
+                backgroundColor: ['#475569', '#10b981'],
+                borderRadius: 8,
+                barThickness: 60
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { display: false } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+</script>

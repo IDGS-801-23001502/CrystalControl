@@ -2,51 +2,7 @@
 {% block content %}
 
 <style>
-    /* --- CONFIGURACIÓN DE VISIBILIDAD --- */
-    
-    /* En la web: ocultamos el formato de impresión */
-    .print-format-container { display: none; }
-
-    @media print {
-        /* Al imprimir: ocultamos TODO el diseño web original */
-        .web-layout-container, nav, footer, .sidebar, button, .no-print {
-            display: none !important;
-        }
-
-        /* Al imprimir: mostramos el formato ejecutivo */
-        .print-format-container {
-            display: block !important;
-            font-family: "Courier New", Courier, monospace; /* Fuente tipo técnica */
-            color: black;
-        }
-
-        /* Ajustes de página para impresión */
-        body { background: white !important; }
-        @page { margin: 1.5cm; }
-        
-        .tabla-ejecutiva {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .tabla-ejecutiva th, .tabla-ejecutiva td {
-            border: 1px solid black;
-            padding: 8px;
-            font-size: 10pt;
-            text-align: left;
-        }
-        .tabla-ejecutiva th {
-            background-color: #f2f2f2 !important;
-            -webkit-print-color-adjust: exact;
-        }
-        
-        .titulo-seccion {
-            border-bottom: 2px solid black;
-            margin: 20px 0 10px 0;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-    }
+    #print-content { display: none; }
 </style>
 
 <div class="web-layout-container py-12 max-w-5xl mx-auto px-4">
@@ -70,7 +26,7 @@
                 Versionar Receta
             </a>
             {% endif %}
-            <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-900 transition-all flex items-center gap-2">
+            <button onclick="imprimirReceta()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-900 transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                 Imprimir para Planta
             </button>
@@ -88,11 +44,11 @@
                     </div>
                     <div>
                         <label class="text-xs text-slate-400 block">Producto Base</label>
-                        <p class="text-slate-700">{{ recipe.product_id }} - {{recipe.product.name}}</p>
+                        <p class="text-slate-700">{{ recipe.product_id }} - {{ recipe.product.name }}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="text-xs text-slate-400 block">Lote </label>
+                            <label class="text-xs text-slate-400 block">Lote</label>
                             <p class="text-slate-800 font-medium">{{ recipe.produced_quantity }} {{ recipe.nombre_unidad_lote }}</p>
                         </div>
                         <div>
@@ -134,7 +90,7 @@
                     <tbody class="divide-y divide-slate-100">
                         {% for detail in recipe.details %}
                         <tr class="hover:bg-slate-50/80 transition-colors">
-                            <td class="px-6 py-4 font-medium text-slate-700"> {{ detail.material.name }}</td>
+                            <td class="px-6 py-4 font-medium text-slate-700">{{ detail.material.name }}</td>
                             <td class="px-6 py-4 text-right font-mono font-bold text-emerald-600">{{ detail.required_quantity }}</td>
                             <td class="px-6 py-4 text-slate-500">{{ detail.material.nombre_unidad }}</td>
                         </tr>
@@ -172,24 +128,26 @@
     </div>
 </div>
 
-<div class="print-format-container">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid black; padding-bottom: 10px; margin-bottom: 20px;">
+<!-- Contenido oculto para impresión -->
+<div id="print-content">
+
+    <div class="encabezado">
         <div>
-            <h1 style="font-size: 26pt; margin: 0; font-weight: bold;">EXPRESS & CLEAN</h1>
-            <p style="margin: 0; font-size: 10pt;">HOJA DE CONTROL DE PRODUCCIÓN Y MEZCLA</p>
+            <h1>EXPRESS &amp; CLEAN</h1>
+            <p>HOJA DE CONTROL DE PRODUCCIÓN Y MEZCLA</p>
         </div>
-        <div style="text-align: right;">
-            <p style="margin: 0; font-weight: bold;">CÓDIGO: {{ recipe.unique_code }}</p>
-            <p style="margin: 0; font-size: 9pt;">FECHA: {{ now.strftime('%d/%m/%Y %H:%M') if now else 'Abril 2026' }}</p>
+        <div class="encabezado-derecha">
+            <p><strong>CÓDIGO: {{ recipe.unique_code }}</strong></p>
+            <p>FECHA: {{ now.strftime('%d/%m/%Y %H:%M') if now else '' }}</p>
         </div>
     </div>
 
-    <table class="tabla-ejecutiva">
+    <table>
         <tr>
-            <th style="width: 25%;">RECETA:</th>
-            <td style="width: 35%; font-size: 12pt;">{{ recipe.final_name }}</td>
-            <th style="width: 15%;">LOTE:</th>
-            <td style="width: 15%;">{{ recipe.produced_quantity }} {{ recipe.nombre_unidad_lote }}</td>
+            <th style="width:20%">RECETA:</th>
+            <td style="width:35%">{{ recipe.final_name }}</td>
+            <th style="width:15%">LOTE:</th>
+            <td>{{ recipe.produced_quantity }} {{ recipe.nombre_unidad_lote }}</td>
         </tr>
         <tr>
             <th>PRODUCTO:</th>
@@ -199,64 +157,162 @@
         </tr>
     </table>
 
-    <div class="titulo-seccion">1. LISTADO DE MATERIAS PRIMAS</div>
-    <table class="tabla-ejecutiva">
+    <div class="titulo-seccion">1. Listado de Materias Primas</div>
+    <table>
         <thead>
             <tr>
-                <th style="width: 50%;">DESCRIPCIÓN DEL MATERIAL</th>
-                <th style="width: 20%; text-align: center;">CANTIDAD</th>
-                <th style="width: 15%; text-align: center;">UNIDAD</th>
+                <th style="width:55%">DESCRIPCIÓN DEL MATERIAL</th>
+                <th style="width:25%;text-align:center">CANTIDAD</th>
+                <th style="width:20%;text-align:center">UNIDAD</th>
             </tr>
         </thead>
         <tbody>
             {% for detail in recipe.details %}
             <tr>
                 <td>{{ detail.material.name }}</td>
-                <td style="text-align: center; font-weight: bold;">{{ detail.required_quantity }}</td>
-                <td style="text-align: center;">{{ detail.material.nombre_unidad }}</td>
+                <td style="text-align:center;font-weight:bold">{{ detail.required_quantity }}</td>
+                <td style="text-align:center">{{ detail.material.nombre_unidad }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="titulo-seccion">2. INSTRUCCIONES OPERATIVAS (Procedimiento)</div>
-    <table class="tabla-ejecutiva">
+    <div class="titulo-seccion">2. Instrucciones Operativas (Procedimiento)</div>
+    <table>
         <thead>
             <tr>
-                <th style="width: 10%; text-align: center;">PASO</th>
-                <th style="width: 25%;">ETAPA</th>
-                <th style="width: 25%;">TIPO</th>
-                <th style="width: 50%;">INSTRUCCIÓN</th>
-                <th style="width: 15%; text-align: center;">TIEMPO</th>
+                <th style="width:6%;text-align:center">PASO</th>
+                <th style="width:20%">ETAPA</th>
+                <th style="width:18%">TIPO</th>
+                <th style="width:46%">INSTRUCCIÓN</th>
+                <th style="width:10%;text-align:center">TIEMPO</th>
             </tr>
         </thead>
         <tbody>
             {% for step in recipe.steps | sort(attribute='step_order') %}
             <tr>
-                <td style="text-align: center;">{{ step.step_order }}</td>
-                <td style="font-weight: bold;">{{ step.stage_name }}</td>
-                <td style="text-align: center;"> {{ step.nombre_proceso }}</td>                
-                <td style="font-size: 9pt;">{{ step.description }}</td>
-                <td style="text-align: center;">{{ step.estimated_time }} min</td>
+                <td style="text-align:center">{{ step.step_order }}</td>
+                <td><strong>{{ step.stage_name }}</strong></td>
+                <td>{{ step.nombre_proceso }}</td>
+                <td style="font-size:8.5pt">{{ step.description }}</td>
+                <td style="text-align:center">{{ step.estimated_time }} min</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <br><br>
-
-    <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; text-align: center;">
-        <div style="border-top: 1px solid black; padding-top: 10px;">
-            <p style="font-size: 9pt; margin: 0;">FIRMA OPERARIO RESPONSABLE</p>
-        </div>
-        <div style="border-top: 1px solid black; padding-top: 10px;">
-            <p style="font-size: 9pt; margin: 0;">SUPERVISOR DE CALIDAD</p>
+    <div class="firmas">
+        <div class="firmas-row">
+            <div class="firma-celda">FIRMA OPERARIO RESPONSABLE</div>
+            <div class="firma-celda">SUPERVISOR DE CALIDAD</div>
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8pt; color: #555; border-top: 1px solid #ccc; padding-top: 5px;">
-        Documento interno de Express & Clean. Prohibida su reproducción externa.
+    <div class="footer">
+        Documento interno de Express &amp; Clean. Prohibida su reproducción externa.
     </div>
+
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function imprimirReceta() {
+    const contenido = document.getElementById('print-content').innerHTML;
+    const ventana = window.open('', '_blank', 'width=900,height=700');
+    ventana.document.write(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Receta {{ recipe.unique_code }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Courier New", Courier, monospace;
+            color: black;
+            background: white;
+            padding: 1cm;
+        }
+        @page { margin: 1.5cm; size: A4 portrait; }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 4px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .encabezado h1 { font-size: 22pt; font-weight: bold; }
+        .encabezado p  { font-size: 9pt; margin-top: 4px; }
+        .encabezado-derecha { text-align: right; font-size: 9pt; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            table-layout: fixed;
+        }
+        thead { display: table-header-group; }
+        tr    { page-break-inside: avoid; }
+        th, td {
+            border: 1px solid black;
+            padding: 6px 8px;
+            font-size: 9pt;
+            text-align: left;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        th { background-color: #f2f2f2; font-weight: bold; }
+
+        .titulo-seccion {
+            border-bottom: 2px solid black;
+            margin: 16px 0 8px 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10pt;
+            page-break-after: avoid;
+        }
+
+        .firmas {
+            margin-top: 50px;
+            display: table;
+            width: 100%;
+            page-break-inside: avoid;
+        }
+        .firmas-row  { display: table-row; }
+        .firma-celda {
+            display: table-cell;
+            width: 50%;
+            border-top: 1px solid black;
+            padding-top: 8px;
+            text-align: center;
+            font-size: 9pt;
+        }
+        .firma-celda:first-child { padding-right: 40px; }
+        .firma-celda:last-child  { padding-left:  40px; }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 8pt;
+            color: #555;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    ${contenido}
+</body>
+</html>`);
+    ventana.document.close();
+    ventana.onload = function() {
+        ventana.focus();
+        ventana.print();
+        ventana.close();
+    };
+}
+</script>
 {% endblock %}
