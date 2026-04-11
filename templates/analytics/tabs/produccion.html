@@ -1,0 +1,93 @@
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500">
+        <p class="text-[10px] font-bold text-slate-400 uppercase">Órdenes Totales</p>
+        <h3 class="text-xl font-black text-slate-800">{{ data.total_ordenes }}</h3>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
+        <p class="text-[10px] font-bold text-slate-400 uppercase">En Proceso</p>
+        <h3 class="text-xl font-black text-slate-800">{{ data.status_counts.get(2, 0) }}</h3>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-purple-500">
+        <p class="text-[10px] font-bold text-slate-400 uppercase">En Calidad</p>
+        <h3 class="text-xl font-black text-slate-800">{{ data.status_counts.get(3, 0) }}</h3>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
+        <p class="text-[10px] font-bold text-slate-400 uppercase">Terminadas</p>
+        <h3 class="text-xl font-black text-slate-800">{{ data.status_counts.get(4, 0) }}</h3>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-8">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center justify-between">
+            <span>Procesos en Curso</span>
+            <span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-full uppercase tracking-tighter">Tiempo Real</span>
+        </h2>
+        <div class="overflow-y-auto max-h-[400px] pr-2">
+            {% for orden in data.procesos_activos %}
+            <div class="flex items-center gap-4 p-3 mb-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-300 transition-colors">
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">
+                    #{{ orden.id }}
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-bold text-slate-700">{{ orden.recipe.final_name }}</p>
+                    <p class="text-[10px] text-slate-500 italic">Op: {{ orden.operator.username }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase 
+                        {% if orden.status == 1 %} bg-slate-200 text-slate-600 
+                        {% elif orden.status == 2 %} bg-amber-100 text-amber-600 
+                        {% elif orden.status == 3 %} bg-purple-100 text-purple-600 {% endif %}">
+                        {{ 'Pendiente' if orden.status == 1 else 'En Proceso' if orden.status == 2 else 'Calidad' }}
+                    </span>
+                    <p class="text-[9px] text-slate-400 mt-1">{{ orden.created_at.strftime('%H:%M') }} hrs</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center text-slate-400 py-10 text-sm italic">No hay procesos activos en este momento.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Eficiencia de Materia Prima</h2>
+        <div class="h-[300px]">
+            <canvas id="mermasProduccionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctxMermas = document.getElementById('mermasProduccionChart').getContext('2d');
+    new Chart(ctxMermas, {
+        type: 'bar',
+        data: {
+            labels: [{% for m in data.mermas %}'{{ m.final_name }}',{% endfor %}],
+            datasets: [
+                {
+                    label: 'Merma Esperada %',
+                    data: [{% for m in data.mermas %}{{ m.esperado or 0 }},{% endfor %}],
+                    backgroundColor: '#cbd5e1',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Merma Real %',
+                    data: [{% for m in data.mermas %}{{ m.real or 0 }},{% endfor %}],
+                    backgroundColor: '#10b981',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } 
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Porcentaje %', font: { size: 10 } } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>

@@ -1,0 +1,81 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ingresos Totales</p>
+        <h3 class="text-2xl font-black text-slate-800">${{ "{:,.2f}".format(data.total_periodo or 0) }}</h3>
+        <p class="text-xs text-emerald-600 font-medium">En el rango seleccionado</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ticket Promedio</p>
+        <h3 class="text-2xl font-black text-slate-800">${{ "{:,.2f}".format(data.ticket_promedio or 0) }}</h3>
+        <p class="text-xs text-slate-500">Por orden de venta</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Productos Movidos</p>
+        <h3 class="text-2xl font-black text-blue-600">
+            {{ data.top_productos|sum(attribute='cantidad_vendida')|int }}
+        </h3>
+        <p class="text-xs text-slate-500">Unidades totales vendidas</p>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span class="w-2 h-6 bg-emerald-500 rounded-full"></span>
+            Tendencia de Ingresos Diarios
+        </h2>
+        <div class="h-[300px]">
+            <canvas id="ventasTendenciaChart"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Top 5 Productos</h2>
+        <div class="space-y-6">
+            {% for prod in data.top_productos %}
+            <div class="flex items-center justify-between">
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold text-slate-700">{{ prod.name }}</span>
+                    <span class="text-[10px] text-slate-500 uppercase">{{ prod.cantidad_vendida|int }} unidades vendidas</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-sm font-black text-emerald-600">${{ "{:,.0f}".format(prod.ingreso_total) }}</span>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center text-slate-400 py-10 text-sm italic">No hay ventas en este rango.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctxVentas = document.getElementById('ventasTendenciaChart').getContext('2d');
+    new Chart(ctxVentas, {
+        type: 'line',
+        data: {
+            labels: [{% for v in data.ventas_tendencia %}'{{ v.fecha }}',{% endfor %}],
+            datasets: [{
+                label: 'Ventas Diarias',
+                data: [{% for v in data.ventas_tendencia %}{{ v.total }},{% endfor %}],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#10b981'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>

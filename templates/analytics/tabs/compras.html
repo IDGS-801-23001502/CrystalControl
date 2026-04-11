@@ -1,0 +1,81 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Inversión Total MP</p>
+        <h3 class="text-2xl font-black text-slate-800">${{ "{:,.2f}".format(data.total_invertido or 0) }}</h3>
+        <p class="text-xs text-blue-600 font-medium italic">Compras liquidadas y recibidas</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Órdenes Pendientes</p>
+        <h3 class="text-2xl font-black text-amber-600">
+            {{ data.status_compras.get(1, 0) + data.status_compras.get(4, 0) }}
+        </h3>
+        <p class="text-xs text-slate-500 font-medium">Esperando insumos</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm bg-red-50/30">
+        <p class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Riesgo de Desabasto</p>
+        <h3 class="text-2xl font-black text-red-600">{{ data.materiales_criticos|length }}</h3>
+        <p class="text-xs text-red-500 font-medium uppercase text-[9px]">Materiales bajo el mínimo</p>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-8">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Distribución de Gasto (Top 5)</h2>
+        <div class="h-[300px]">
+            <canvas id="gastoComprasChart"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-4">Insumos Críticos (Reponer Ya)</h2>
+        <div class="overflow-y-auto max-h-[300px] space-y-3 pr-2">
+            {% for mat in data.materiales_criticos %}
+            <div class="flex items-center justify-between p-3 bg-red-50 border border-red-100 rounded-lg">
+                <div>
+                    <p class="text-sm font-bold text-red-800">{{ mat.name }}</p>
+                    <p class="text-[10px] text-red-600 italic">Mínimo: {{ mat.stock_min }} | Actual: <strong>{{ mat.real_stock }}</strong></p>
+                </div>
+                <div class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">
+                    ALERTA
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+                <p class="text-slate-400 text-sm italic">Inventario saludable. No hay insumos críticos.</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% if data.materiales_criticos %}
+        <button class="w-full mt-4 bg-slate-800 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-700 transition-colors uppercase tracking-widest">
+            Generar Solicitud de Compra Grupal
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const ctxCompras = document.getElementById('gastoComprasChart').getContext('2d');
+    new Chart(ctxCompras, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for g in data.gasto_categoria %}'{{ g.name }}',{% endfor %}],
+            datasets: [{
+                data: [{% for g in data.gasto_categoria %}{{ g.total_gasto }},{% endfor %}],
+                backgroundColor: ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8'],
+                hoverOffset: 10,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+</script>
