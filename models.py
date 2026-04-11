@@ -81,12 +81,10 @@ class Cliente(db.Model):
     id = db.Column('id_cliente', db.Integer, primary_key=True)
     # Llave foránea que apunta al Usuario
     id_usuario = db.Column(db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
-    
-    # Datos específicos del negocio
-    direccion_envio = db.Column(db.Integer, db.ForeignKey('Direcciones.id_direccion'), nullable=False)
     telefono = db.Column(db.String(20))
-    
-    favoritos = db.relationship('FavoriteSale', backref='cliente_favorito', lazy=True)
+    # RELACIÓN: Un cliente tiene muchas direcciones
+    direcciones = db.relationship('Address', backref='cliente', lazy=True)
+    favoritos = db.relationship('FavoriteSale', backref='cliente', lazy=True)
     
 ##MATERIAS PRIMAS###
 class Raw_Material(db.Model):
@@ -273,11 +271,18 @@ class Sales(db.Model):
     estimated_delivery_date = db.Column('fecha_entrega_estimada', db.String(5))
     gross_total = db.Column('total_bruto', db.Numeric(10, 2))
     profit_total = db.Column('total_utilidad', db.Numeric(10, 2))
-    shipping_address = db.Column('direccion_envio', db.String(50))
+    # 2. Relación con la tabla Direcciones (La "Llave")
+    id_address = db.Column('id_direccion', db.Integer, db.ForeignKey('Direcciones.id_direccion'), nullable=True)
+    # 3. Snapshot de la dirección (El "Respaldo")
+    # Aquí guardarás el texto: "Av. Siempre Viva 123, CP 37000..." 
+    # Así, si el cliente borra su dirección después, la venta sigue teniendo el dato.
+    shipping_address_text = db.Column('direccion_envio_texto', db.Text)
     id_client_sold = db.Column('id_cliente_vendido', db.Integer, db.ForeignKey('Clientes.id_cliente'))
     id_break = db.Column('id_corte', db.Integer, db.ForeignKey('cortes_cajas.id_corte'))
     tracking = db.Column('rastreo', db.String(50))
-
+    
+    direccion_rel = db.relationship('Address', backref='ventas_realizadas')
+    
     status = db.Column('status', db.Integer) 
 
     @property
@@ -290,6 +295,7 @@ class SaleDetail(db.Model):
     id = db.Column('id_detalle_venta', db.Integer, primary_key=True, nullable=False)
     id_sale = db.Column('id_venta', db.Integer, db.ForeignKey('Ventas.id_venta'), primary_key=True)
     id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'), primary_key=True)
+    id_presentation = db.Column('id_presentacion', db.Integer, db.ForeignKey('producto_presentación_precio.id_presentacion_precio'))
     lot = db.Column('cantidad', db.Integer)
     unit_price_moment = db.Column('precio_unitario_momento', db.Numeric(10,2))
     moment_utility = db.Column('utilidad_momento', db.Numeric(10,2))
@@ -309,19 +315,21 @@ class SalePayment(db.Model):
         values = {1: 'Efectivo', 2: 'Tarjeta Debito', 3: 'Tarjeta Credito', 4: 'Transferencia', 5:'Clip/Terminal', 6:'Credito tienda'}
         return values.get(self.payment_method)
 
-class address(db.Model):
+class Address(db.Model):
     __tablename__ = 'Direcciones'
-
     id = db.Column('id_direccion', db.Integer, primary_key=True)
-    address = db.Column('direccion', db.String(100), nullable=False)
-    id_client = db.Column('id_client', db.Integer, db.ForeignKey('Clientes.id_cliente'))
+    address = db.Column('direccion', db.String(255), nullable=False)
+    
+    # Mantenemos esta llave
+    id_client = db.Column('id_client', db.Integer, db.ForeignKey('Clientes.id_cliente'), nullable=False)
 
-class FavoriteSale(db.Model):
+class FavoriteProduct(db.Model):
     __tablename__ = 'Favoritos'
     
     id = db.Column('id_favorito', db.Integer, primary_key=True, autoincrement=True, nullable=False)
     id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'))
     id_client = db.Column('id_cliente', db.Integer, db.ForeignKey('Clientes.id_cliente'))
+    __table_args__ = (db.UniqueConstraint('id_producto', 'id_cliente', name='_customer_product_uc'),)
 
 
 class CashRegisters(db.Model):
