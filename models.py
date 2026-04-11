@@ -265,7 +265,7 @@ class PurchaseDetail(db.Model):
     approved_quantity = db.Column('cantidad_aprobada', db.Numeric(10, 2), default=0.0)
     unit_price = db.Column('precio_unitario_final', db.Numeric(10, 2), default=0.0)
     delivery_days = db.Column('dias_entrega', db.Integer)
-    # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: Recibido, 5:Revibido con retraso
+    # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: En camino, 5: Recibido, 6:Recibido con retraso
     status = db.Column('status_item', db.Integer, default=1)
 
     material = db.relationship('Raw_Material', backref='purchase_details')
