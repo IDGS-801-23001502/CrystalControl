@@ -3,6 +3,7 @@ from models import db, Recipe, RecipeDetail, RecipeStep, Producto, Raw_Material,
 from forms import FormRecipe, FormRecipeDetail, FormRecipeStep
 from datetime import datetime
 
+
 module = 'recipes'
 
 recipes_bp = Blueprint(
@@ -29,7 +30,20 @@ def add_recipe():
     materiales_info = {m.id: m.nombre_unidad for m in materiales_db} 
 
     product_choices = [(p.id, p.name) for p in Producto.query.filter_by(status='Activo').all()]
-    process_choices = [(1, 'Mezclado'), (2, 'Envasado'), (3, 'Reposo')]
+    process_choices = [
+    (1,  'Mezclado / Homogeneización'),
+    (2,  'Disolución (Sólido a Líquido)'),
+    (3,  'Reacción Química (Control de Temp/pH)'),
+    (4,  'Emulsificación'),
+    (5,  'Reposo / Desaireación'),
+    (6,  'Filtrado'),
+    (7,  'Control de Calidad (Muestreo)'),
+    (8,  'Envasado'),
+    (9,  'Etiquetado y Codificado'),
+    (10, 'Paletizado / Emplayado'),
+    (11, 'Dilución de Concentrados'),
+    (12, 'Neutralización'),
+    ]
 
     form = FormRecipe()
     form.product_id.choices = product_choices
@@ -39,6 +53,14 @@ def add_recipe():
         
     for step_form in form.steps:
         step_form.process_type.choices = process_choices
+
+    if request.method == 'POST':
+        form.validate()  # forzar validación
+        print("form errors completos:", form.errors)
+        print("steps errors:", form.steps.errors)
+        print("materials errors:", form.materials.errors)
+        print("validate_on_submit:", form.validate_on_submit())
+        
 
     if form.validate_on_submit():
         if not form.materials.data or len(form.materials.data) == 0:
@@ -58,9 +80,28 @@ def add_recipe():
             extra_unidad = {2: 0.3, 1: 0.2, 3: 0.05}.get(unidad_lote, 0.0)
             merma_acumulada = 1.0 + (len(form.materials.data) * 0.2) + extra_unidad
             
+            #for s in form.steps.data:
+            #    t_proc = int(s.get('process_type') or 1)
+            #    merma_acumulada += {1: 1.2, 2: 0.5, 3: 0.1}.get(t_proc, 0.1)
+
+
+            MERMA_PASOS = {
+                1: 1.2,   # Mezclado / Homogeneización
+                2: 0.8,   # Disolución
+                3: 1.5,   # Reacción Química
+                4: 1.0,   # Emulsificación
+                5: 0.1,   # Reposo / Desaireación
+                6: 0.6,   # Filtrado
+                7: 0.05,  # Control de Calidad
+                8: 0.5,   # Envasado
+                9: 0.2,   # Etiquetado
+                10: 0.1,  # Paletizado
+                11: 0.8,  # Dilución
+                12: 0.9,  # Neutralización
+            }
             for s in form.steps.data:
                 t_proc = int(s.get('process_type') or 1)
-                merma_acumulada += {1: 1.2, 2: 0.5, 3: 0.1}.get(t_proc, 0.1)
+                merma_acumulada += MERMA_PASOS.get(t_proc, 0.1)
 
             factor = 1.25 if 0 < cant_lote < 15 else (0.90 if cant_lote > 50 else 1.0)
             final_waste = merma_acumulada * factor
@@ -114,7 +155,20 @@ def edit_recipe(id):
     materiales_info = {m.id: m.nombre_unidad for m in materiales_db} # Para el JS
 
     product_choices = [(p.id, p.name) for p in Producto.query.filter_by(status='Activo').all()]
-    process_choices = [(1, 'Mezclado'), (2, 'Envasado'), (3, 'Reposo')]
+    process_choices = [
+    (1,  'Mezclado / Homogeneización'),
+    (2,  'Disolución (Sólido a Líquido)'),
+    (3,  'Reacción Química (Control de Temp/pH)'),
+    (4,  'Emulsificación'),
+    (5,  'Reposo / Desaireación'),
+    (6,  'Filtrado'),
+    (7,  'Control de Calidad (Muestreo)'),
+    (8,  'Envasado'),
+    (9,  'Etiquetado y Codificado'),
+    (10, 'Paletizado / Emplayado'),
+    (11, 'Dilución de Concentrados'),
+    (12, 'Neutralización'),
+    ]
 
     form = FormRecipe(obj=old_recipe)
     form.product_id.choices = product_choices
@@ -159,10 +213,29 @@ def edit_recipe(id):
 
             extra_u = {2: 0.3, 1: 0.2, 3: 0.05}.get(unidad_lote, 0.0)
             merma_base = 1.0 + (len(form.materials.data) * 0.2) + extra_u
-            for s in form.steps.data:
-                tp = int(s.get('process_type') or 1)
-                merma_base += {1: 1.2, 2: 0.5, 3: 0.1}.get(tp, 0.1)
+            #for s in form.steps.data:
+            #    tp = int(s.get('process_type') or 1)
+            #    merma_base += {1: 1.2, 2: 0.5, 3: 0.1}.get(tp, 0.1)
             
+
+            MERMA_PASOS = {
+                1: 1.2,   # Mezclado / Homogeneización
+                2: 0.8,   # Disolución
+                3: 1.5,   # Reacción Química
+                4: 1.0,   # Emulsificación
+                5: 0.1,   # Reposo / Desaireación
+                6: 0.6,   # Filtrado
+                7: 0.05,  # Control de Calidad
+                8: 0.5,   # Envasado
+                9: 0.2,   # Etiquetado
+                10: 0.1,  # Paletizado
+                11: 0.8,  # Dilución
+                12: 0.9,  # Neutralización
+            }
+            for s in form.steps.data:
+                t_proc = int(s.get('process_type') or 1)
+                merma_base += MERMA_PASOS.get(t_proc, 0.1)
+
             factor = 1.25 if 0 < cant_lote < 15 else (0.90 if cant_lote > 50 else 1.0)
             final_waste = merma_base * factor
 

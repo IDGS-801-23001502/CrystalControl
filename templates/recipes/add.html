@@ -696,7 +696,21 @@ document.addEventListener('DOMContentLoaded', function () {
   // ─────────────────────────────────────────────
   // PASOS
   // ─────────────────────────────────────────────
-  const processChoices = [[1,'Mezclado'],[2,'Envasado'],[3,'Reposo']];
+
+  const processChoices = [
+  [1,  'Mezclado / Homogeneización'],
+  [2,  'Disolución (Sólido a Líquido)'],
+  [3,  'Reacción Química (Control de Temp/pH)'],
+  [4,  'Emulsificación'],
+  [5,  'Reposo / Desaireación'],
+  [6,  'Filtrado'],
+  [7,  'Control de Calidad (Muestreo)'],
+  [8,  'Envasado'],
+  [9,  'Etiquetado y Codificado'],
+  [10, 'Paletizado / Emplayado'],
+  [11, 'Dilución de Concentrados'],
+  [12, 'Neutralización'],
+];
 
   function buildStepSelect(name, selectedVal) {
     const opts = processChoices.map(([v, l]) =>
@@ -784,10 +798,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.step-row').forEach(row => {
       const t = row.querySelector('input[name$="-estimated_time"]');
       if (t) tiempoTotal += parseInt(t.value) || 0;
-      const tipo = row.querySelector('select[name$="-process_type"]')?.value;
-      if      (tipo == '1') merma += 1.2;
-      else if (tipo == '2') merma += 0.5;
-      else if (tipo == '3') merma += 0.1;
+      const MERMA_PASOS = {
+        1: 1.2, 2: 0.8, 3: 1.5, 4: 1.0,
+        5: 0.1, 6: 0.6, 7: 0.05, 8: 0.5,
+        9: 0.2, 10: 0.1, 11: 0.8, 12: 0.9
+      };
+      const tipo = parseInt(row.querySelector('select[name$="-process_type"]')?.value || '0');
+      merma += MERMA_PASOS[tipo] || 0;
     });
 
     const lote   = parseFloat(document.getElementById('produced_quantity')?.value) || 0;

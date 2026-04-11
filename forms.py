@@ -184,13 +184,26 @@ class FormRecipeDetail(FlaskForm):
 class FormRecipeStep(FlaskForm):
     """Formulario para una fila de pasos de la receta"""
     step_order = IntegerField('Orden', [validators.Optional()])
-    stage_name = StringField('Etapa', [validators.Length(max=50)])
+    stage_name = StringField('Etapa', [validators.Length(max=100)])
     step_description = TextAreaField('Descripción')
     estimated_time = IntegerField('Minutos', [validators.NumberRange(min=1)])
     process_type = SelectField('Tipo Proceso', coerce=int, choices=[
-        (1, 'Mezclado'),
-        (2, 'Envasado'),
-        (3, 'Reposo')
+        # PREPARACIÓN Y MEZCLA
+        (1,  'Mezclado / Homogeneización'),
+        (2,  'Disolución (Sólido a Líquido)'),
+        (3,  'Reacción Química (Control de Temp/pH)'),
+        (4,  'Emulsificación'),
+        # ACABADO
+        (5,  'Reposo / Desaireación'),
+        (6,  'Filtrado'),
+        (7,  'Control de Calidad (Muestreo)'),
+        # ACONDICIONAMIENTO
+        (8,  'Envasado'),
+        (9,  'Etiquetado y Codificado'),
+        (10, 'Paletizado / Emplayado'),
+        # ESPECIALES
+        (11, 'Dilución de Concentrados'),
+        (12, 'Neutralización'),
     ])
 # --- FORMULARIO PRINCIPAL ---
 class FormRecipe(FlaskForm):
