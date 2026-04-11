@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask_security import current_user, login_required
-from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, Address, verificar_cancelaciones
+from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, Address, FavoriteProduct,verificar_cancelaciones
 from forms import AddToCartForm, AddressForm
 import uuid
+from utils.functions import sale_out
+
 
 modulo = 'e-commerce'
-
 ecommerce_bp = Blueprint(
     modulo,
     __name__,
@@ -31,7 +32,6 @@ def catalog():
                            search_query=search_query,
                            cat_seleccionadas=cat_seleccionadas)
 
-
 @ecommerce_bp.route("/producto_details")
 def product_detail():
     producto_id = request.args.get("id")
@@ -43,7 +43,6 @@ def product_detail():
         (p.id, f"{p.presentation} - ${p.price_men}") for p in producto.precios
     ]
     return render_template("ecommerce/details_product.html", producto=producto, form=form)
-
 
 @ecommerce_bp.route("/carrito/add", methods=['POST'])
 def add_to_cart():
@@ -69,13 +68,11 @@ def add_to_cart():
                 'cantidad': cantidad,
                 'precio': float(pres_precio.price_men),
                 'presentacion': pres_precio.presentation,
-                'imagen': producto.picture or 'default.png'
+                'imagen': pres_precio.picture or 'default.png'
             }
         session.modified = True
         flash(f"✓ {producto.name} agregado al carrito.", "success")
     return redirect(url_for('e-commerce.catalog'))
-
-
 
 @ecommerce_bp.route("/carrito")
 def carrito():
@@ -84,8 +81,6 @@ def carrito():
     iva = subtotal * 0.16
     total = subtotal + iva
     return render_template("ecommerce/carrito.html", cart=cart, subtotal=subtotal, iva=iva, total=total)
-
-
 
 @ecommerce_bp.route("/carrito/remove/<path:cart_key>")
 def remove_from_cart(cart_key):
@@ -96,8 +91,6 @@ def remove_from_cart(cart_key):
         session.modified = True
         flash(f"Se eliminó {nombre} del carrito.", "info")
     return redirect(url_for('e-commerce.carrito'))
-
-
 
 @ecommerce_bp.route("/carrito/update", methods=['POST'])
 def update_cart():
@@ -112,7 +105,6 @@ def update_cart():
         session.modified = True
     return redirect(url_for('e-commerce.carrito'))
 
-
 @ecommerce_bp.route("/checkout/direccion", methods=['GET', 'POST'])
 @login_required
 def checkout_direccion():
@@ -120,128 +112,116 @@ def checkout_direccion():
     if not cart:
         flash("El carrito está vacío.", "warning")
         return redirect(url_for('e-commerce.catalog'))
-
     cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
     mis_direcciones = []
     if cliente:
         mis_direcciones = Address.query.filter_by(id_client=cliente.id).all()
-
     form_nueva = AddressForm()
-
     if request.method == 'POST':
         accion = request.form.get('accion')
-
         if accion == 'usar_existente':
             id_dir = request.form.get('id_direccion')
             if not id_dir:
                 flash("Selecciona una dirección.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
+            
             dir_obj = Address.query.get(id_dir)
-            if not dir_obj:
+            if not dir_obj or dir_obj.id_client != cliente.id:
                 flash("Dirección no válida.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
-            session['checkout_direccion'] = dir_obj.address
-            session.modified = True
+            
+            # Guardamos el ID y el texto en la sesión
+            session['checkout_id_direccion'] = dir_obj.id
+            session['checkout_direccion_texto'] = dir_obj.address
             return redirect(url_for('e-commerce.checkout_pago'))
-
         elif accion == 'nueva_direccion':
             if form_nueva.validate_on_submit():
+                # 1. Asegurar que el objeto Cliente existe
                 if not cliente:
-                    nueva_dir = Address(address=form_nueva.direccion.data, id_client=None)
-                    db.session.add(nueva_dir)
-                    db.session.flush()
-                    cliente = Cliente(
-                        id_usuario=current_user.id,
-                        direccion_envio=nueva_dir.id,
-                        telefono=form_nueva.telefono.data or ''
-                    )
+                    cliente = Cliente(id_usuario=current_user.id, telefono=form_nueva.telefono.data or '')
                     db.session.add(cliente)
-                    db.session.flush()
-                    nueva_dir.id_client = cliente.id
-                    db.session.commit()
-                else:
-                    nueva_dir = Address(address=form_nueva.direccion.data, id_client=cliente.id)
-                    db.session.add(nueva_dir)
-                    db.session.commit()
-                session['checkout_direccion'] = form_nueva.direccion.data
-                session.modified = True
+                    db.session.flush() # Para obtener el id_cliente inmediatamente
+                # 2. Crear la nueva dirección ligada al cliente
+                nueva_dir = Address(address=form_nueva.direccion.data, id_client=cliente.id)
+                db.session.add(nueva_dir)
+                db.session.commit()
+                session['checkout_id_direccion'] = nueva_dir.id
+                session['checkout_direccion_texto'] = nueva_dir.address
                 flash("Dirección registrada correctamente.", "success")
                 return redirect(url_for('e-commerce.checkout_pago'))
             else:
-                flash("Por favor completa el formulario correctamente.", "danger")
-
+                flash("Revisa los datos del formulario.", "danger")
     subtotal = sum(item['precio'] * item['cantidad'] for item in cart.values())
     iva = subtotal * 0.16
     total = subtotal + iva
-
-    return render_template("ecommerce/checkout_direccion.html",
-                           cart=cart, subtotal=subtotal, iva=iva, total=total,
-                           mis_direcciones=mis_direcciones, form_nueva=form_nueva)
-
+    return render_template("ecommerce/checkout_direccion.html", 
+                           cart=cart, 
+                           subtotal=subtotal, # <--- ¡IMPORTANTE PASARLO!
+                           iva=iva, total=total, mis_direcciones=mis_direcciones, form_nueva=form_nueva)
 
 @ecommerce_bp.route("/checkout/pago", methods=['GET', 'POST'])
 @login_required
 def checkout_pago():
     cart = session.get('cart', {})
-    direccion = session.get('checkout_direccion')
-
-    if not cart:
-        flash("El carrito está vacío.", "warning")
-        return redirect(url_for('e-commerce.catalog'))
-    if not direccion:
-        flash("Necesitas ingresar una dirección de envío.", "warning")
+    id_direccion = session.get('checkout_id_direccion')
+    direccion_texto = session.get('checkout_direccion_texto')
+    if not cart or not direccion_texto:
+        flash("Faltan datos para completar la compra.", "warning")
         return redirect(url_for('e-commerce.checkout_direccion'))
-
     subtotal = sum(item['precio'] * item['cantidad'] for item in cart.values())
     iva = subtotal * 0.16
     total = subtotal + iva
-
     if request.method == 'POST':
         card_number = request.form.get('card_number', '').replace(' ', '')
-
         cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
-
+        # Crear la venta principal
         nueva_venta = Sales(
             folio=str(uuid.uuid4())[:8].upper(),
             id_user=current_user.id,
-            shipping_address=direccion[:50],
-            gross_total=total,
             id_client_sold=cliente.id if cliente else None,
+            id_address=id_direccion, # Relación directa
+            shipping_address_text=direccion_texto, # Snapshot histórico
+            gross_total=total,
             status=3  # Pagada
         )
         db.session.add(nueva_venta)
         db.session.flush()
-
+        # Crear los detalles (incluyendo la presentación corregida)
         for item in cart.values():
             detalle = SaleDetail(
                 id_sale=nueva_venta.id,
                 id_product=item['id_producto'],
+                id_presentation=item['id_presentacion'], # ¡Importante!
                 lot=item['cantidad'],
                 unit_price_moment=item['precio'],
-                moment_utility=0
+                moment_utility=0 # Aquí puedes calcular (precio - costo) si lo agregas luego
             )
             db.session.add(detalle)
-
+        # Registrar el pago
         ultimos_4 = card_number[-4:] if len(card_number) >= 4 else 'N/A'
         pago = SalePayment(
             id_sale=nueva_venta.id,
-            payment_method=3,
+            payment_method=3, # Tarjeta Crédito según tu dict
             paid_amount=total,
             payment_reference=f"**** {ultimos_4}"
         )
         db.session.add(pago)
+        
         db.session.commit()
+        success_almacen, mensaje_almacen = sale_out(nueva_venta.id)
+        if not success_almacen:
+            # Si algo sale mal con el stock, avisamos al admin pero no matamos la venta
+            print(f"ALERTA INVENTARIO: {mensaje_almacen}")
 
+        # Limpiar sesión
         session.pop('cart', None)
-        session.pop('checkout_direccion', None)
-        session.modified = True
-
-        flash(f"✓ ¡Pago exitoso! Pedido #{nueva_venta.folio} confirmado.", "success")
+        session.pop('checkout_id_direccion', None)
+        session.pop('checkout_direccion_texto', None)
+        flash(f"✓ ¡Compra exitosa! Pedido #{nueva_venta.folio} confirmado.", "success")
         return redirect(url_for('e-commerce.pedidos'))
-
-    return render_template("ecommerce/checkout_pago.html",
-                           cart=cart, subtotal=subtotal, iva=iva, total=total, direccion=direccion)
-
+    return render_template("ecommerce/checkout_pago.html", cart=cart, 
+                           subtotal=subtotal, # <--- Agregado
+                           iva=iva, total=total, direccion=direccion_texto)
 
 @ecommerce_bp.route("/pedidos/<int:id_venta>/pagar", methods=['GET', 'POST'])
 @login_required
@@ -250,7 +230,6 @@ def pagar_venta(id_venta):
     if venta.status not in [1, 2]:
         flash("Este pedido ya no puede pagarse.", "warning")
         return redirect(url_for('e-commerce.pedidos'))
-
     if request.method == 'POST':
         card_number = request.form.get('card_number', '').replace(' ', '')
         ultimos_4 = card_number[-4:] if len(card_number) >= 4 else 'N/A'
@@ -263,11 +242,13 @@ def pagar_venta(id_venta):
         db.session.add(pago)
         venta.status = 3  # Pagada
         db.session.commit()
-        flash(f"✓ ¡Pago exitoso! Pedido #{venta.folio} pagado.", "success")
+        success_almacen, mensaje_almacen = sale_out(venta.id)
+        if success_almacen:
+            flash(f"✓ ¡Pago exitoso y stock actualizado!", "success")
+        else:
+            flash(f"Pago exitoso, pero hubo un detalle con el stock: {mensaje_almacen}", "info")
         return redirect(url_for('e-commerce.pedidos'))
-
     return render_template("ecommerce/pagar_venta.html", venta=venta)
-
 
 @ecommerce_bp.route("/pedidos")
 @login_required
@@ -276,14 +257,11 @@ def pedidos():
         verificar_cancelaciones()
     except Exception:
         pass
-
     mis_ventas = Sales.query.filter_by(id_user=current_user.id).order_by(Sales.sale_date.desc()).all()
     filtro = request.args.get('filtro', 'todos')
-
     return render_template("ecommerce/pedidos.html",
                            mis_ventas=mis_ventas,
                            filtro=filtro)
-
 
 @ecommerce_bp.route("/favoritos")
 def favoritos():
