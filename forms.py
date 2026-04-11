@@ -396,12 +396,12 @@ class FormInventoryAdjustment(FlaskForm):
     ])
 
 class AddressForm(FlaskForm):
-    direccion = StringField('Dirección', validators=[
+    direccion = StringField('Dirección Completa', validators=[
         validators.DataRequired(message="La dirección es obligatoria"),
-        validators.Length(min=10, max=100, message="La dirección debe tener entre 10 y 100 caracteres")
+        validators.Length(min=10, max=255)
     ])
-    telefono = StringField('Teléfono (opcional)', validators=[
+    telefono = StringField('Teléfono de contacto', validators=[
         validators.Optional(),
         validators.Length(max=20)
     ])
-    submit = SubmitField('Guardar Dirección')
+    submit = SubmitField('Guardar y continuar')

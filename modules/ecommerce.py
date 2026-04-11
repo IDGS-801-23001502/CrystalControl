@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask_security import current_user, login_required
-from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, address, verificar_cancelaciones
+from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, Address, FavoriteProduct,verificar_cancelaciones
 from forms import AddToCartForm, AddressForm
 import uuid
 
@@ -69,7 +69,7 @@ def add_to_cart():
                 'cantidad': cantidad,
                 'precio': float(pres_precio.price_men),
                 'presentacion': pres_precio.presentation,
-                'imagen': producto.picture or 'default.png'
+                'imagen': pres_precio.picture or 'default.png'
             }
         session.modified = True
         flash(f"✓ {producto.name} agregado al carrito.", "success")
@@ -124,7 +124,7 @@ def checkout_direccion():
     cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
     mis_direcciones = []
     if cliente:
-        mis_direcciones = address.query.filter_by(id_client=cliente.id).all()
+        mis_direcciones = Address.query.filter_by(id_client=cliente.id).all()
 
     form_nueva = AddressForm()
 
@@ -136,60 +136,53 @@ def checkout_direccion():
             if not id_dir:
                 flash("Selecciona una dirección.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
-            dir_obj = address.query.get(id_dir)
-            if not dir_obj:
+            
+            dir_obj = Address.query.get(id_dir)
+            if not dir_obj or dir_obj.id_client != cliente.id:
                 flash("Dirección no válida.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
-            session['checkout_direccion'] = dir_obj.address
-            session.modified = True
+            
+            # Guardamos el ID y el texto en la sesión
+            session['checkout_id_direccion'] = dir_obj.id
+            session['checkout_direccion_texto'] = dir_obj.address
             return redirect(url_for('e-commerce.checkout_pago'))
 
         elif accion == 'nueva_direccion':
             if form_nueva.validate_on_submit():
+                # 1. Asegurar que el objeto Cliente existe
                 if not cliente:
-                    nueva_dir = address(address=form_nueva.direccion.data, id_client=None)
-                    db.session.add(nueva_dir)
-                    db.session.flush()
-                    cliente = Cliente(
-                        id_usuario=current_user.id,
-                        direccion_envio=nueva_dir.id,
-                        telefono=form_nueva.telefono.data or ''
-                    )
+                    cliente = Cliente(id_usuario=current_user.id, telefono=form_nueva.telefono.data or '')
                     db.session.add(cliente)
-                    db.session.flush()
-                    nueva_dir.id_client = cliente.id
-                    db.session.commit()
-                else:
-                    nueva_dir = address(address=form_nueva.direccion.data, id_client=cliente.id)
-                    db.session.add(nueva_dir)
-                    db.session.commit()
-                session['checkout_direccion'] = form_nueva.direccion.data
-                session.modified = True
+                    db.session.flush() # Para obtener el id_cliente inmediatamente
+
+                # 2. Crear la nueva dirección ligada al cliente
+                nueva_dir = Address(address=form_nueva.direccion.data, id_client=cliente.id)
+                db.session.add(nueva_dir)
+                db.session.commit()
+
+                session['checkout_id_direccion'] = nueva_dir.id
+                session['checkout_direccion_texto'] = nueva_dir.address
                 flash("Dirección registrada correctamente.", "success")
                 return redirect(url_for('e-commerce.checkout_pago'))
             else:
-                flash("Por favor completa el formulario correctamente.", "danger")
+                flash("Revisa los datos del formulario.", "danger")
 
     subtotal = sum(item['precio'] * item['cantidad'] for item in cart.values())
-    iva = subtotal * 0.16
-    total = subtotal + iva
+    total = subtotal * 1.16
 
-    return render_template("ecommerce/checkout_direccion.html",
-                           cart=cart, subtotal=subtotal, iva=iva, total=total,
-                           mis_direcciones=mis_direcciones, form_nueva=form_nueva)
+    return render_template("ecommerce/checkout_direccion.html", 
+                           cart=cart, total=total, mis_direcciones=mis_direcciones, form_nueva=form_nueva)
 
 
 @ecommerce_bp.route("/checkout/pago", methods=['GET', 'POST'])
 @login_required
 def checkout_pago():
     cart = session.get('cart', {})
-    direccion = session.get('checkout_direccion')
+    id_direccion = session.get('checkout_id_direccion')
+    direccion_texto = session.get('checkout_direccion_texto')
 
-    if not cart:
-        flash("El carrito está vacío.", "warning")
-        return redirect(url_for('e-commerce.catalog'))
-    if not direccion:
-        flash("Necesitas ingresar una dirección de envío.", "warning")
+    if not cart or not direccion_texto:
+        flash("Faltan datos para completar la compra.", "warning")
         return redirect(url_for('e-commerce.checkout_direccion'))
 
     subtotal = sum(item['precio'] * item['cantidad'] for item in cart.values())
@@ -198,50 +191,54 @@ def checkout_pago():
 
     if request.method == 'POST':
         card_number = request.form.get('card_number', '').replace(' ', '')
-
         cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
 
+        # Crear la venta principal
         nueva_venta = Sales(
             folio=str(uuid.uuid4())[:8].upper(),
             id_user=current_user.id,
-            shipping_address=direccion[:50],
-            gross_total=total,
             id_client_sold=cliente.id if cliente else None,
+            id_address=id_direccion, # Relación directa
+            shipping_address_text=direccion_texto, # Snapshot histórico
+            gross_total=total,
             status=3  # Pagada
         )
         db.session.add(nueva_venta)
         db.session.flush()
 
+        # Crear los detalles (incluyendo la presentación corregida)
         for item in cart.values():
             detalle = SaleDetail(
                 id_sale=nueva_venta.id,
                 id_product=item['id_producto'],
+                id_presentation=item['id_presentacion'], # ¡Importante!
                 lot=item['cantidad'],
                 unit_price_moment=item['precio'],
-                moment_utility=0
+                moment_utility=0 # Aquí puedes calcular (precio - costo) si lo agregas luego
             )
             db.session.add(detalle)
 
+        # Registrar el pago
         ultimos_4 = card_number[-4:] if len(card_number) >= 4 else 'N/A'
         pago = SalePayment(
             id_sale=nueva_venta.id,
-            payment_method=3,
+            payment_method=3, # Tarjeta Crédito según tu dict
             paid_amount=total,
             payment_reference=f"**** {ultimos_4}"
         )
         db.session.add(pago)
+        
         db.session.commit()
 
+        # Limpiar sesión
         session.pop('cart', None)
-        session.pop('checkout_direccion', None)
-        session.modified = True
+        session.pop('checkout_id_direccion', None)
+        session.pop('checkout_direccion_texto', None)
 
-        flash(f"✓ ¡Pago exitoso! Pedido #{nueva_venta.folio} confirmado.", "success")
+        flash(f"✓ ¡Compra exitosa! Pedido #{nueva_venta.folio} confirmado.", "success")
         return redirect(url_for('e-commerce.pedidos'))
 
-    return render_template("ecommerce/checkout_pago.html",
-                           cart=cart, subtotal=subtotal, iva=iva, total=total, direccion=direccion)
-
+    return render_template("ecommerce/checkout_pago.html", cart=cart, total=total, direccion=direccion_texto)
 
 @ecommerce_bp.route("/pedidos/<int:id_venta>/pagar", methods=['GET', 'POST'])
 @login_required
