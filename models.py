@@ -84,7 +84,7 @@ class Cliente(db.Model):
     telefono = db.Column(db.String(20))
     # RELACIÓN: Un cliente tiene muchas direcciones
     direcciones = db.relationship('Address', backref='cliente', lazy=True)
-    favoritos = db.relationship('FavoriteSale', backref='cliente', lazy=True)
+    favoritos = db.relationship('FavoriteProduct', backref='cliente', lazy=True)
     
 ##MATERIAS PRIMAS###
 class Raw_Material(db.Model):
@@ -204,7 +204,7 @@ class Producto(db.Model):
 
     precios = db.relationship('ProductoPresentacionPrecio', backref='producto', lazy=True)
     
-    favoritos = db.relationship('FavoriteSale', backref='producto_favorito', lazy=True)
+    favoritos = db.relationship('FavoriteProduct', backref='producto_favorito', lazy=True)
 
 class ProductoPresentacionPrecio(db.Model):
     __tablename__ = 'producto_presentación_precio'
