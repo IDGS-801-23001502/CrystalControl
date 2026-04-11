@@ -6,6 +6,7 @@ from forms import FormProductionOrder, FormQualityCheck, FormCloseProductionOrde
 from utils.decorators import roles_accepted
 from flask_security import current_user
 from datetime import datetime, timedelta
+from utils.functions import generar_gs1_128, formatear_cadena_gs1_128
 
 
 module='production'
@@ -327,6 +328,7 @@ def quality_check(lot_id):
                     reason=2,             # Producción
                     quantity=lot.produced_quantity,
                     resulting_stock=prod.stock,
+                    status=1,
                     user_id=current_user.id
                 ))
                 flash(f"Lote {lot.lot_code} aprobado. Stock actualizado.", "success")
@@ -342,6 +344,7 @@ def quality_check(lot_id):
                     reason=1,            
                     quantity=lot.produced_quantity,
                     resulting_stock=prod.stock,
+                    status=2,
                     user_id=current_user.id
                 ))
                 flash(f"Lote {lot.lot_code} rechazado. Sin impacto en stock.", "warning")
@@ -399,6 +402,7 @@ def inventory_pt_adjustment():
                 quantity=cantidad,
                 resulting_stock=producto.stock,
                 user_id=current_user.id,
+                status=1,
                 timestamp=datetime.now()
             )
             
@@ -552,4 +556,27 @@ def recipe_info(recipe_id):
         'producto_nombre':  recipe.product.name if recipe.product else '—',
         'insumos':          insumos,
         'presentaciones':   presentaciones,
+    })
+
+@production_bp.route('/lot_barcode/<int:lot_id>')
+@roles_accepted('Administrador', 'Produccion', 'Almacenista')
+def lot_barcode(lot_id):
+    
+    
+    lot = ProductionLot.query.get_or_404(lot_id)
+    
+    # Necesitamos product_id y presentation_id — usamos 1 como presentación base
+    # si no tienes presentacion_id en el lote, puedes ajustar este valor
+    barcode_img = generar_gs1_128(
+        producto_id=lot.product_id,
+        presentacion_id=1,          # ajusta si tienes el dato en el lote
+        lote_nombre=lot.lot_code
+    )
+    cadena_gs1 = formatear_cadena_gs1_128(lot.product_id, 1, lot.lot_code)
+    
+    return jsonify({
+        'imagen_base64': barcode_img,
+        'codigo_gs1': cadena_gs1,
+        'lot_code': lot.lot_code,
+        'product_name': lot.product_name
     })

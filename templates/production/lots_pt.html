@@ -28,18 +28,13 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Código de
-                            Lote</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Producto /
-                            Ref. Orden</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">
-                            Stock Actual</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">
-                            Costo U.</th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Caducidad
-                        </th>
-                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">
-                            Estado</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Código de Lote</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Producto / Ref. Orden</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Stock Actual</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Costo U.</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Caducidad</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Estado</th>
+                        <th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm">
@@ -67,28 +62,39 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <span
-                                    class="{% if lot.expiry_date < now %}text-red-500 font-bold{% else %}text-slate-600{% endif %}">
+                                <span class="{% if lot.expiry_date < now %}text-red-500 font-bold{% else %}text-slate-600{% endif %}">
                                     {{ lot.expiry_date.strftime('%d/%m/%Y') }}
                                 </span>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-center">
                             {% if lot.status == 1 %}
-                            <span
-                                class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">LIBERADO</span>
+                            <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">LIBERADO</span>
                             {% elif lot.status == 2 %}
-                            <span
-                                class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-md">CUARENTENA</span>
+                            <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-md">CUARENTENA</span>
                             {% else %}
-                            <span
-                                class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-md">RECHAZADO</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-md">RECHAZADO</span>
                             {% endif %}
+                        </td>
+                        <!-- ── COLUMNA ACCIONES ── -->
+                        <td class="px-6 py-4 text-center">
+                            <button
+                                onclick="generarBarcode({{ lot.id }}, '{{ lot.lot_code }}', '{{ lot.product_name }}')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:border-emerald-200 transition-all duration-150 active:scale-95"
+                                title="Generar código de barras GS1-128">
+                                <!-- Icono código de barras -->
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                                    <path d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375M16.875 16.875v3M13.5 19.875h3.375" />
+                                </svg>
+                                Código
+                            </button>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="px-6 py-10 text-center text-slate-400 italic">
+                        <td colspan="7" class="px-6 py-10 text-center text-slate-400 italic">
                             No se encontraron lotes producidos.
                         </td>
                     </tr>
@@ -98,5 +104,162 @@
         </div>
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--            MODAL CÓDIGO DE BARRAS             -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="modalBarcode"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+     role="dialog" aria-modal="true">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+
+        <!-- Cabecera -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div>
+                <h2 class="text-base font-bold text-slate-800">Código de Barras GS1-128</h2>
+                <p id="modalSubtitle" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button onclick="cerrarModal()"
+                    class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Cuerpo -->
+        <div class="px-6 py-5">
+
+            <!-- Estado de carga -->
+            <div id="barcodeLoading" class="flex flex-col items-center gap-3 py-8">
+                <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-slate-400">Generando código...</p>
+            </div>
+
+            <!-- Imagen del código -->
+            <div id="barcodeResult" class="hidden">
+                <div class="bg-white border border-slate-100 rounded-xl p-4 flex justify-center">
+                    <img id="barcodeImg" src="" alt="Código de barras GS1-128"
+                         class="max-w-full h-auto" style="max-height: 120px;" />
+                </div>
+
+                <!-- Cadena GS1 -->
+                <div class="mt-4 bg-slate-50 rounded-lg px-4 py-3">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Cadena GS1-128</p>
+                    <p id="cadenaGs1" class="font-mono text-xs text-slate-700 break-all"></p>
+                </div>
+
+                <!-- Info del lote -->
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <div class="bg-slate-50 rounded-lg px-3 py-2">
+                        <p class="text-[10px] uppercase font-bold text-slate-400">Lote</p>
+                        <p id="infoLotCode" class="text-xs font-mono font-bold text-emerald-700 mt-0.5 truncate"></p>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg px-3 py-2">
+                        <p class="text-[10px] uppercase font-bold text-slate-400">Producto</p>
+                        <p id="infoProductName" class="text-xs font-bold text-slate-700 mt-0.5 truncate"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div id="barcodeError" class="hidden flex-col items-center gap-2 py-6 text-center">
+                <svg class="w-10 h-10 text-red-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+                <p id="barcodeErrorMsg" class="text-sm text-red-500 font-medium"></p>
+            </div>
+        </div>
+
+        <!-- Pie -->
+        <div id="barcodeFooter" class="hidden px-6 py-4 border-t border-slate-100 flex gap-3 justify-end">
+            <button onclick="cerrarModal()"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors">
+                Cerrar
+            </button>
+            <button onclick="descargarBarcode()"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors active:scale-95">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Descargar PNG
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let _currentLotCode = '';
+    let _currentImgBase64 = '';
+
+    function generarBarcode(lotId, lotCode, productName) {
+        // Preparar modal
+        _currentLotCode = lotCode;
+        document.getElementById('modalSubtitle').textContent = `${productName} — ${lotCode}`;
+
+        // Reset estados
+        document.getElementById('barcodeLoading').classList.remove('hidden');
+        document.getElementById('barcodeResult').classList.add('hidden');
+        document.getElementById('barcodeError').classList.add('hidden');
+        document.getElementById('barcodeFooter').classList.add('hidden');
+
+        // Mostrar modal
+        const modal = document.getElementById('modalBarcode');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Llamada al backend
+        fetch(`{{ url_for('production.lot_barcode', lot_id=0) }}`.replace('/0', `/${lotId}`))
+            .then(r => {
+                if (!r.ok) throw new Error(`Error ${r.status}: ${r.statusText}`);
+                return r.json();
+            })
+            .then(data => {
+                _currentImgBase64 = data.imagen_base64;
+
+                document.getElementById('barcodeImg').src = `data:image/png;base64,${data.imagen_base64}`;
+                document.getElementById('cadenaGs1').textContent = data.codigo_gs1;
+                document.getElementById('infoLotCode').textContent = data.lot_code;
+                document.getElementById('infoProductName').textContent = data.product_name;
+
+                document.getElementById('barcodeLoading').classList.add('hidden');
+                document.getElementById('barcodeResult').classList.remove('hidden');
+                document.getElementById('barcodeFooter').classList.remove('hidden');
+            })
+            .catch(err => {
+                document.getElementById('barcodeLoading').classList.add('hidden');
+                document.getElementById('barcodeErrorMsg').textContent = err.message || 'No se pudo generar el código.';
+                document.getElementById('barcodeError').classList.remove('hidden');
+                document.getElementById('barcodeError').classList.add('flex');
+            });
+    }
+
+    function cerrarModal() {
+        const modal = document.getElementById('modalBarcode');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        _currentImgBase64 = '';
+        _currentLotCode = '';
+    }
+
+    function descargarBarcode() {
+        if (!_currentImgBase64) return;
+        const link = document.createElement('a');
+        link.href = `data:image/png;base64,${_currentImgBase64}`;
+        link.download = `GS1-128_${_currentLotCode}.png`;
+        link.click();
+    }
+
+    // Cerrar modal al hacer click en el fondo
+    document.getElementById('modalBarcode').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarModal();
+    });
+</script>
 
 {% endblock %}

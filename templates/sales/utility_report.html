@@ -1,0 +1,564 @@
+{% extends "layout_employees.html" %}
+{% block title %} Reportes de Ventas {% endblock %}
+
+{% block content %}
+
+<style>
+  /* ── Visibilidad web/impresión ────────────────────────────── */
+  .print-format-container { display: none; }
+
+  @media print {
+    .web-layout-container, nav, footer, .sidebar, button, .no-print { display: none !important; }
+    .print-format-container {
+      display: block !important;
+      font-family: "Courier New", Courier, monospace;
+      color: black;
+    }
+    body { background: white !important; }
+    @page { margin: 1.5cm; }
+
+    .tabla-ejecutiva {
+      width: 100%; border-collapse: collapse; margin-bottom: 20px;
+    }
+    .tabla-ejecutiva th, .tabla-ejecutiva td {
+      border: 1px solid black; padding: 7px; font-size: 9.5pt; text-align: left;
+    }
+    .tabla-ejecutiva th {
+      background-color: #f2f2f2 !important;
+      -webkit-print-color-adjust: exact;
+    }
+    .titulo-seccion {
+      border-bottom: 2px solid black;
+      margin: 18px 0 8px 0;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 10pt;
+    }
+    .print-kpi-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-bottom: 18px;
+    }
+    .print-kpi-box {
+      border: 1px solid black; padding: 8px 10px; text-align: center;
+    }
+    .print-kpi-val { font-size: 14pt; font-weight: bold; }
+    .print-kpi-lbl { font-size: 8pt; text-transform: uppercase; }
+  }
+
+  /* ── Estilos web ──────────────────────────────────────────── */
+  .emerald-icon-bg    { background-color: rgba(16,185,129,.10); border-color: rgba(16,185,129,.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-thead      { background-color: rgba(16,185,129,.05); }
+  .emerald-row:hover  { background-color: rgba(16,185,129,.04); }
+
+  .kpi-card {
+    background:#fff; border:1px solid #e2e8f0; border-radius:.75rem;
+    padding:1.25rem 1.5rem; box-shadow:0 1px 3px 0 rgb(0 0 0/.05);
+  }
+  .kpi-value { font-size:1.75rem; font-weight:800; line-height:1.1; color:#0f172a; }
+  .kpi-label {
+    font-size:.65rem; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:#94a3b8; margin-bottom:.4rem;
+  }
+
+  .filter-pill {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:5px 14px; border-radius:999px; font-size:.75rem;
+    font-weight:600; border:1.5px solid #e2e8f0;
+    cursor:pointer; transition:all .15s ease;
+    background:#f1f5f9; color:#64748b; text-decoration:none;
+  }
+  .filter-pill:hover { background:#e2e8f0; color:#334155; }
+  .filter-pill.active { background:#1e293b; color:#fff; border-color:#1e293b; }
+
+  .prog-bar  { height:6px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:99px; background:#059669; }
+
+  .status-badge {
+    display:inline-block; padding:.2rem .55rem; border-radius:6px;
+    font-size:.62rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .badge-green  { background:#d1fae5; color:#065f46; }
+  .badge-blue   { background:#dbeafe; color:#1e40af; }
+  .badge-amber  { background:#fef3c7; color:#92400e; }
+  .badge-red    { background:#fee2e2; color:#991b1b; }
+
+  .chart-wrap { position:relative; height:220px; }
+</style>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--                    VISTA WEB                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="web-layout-container max-w-7xl mx-auto mt-10 px-4 mb-24">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="flex items-center gap-4">
+      <div class="emerald-icon-bg flex items-center justify-center w-12 h-12 rounded-2xl border">
+        <svg class="emerald-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Reportes de Ventas</h1>
+        <p class="text-sm text-slate-500">
+          Período:
+          <strong class="text-slate-700 font-mono text-xs">
+            {{ fecha_ini.strftime('%d/%m/%Y') }} — {{ fecha_fin.strftime('%d/%m/%Y') }}
+          </strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Filtros período -->
+      <form method="GET" action="{{ url_for('sales.reports') }}"
+            class="flex flex-wrap items-center gap-2">
+        {% for p, lbl in [('dia','Día'),('semana','Semana'),('mes','Mes'),('anio','Año')] %}
+        <button type="submit" name="periodo" value="{{ p }}"
+                class="filter-pill {% if periodo == p %}active{% endif %}">{{ lbl }}</button>
+        {% endfor %}
+        <div class="h-6 w-px bg-slate-200 mx-1"></div>
+        <input type="date" name="fecha" value="{{ fecha_ref }}"
+               onchange="this.form.submit()"
+               class="px-3 py-1.5 text-sm border border-slate-200 rounded-xl bg-slate-50
+                      focus:ring-2 focus:ring-emerald-400 focus:outline-none text-slate-700 font-mono">
+      </form>
+
+      <!-- Botón imprimir -->
+      <button onclick="window.print()"
+              class="no-print inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white
+                     text-sm font-medium rounded-lg hover:bg-slate-900 transition-all active:scale-95 shadow-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+        </svg>
+        Imprimir Reporte
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="kpi-card emerald-border-top">
+      <p class="kpi-label">Total Ingresos</p>
+      <p class="kpi-value">${{ "{:,.2f}".format(total_ingresos) }}</p>
+      <p class="text-xs text-slate-400 mt-2 font-mono">{{ num_ventas }} venta(s)</p>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid #10b981;">
+      <p class="kpi-label">Utilidad Neta</p>
+      <p class="kpi-value text-emerald-600">${{ "{:,.2f}".format(total_utilidad) }}</p>
+      <p class="text-xs text-slate-400 mt-2 font-mono">
+        {% if total_ingresos > 0 %}{{ "{:.1f}".format(total_utilidad / total_ingresos * 100) }}% margen{% else %}Sin ingresos{% endif %}
+      </p>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
+      <p class="kpi-label">Ticket Promedio</p>
+      <p class="kpi-value text-sky-600">${{ "{:,.2f}".format(ticket_promedio) }}</p>
+      <p class="text-xs text-slate-400 mt-2 font-mono">por transacción</p>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid #f59e0b;">
+      <p class="kpi-label">Núm. Ventas</p>
+      <p class="kpi-value text-amber-500">{{ num_ventas }}</p>
+      <p class="text-xs text-slate-400 mt-2 font-mono">en el período</p>
+    </div>
+  </div>
+
+  <!-- GRÁFICAS -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+
+    <!-- Serie temporal -->
+    <div class="emerald-border-top lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="emerald-icon-bg flex items-center justify-center w-7 h-7 rounded-lg border">
+          <svg class="emerald-icon w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+          </svg>
+        </div>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ingresos &amp; Utilidad — evolución diaria</h3>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartSerie"></canvas>
+      </div>
+    </div>
+
+    <!-- Doughnut -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5" style="border-top:3px solid #f59e0b;">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-7 h-7 rounded-lg border flex items-center justify-center"
+             style="background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.25);">
+          <svg class="w-3.5 h-3.5" style="color:#d97706" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+          </svg>
+        </div>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Composición del ingreso</h3>
+      </div>
+      <div class="flex justify-center" style="height:160px;">
+        <canvas id="chartDoughnut"></canvas>
+      </div>
+      <div class="flex justify-around text-center mt-4 pt-4 border-t border-slate-100">
+        <div>
+          <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Costo</p>
+          <p class="text-base font-bold text-slate-700">
+            ${{ "{:,.0f}".format([total_ingresos - total_utilidad, 0] | max) }}
+          </p>
+        </div>
+        <div class="w-px bg-slate-100"></div>
+        <div>
+          <p class="text-[10px] text-emerald-600 uppercase font-bold tracking-wider">Utilidad</p>
+          <p class="text-base font-bold text-emerald-600">${{ "{:,.0f}".format(total_utilidad) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UTILIDAD POR PRODUCTO -->
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">
+        Utilidad por Producto — Top {{ utilidad_productos | length }}
+      </h3>
+      <span class="text-xs text-slate-400 font-mono">{{ num_ventas }} ventas analizadas</span>
+    </div>
+    {% if utilidad_productos %}
+    {% set max_util = utilidad_productos[0].utilidad %}
+    <div class="divide-y divide-slate-100">
+      {% for p in utilidad_productos %}
+      <div class="px-6 py-4 grid grid-cols-12 items-center gap-4 hover:bg-slate-50/70 transition-colors">
+        <div class="col-span-1 text-center">
+          <span class="text-xs font-bold text-slate-300 font-mono">{{ loop.index }}</span>
+        </div>
+        <div class="col-span-4">
+          <p class="text-sm font-semibold text-slate-800 truncate" title="{{ p.producto }}">{{ p.producto }}</p>
+          <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ p.unidades }} unidades vendidas</p>
+        </div>
+        <div class="col-span-4">
+          <div class="prog-bar">
+            <div class="prog-fill"
+                 style="width:{{ (p.utilidad / max_util * 100) | round(1) if max_util > 0 else 0 }}%"></div>
+          </div>
+          <p class="text-[10px] text-slate-400 font-mono mt-1">Ingreso: ${{ "{:,.2f}".format(p.ingreso) }}</p>
+        </div>
+        <div class="col-span-3 text-right">
+          <p class="text-sm font-bold text-emerald-600 font-mono">${{ "{:,.2f}".format(p.utilidad) }}</p>
+          <span class="inline-block mt-0.5 px-2 py-0.5 bg-emerald-50 text-emerald-700
+                       text-[10px] font-bold rounded-full border border-emerald-100">
+            {{ p.margen }}% mg.
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="py-12 text-center text-slate-400 italic text-sm">Sin datos de utilidad para este período.</p>
+    {% endif %}
+  </div>
+
+  <!-- TABLA DETALLADA -->
+  <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Detalle de Ventas</h3>
+      <span class="text-xs text-slate-400 font-mono">{{ ventas_tabla | length }} registros</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-slate-500">
+        <thead class="emerald-thead text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
+          <tr>
+            <th class="px-6 py-3 font-semibold">Folio</th>
+            <th class="px-6 py-3 font-semibold">Fecha</th>
+            <th class="px-6 py-3 font-semibold">Vendedor</th>
+            <th class="px-6 py-3 font-semibold text-right">Ingreso</th>
+            <th class="px-6 py-3 font-semibold text-right">Utilidad</th>
+            <th class="px-6 py-3 font-semibold text-center">Estado</th>
+            <th class="px-6 py-3 font-semibold text-center no-print">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for sale, user in ventas_tabla %}
+          <tr class="emerald-row bg-white transition-colors">
+            <td class="px-6 py-3 font-bold font-mono text-xs text-slate-700">#{{ sale.folio }}</td>
+            <td class="px-6 py-3 font-mono text-xs text-slate-500">
+              {{ sale.sale_date.strftime('%d/%m/%Y') }}<br>
+              <span class="text-slate-400">{{ sale.sale_date.strftime('%H:%M') }}</span>
+            </td>
+            <td class="px-6 py-3 text-slate-700 font-medium">
+              {{ user.nombre if user else 'Tienda Online' }}
+            </td>
+            <td class="px-6 py-3 text-right font-bold font-mono text-slate-800">
+              ${{ "{:,.2f}".format(sale.gross_total or 0) }}
+            </td>
+            <td class="px-6 py-3 text-right font-mono font-semibold">
+              {% if sale.profit_total %}
+                <span class="text-emerald-600">${{ "{:,.2f}".format(sale.profit_total) }}</span>
+              {% else %}
+                <span class="text-slate-300">—</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-3 text-center">
+              {% set st = sale.status %}
+              {% if st == 3 %}<span class="status-badge badge-green">Pagada</span>
+              {% elif st == 4 %}<span class="status-badge badge-blue">En camino</span>
+              {% elif st == 5 %}<span class="status-badge badge-blue">Entregada</span>
+              {% elif st in [1,2] %}<span class="status-badge badge-amber">Pendiente</span>
+              {% else %}<span class="status-badge badge-red">Cancelada</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-3 text-center no-print">
+              <a href="{{ url_for('sales.view_detail', id=sale.id) }}"
+                 class="text-emerald-600 hover:text-emerald-800 text-xs font-semibold hover:underline transition-colors">
+                Ver detalle
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="py-12 text-center text-slate-400 italic text-sm">
+              No hay ventas registradas en este período.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /web-layout-container -->
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--                  FORMATO DE IMPRESIÓN                     -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="print-format-container">
+
+  <!-- Encabezado ejecutivo -->
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;
+              border-bottom:4px solid black; padding-bottom:10px; margin-bottom:18px;">
+    <div>
+      <h1 style="font-size:22pt; margin:0; font-weight:bold;">EXPRESS &amp; CLEAN</h1>
+      <p style="margin:2px 0 0; font-size:9.5pt;">REPORTE EJECUTIVO DE VENTAS Y UTILIDAD</p>
+    </div>
+    <div style="text-align:right;">
+      <p style="margin:0; font-weight:bold; font-size:10pt;">
+        PERÍODO: {{ fecha_ini.strftime('%d/%m/%Y') }} — {{ fecha_fin.strftime('%d/%m/%Y') }}
+      </p>
+      <p style="margin:2px 0 0; font-size:8.5pt;">
+        GENERADO: {{ now.strftime('%d/%m/%Y %H:%M') if now else '' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- KPIs en cuadrícula -->
+  <div class="print-kpi-grid">
+    <div class="print-kpi-box">
+      <p class="print-kpi-lbl">Total Ingresos</p>
+      <p class="print-kpi-val">${{ "{:,.2f}".format(total_ingresos) }}</p>
+    </div>
+    <div class="print-kpi-box">
+      <p class="print-kpi-lbl">Utilidad Neta</p>
+      <p class="print-kpi-val">${{ "{:,.2f}".format(total_utilidad) }}</p>
+      {% if total_ingresos > 0 %}
+      <p style="font-size:8pt; margin:2px 0 0;">
+        Margen: {{ "{:.1f}".format(total_utilidad / total_ingresos * 100) }}%
+      </p>
+      {% endif %}
+    </div>
+    <div class="print-kpi-box">
+      <p class="print-kpi-lbl">Ticket Promedio</p>
+      <p class="print-kpi-val">${{ "{:,.2f}".format(ticket_promedio) }}</p>
+    </div>
+    <div class="print-kpi-box">
+      <p class="print-kpi-lbl">Núm. Ventas</p>
+      <p class="print-kpi-val">{{ num_ventas }}</p>
+    </div>
+  </div>
+
+  <!-- Sección 1: Utilidad por producto -->
+  <div class="titulo-seccion">1. UTILIDAD POR PRODUCTO — TOP {{ utilidad_productos | length }}</div>
+  <table class="tabla-ejecutiva">
+    <thead>
+      <tr>
+        <th style="width:5%; text-align:center;">#</th>
+        <th style="width:40%;">PRODUCTO</th>
+        <th style="width:12%; text-align:center;">UNIDADES</th>
+        <th style="width:18%; text-align:right;">INGRESO</th>
+        <th style="width:18%; text-align:right;">UTILIDAD</th>
+        <th style="width:10%; text-align:center;">MARGEN</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in utilidad_productos %}
+      <tr>
+        <td style="text-align:center;">{{ loop.index }}</td>
+        <td style="font-weight:bold;">{{ p.producto }}</td>
+        <td style="text-align:center;">{{ p.unidades }}</td>
+        <td style="text-align:right;">${{ "{:,.2f}".format(p.ingreso) }}</td>
+        <td style="text-align:right; font-weight:bold;">${{ "{:,.2f}".format(p.utilidad) }}</td>
+        <td style="text-align:center;">{{ p.margen }}%</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center; font-style:italic;">Sin datos en el período.</td></tr>
+      {% endfor %}
+      <!-- Fila totales -->
+      <tr style="font-weight:bold; border-top:2px solid black;">
+        <td colspan="3" style="text-align:right;">TOTALES:</td>
+        <td style="text-align:right;">
+          ${{ "{:,.2f}".format(utilidad_productos | sum(attribute='ingreso')) }}
+        </td>
+        <td style="text-align:right;">
+          ${{ "{:,.2f}".format(utilidad_productos | sum(attribute='utilidad')) }}
+        </td>
+        <td style="text-align:center;">
+          {% set tot_ing = utilidad_productos | sum(attribute='ingreso') %}
+          {% set tot_util = utilidad_productos | sum(attribute='utilidad') %}
+          {% if tot_ing > 0 %}{{ "{:.1f}".format(tot_util / tot_ing * 100) }}%{% else %}—{% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Sección 2: Detalle de ventas -->
+  <div class="titulo-seccion">2. DETALLE DE VENTAS DEL PERÍODO</div>
+  <table class="tabla-ejecutiva">
+    <thead>
+      <tr>
+        <th style="width:12%;">FOLIO</th>
+        <th style="width:16%;">FECHA</th>
+        <th style="width:22%;">VENDEDOR</th>
+        <th style="width:18%; text-align:right;">INGRESO</th>
+        <th style="width:18%; text-align:right;">UTILIDAD</th>
+        <th style="width:14%; text-align:center;">ESTADO</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sale, user in ventas_tabla %}
+      <tr>
+        <td style="font-family:'Courier New'; font-weight:bold;">#{{ sale.folio }}</td>
+        <td>{{ sale.sale_date.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ user.nombre if user else 'Tienda Online' }}</td>
+        <td style="text-align:right; font-weight:bold;">${{ "{:,.2f}".format(sale.gross_total or 0) }}</td>
+        <td style="text-align:right;">
+          {% if sale.profit_total %}${{ "{:,.2f}".format(sale.profit_total) }}{% else %}—{% endif %}
+        </td>
+        <td style="text-align:center;">
+          {% set st = sale.status %}
+          {% if st == 3 %}PAGADA
+          {% elif st == 4 %}EN CAMINO
+          {% elif st == 5 %}ENTREGADA
+          {% elif st in [1,2] %}PENDIENTE
+          {% else %}CANCELADA
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center; font-style:italic;">Sin ventas en el período.</td></tr>
+      {% endfor %}
+      <!-- Fila de totales -->
+      <tr style="font-weight:bold; border-top:2px solid black;">
+        <td colspan="3" style="text-align:right;">TOTALES DEL PERÍODO:</td>
+        <td style="text-align:right;">${{ "{:,.2f}".format(total_ingresos) }}</td>
+        <td style="text-align:right;">${{ "{:,.2f}".format(total_utilidad) }}</td>
+        <td style="text-align:center;">{{ num_ventas }} ventas</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Firmas -->
+  <br><br>
+  <div style="margin-top:40px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:40px; text-align:center;">
+    <div style="border-top:1px solid black; padding-top:10px;">
+      <p style="font-size:8.5pt; margin:0;">GERENTE COMERCIAL</p>
+    </div>
+    <div style="border-top:1px solid black; padding-top:10px;">
+      <p style="font-size:8.5pt; margin:0;">RESPONSABLE DE VENTAS</p>
+    </div>
+    <div style="border-top:1px solid black; padding-top:10px;">
+      <p style="font-size:8.5pt; margin:0;">DIRECCIÓN GENERAL</p>
+    </div>
+  </div>
+
+  <!-- Pie de página -->
+  <div style="position:fixed; bottom:0; width:100%; text-align:center;
+              font-size:7.5pt; color:#555; border-top:1px solid #ccc; padding-top:4px;">
+    Documento interno — Express &amp; Clean &nbsp;|&nbsp;
+    Reporte generado el {{ now.strftime('%d/%m/%Y %H:%M') if now else '' }} &nbsp;|&nbsp;
+    Prohibida su reproducción externa.
+  </div>
+
+</div><!-- /print-format-container -->
+
+<!-- ── CHART.JS (solo en web) ──────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const labels   = {{ serie_labels   | tojson }};
+const ingresos = {{ serie_ingresos | tojson }};
+const utilidad = {{ serie_utilidad | tojson }};
+const totalIng  = {{ total_ingresos | tojson }};
+const totalUtil = {{ total_utilidad | tojson }};
+
+Chart.defaults.font.family = "ui-monospace,'Courier New',monospace";
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#94a3b8';
+
+// Serie temporal
+const ctxS    = document.getElementById('chartSerie').getContext('2d');
+const gradIng  = ctxS.createLinearGradient(0,0,0,220);
+gradIng.addColorStop(0,'rgba(14,165,233,.18)');
+gradIng.addColorStop(1,'rgba(14,165,233,0)');
+const gradUtil = ctxS.createLinearGradient(0,0,0,220);
+gradUtil.addColorStop(0,'rgba(5,150,105,.15)');
+gradUtil.addColorStop(1,'rgba(5,150,105,0)');
+
+new Chart(ctxS, {
+  type:'line',
+  data:{
+    labels,
+    datasets:[
+      { label:'Ingresos', data:ingresos, borderColor:'#0ea5e9', backgroundColor:gradIng,
+        borderWidth:2, pointRadius:labels.length>25?0:3, pointBackgroundColor:'#0ea5e9', tension:.4, fill:true },
+      { label:'Utilidad', data:utilidad, borderColor:'#059669', backgroundColor:gradUtil,
+        borderWidth:2, pointRadius:labels.length>25?0:3, pointBackgroundColor:'#059669', tension:.4, fill:true }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{ position:'top', labels:{boxWidth:9,padding:14,font:{size:11}} },
+      tooltip:{
+        backgroundColor:'#0f172a', padding:10, cornerRadius:8,
+        callbacks:{ label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString('es-MX',{minimumFractionDigits:2})}` }
+      }
+    },
+    scales:{
+      x:{ grid:{display:false}, ticks:{maxRotation:0,maxTicksLimit:10} },
+      y:{ grid:{color:'#f1f5f9'}, ticks:{ callback: v=>'$'+(v>=1000?(v/1000).toFixed(1)+'k':v) } }
+    }
+  }
+});
+
+// Doughnut
+const costo = Math.max(0, totalIng - totalUtil);
+new Chart(document.getElementById('chartDoughnut'),{
+  type:'doughnut',
+  data:{
+    labels:['Costo','Utilidad'],
+    datasets:[{ data:[costo,totalUtil], backgroundColor:['#e2e8f0','#059669'], borderWidth:0, hoverOffset:5 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'74%',
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#0f172a', padding:10, cornerRadius:8,
+        callbacks:{ label: ctx=>` $${ctx.parsed.toLocaleString('es-MX',{minimumFractionDigits:2})}` }
+      }
+    }
+  }
+});
+</script>
+
+{% endblock %}

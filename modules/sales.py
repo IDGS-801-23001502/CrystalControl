@@ -3,9 +3,9 @@ from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, Cash
 from decimal import Decimal
 from utils.decorators import roles_accepted
 from utils.functions import parse_gs1_128, sale_out
-from sqlalchemy import func
+from sqlalchemy import func, extract, case
 from flask_security import current_user
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import uuid
 
 module = 'sales'
@@ -320,3 +320,125 @@ def procesar_codigo_pos(barcode_raw):
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
+@sales_bp.route('/reports')
+@roles_accepted('Administrador', 'Gerente')
+def reports():
+    # ── Parámetros del filtro ─────────────────────────────────────────────────
+    periodo   = request.args.get('periodo', 'mes')      # dia | semana | mes | anio
+    fecha_str = request.args.get('fecha', date.today().isoformat())  # YYYY-MM-DD
+
+    try:
+        fecha_ref = date.fromisoformat(fecha_str)
+    except ValueError:
+        fecha_ref = date.today()
+
+    # ── Rango según período ───────────────────────────────────────────────────
+    if periodo == 'dia':
+        fecha_ini = fecha_ref
+        fecha_fin = fecha_ref
+        label_fmt = 'Día %d/%m/%Y'
+    elif periodo == 'semana':
+        # Lunes de la semana que contiene fecha_ref
+        fecha_ini = fecha_ref - timedelta(days=fecha_ref.weekday())
+        fecha_fin = fecha_ini + timedelta(days=6)
+        label_fmt = 'Semana %d/%m'
+    elif periodo == 'anio':
+        fecha_ini = date(fecha_ref.year, 1, 1)
+        fecha_fin = date(fecha_ref.year, 12, 31)
+        label_fmt = 'Año %Y'
+    else:  # mes (default)
+        fecha_ini = date(fecha_ref.year, fecha_ref.month, 1)
+        # último día del mes
+        if fecha_ref.month == 12:
+            fecha_fin = date(fecha_ref.year, 12, 31)
+        else:
+            fecha_fin = date(fecha_ref.year, fecha_ref.month + 1, 1) - timedelta(days=1)
+        label_fmt = 'Mes %m/%Y'
+
+    dt_ini = datetime.combine(fecha_ini, datetime.min.time())
+    dt_fin = datetime.combine(fecha_fin, datetime.max.time())
+
+    # ── KPIs resumen ─────────────────────────────────────────────────────────
+    ventas_periodo = Sales.query.filter(
+        Sales.sale_date.between(dt_ini, dt_fin),
+        Sales.status.notin_([6])          # excluir canceladas
+    ).all()
+
+    total_ingresos  = sum(float(v.gross_total or 0) for v in ventas_periodo)
+    total_utilidad  = sum(float(v.profit_total or 0) for v in ventas_periodo)
+    num_ventas      = len(ventas_periodo)
+    ticket_promedio = (total_ingresos / num_ventas) if num_ventas else 0
+
+    # ── Serie temporal (ventas agrupadas por día) ─────────────────────────────
+    serie_raw = db.session.query(
+        func.date(Sales.sale_date).label('dia'),
+        func.sum(Sales.gross_total).label('ingresos'),
+        func.sum(Sales.profit_total).label('utilidad'),
+        func.count(Sales.id).label('num_ventas')
+    ).filter(
+        Sales.sale_date.between(dt_ini, dt_fin),
+        Sales.status.notin_([6])
+    ).group_by(func.date(Sales.sale_date))\
+     .order_by(func.date(Sales.sale_date)).all()
+
+    serie_labels   = [str(r.dia) for r in serie_raw]
+    serie_ingresos = [float(r.ingresos or 0) for r in serie_raw]
+    serie_utilidad = [float(r.utilidad or 0) for r in serie_raw]
+
+    # ── Utilidad por producto (top 10) ────────────────────────────────────────
+    utilidad_prod_raw = db.session.query(
+        Producto.name.label('producto'),
+        func.sum(SaleDetail.moment_utility * SaleDetail.lot).label('utilidad_total'),
+        func.sum(SaleDetail.lot).label('unidades'),
+        func.sum(SaleDetail.unit_price_moment * SaleDetail.lot).label('ingreso_total')
+    ).join(SaleDetail, Producto.id == SaleDetail.id_product)\
+     .join(Sales, Sales.id == SaleDetail.id_sale)\
+     .filter(
+        Sales.sale_date.between(dt_ini, dt_fin),
+        Sales.status.notin_([6])
+     ).group_by(Producto.id, Producto.name)\
+      .order_by(func.sum(SaleDetail.moment_utility * SaleDetail.lot).desc())\
+      .limit(10).all()
+
+    utilidad_productos = [{
+        'producto':      r.producto,
+        'utilidad':      float(r.utilidad_total or 0),
+        'unidades':      int(r.unidades or 0),
+        'ingreso':       float(r.ingreso_total or 0),
+        'margen':        round(
+                            float(r.utilidad_total or 0) /
+                            float(r.ingreso_total or 1) * 100, 1
+                         )
+    } for r in utilidad_prod_raw]
+
+    # ── Tabla detallada de ventas ─────────────────────────────────────────────
+    ventas_tabla = db.session.query(Sales, User).outerjoin(
+        User, Sales.id_user == User.id
+    ).filter(
+        Sales.sale_date.between(dt_ini, dt_fin),
+        Sales.status.notin_([6])
+    ).order_by(Sales.sale_date.desc()).all()
+
+    return render_template(
+        'sales/utility_report.html',
+        # Filtros activos
+        periodo=periodo,
+        fecha_ref=fecha_ref.isoformat(),
+        fecha_ini=fecha_ini,
+        fecha_fin=fecha_fin,
+        # KPIs
+        total_ingresos=total_ingresos,
+        total_utilidad=total_utilidad,
+        num_ventas=num_ventas,
+        ticket_promedio=ticket_promedio,
+        # Gráficas
+        serie_labels=serie_labels,
+        serie_ingresos=serie_ingresos,
+        serie_utilidad=serie_utilidad,
+        # Utilidad por producto
+        utilidad_productos=utilidad_productos,
+        # Tabla
+        ventas_tabla=ventas_tabla,
+        now=datetime.now()
+    )
