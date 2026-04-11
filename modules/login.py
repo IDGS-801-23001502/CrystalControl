@@ -52,7 +52,6 @@ def register():
         nombre = request.form.get("nombre")
         email = request.form.get('email')
         password = request.form.get("password")
-        address = request.form.get("address")
         phone = request.form.get("phone")
 
         role_cliente = Role.query.filter_by(name="Cliente").first()
@@ -70,7 +69,6 @@ def register():
 
         client = Cliente(
             id_usuario=user_client.id,
-            direccion_envio = address,
             telefono = ''
         )
         db.session.add(client)
