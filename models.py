@@ -87,6 +87,13 @@ class Cliente(db.Model):
     telefono = db.Column(db.String(20))
     
     favoritos = db.relationship('FavoriteSale', backref='cliente_favorito', lazy=True)
+
+class Address(db.Model):
+    __tablename__ = 'Direcciones'
+
+    id = db.Column('id_direccion', db.Integer, primary_key=True)
+    address = db.Column('direccion', db.String(100), nullable=False)
+    id_client = db.Column('id_client', db.Integer, db.ForeignKey('Clientes.id_cliente'))
     
 ##MATERIAS PRIMAS###
 class Raw_Material(db.Model):
@@ -308,13 +315,6 @@ class SalePayment(db.Model):
     def methods(self):
         values = {1: 'Efectivo', 2: 'Tarjeta Debito', 3: 'Tarjeta Credito', 4: 'Transferencia', 5:'Clip/Terminal', 6:'Credito tienda'}
         return values.get(self.payment_method)
-
-class address(db.Model):
-    __tablename__ = 'Direcciones'
-
-    id = db.Column('id_direccion', db.Integer, primary_key=True)
-    address = db.Column('direccion', db.String(100), nullable=False)
-    id_client = db.Column('id_client', db.Integer, db.ForeignKey('Clientes.id_cliente'))
 
 class FavoriteSale(db.Model):
     __tablename__ = 'Favoritos'

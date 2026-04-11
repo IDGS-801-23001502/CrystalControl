@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask_security import current_user, login_required
-from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, address, verificar_cancelaciones
+from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, Address, verificar_cancelaciones
 from forms import AddToCartForm, AddressForm
 import uuid
 
@@ -124,7 +124,7 @@ def checkout_direccion():
     cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
     mis_direcciones = []
     if cliente:
-        mis_direcciones = address.query.filter_by(id_client=cliente.id).all()
+        mis_direcciones = Address.query.filter_by(id_client=cliente.id).all()
 
     form_nueva = AddressForm()
 
@@ -136,7 +136,7 @@ def checkout_direccion():
             if not id_dir:
                 flash("Selecciona una dirección.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
-            dir_obj = address.query.get(id_dir)
+            dir_obj = Address.query.get(id_dir)
             if not dir_obj:
                 flash("Dirección no válida.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
@@ -147,7 +147,7 @@ def checkout_direccion():
         elif accion == 'nueva_direccion':
             if form_nueva.validate_on_submit():
                 if not cliente:
-                    nueva_dir = address(address=form_nueva.direccion.data, id_client=None)
+                    nueva_dir = Address(address=form_nueva.direccion.data, id_client=None)
                     db.session.add(nueva_dir)
                     db.session.flush()
                     cliente = Cliente(
@@ -160,7 +160,7 @@ def checkout_direccion():
                     nueva_dir.id_client = cliente.id
                     db.session.commit()
                 else:
-                    nueva_dir = address(address=form_nueva.direccion.data, id_client=cliente.id)
+                    nueva_dir = Address(address=form_nueva.direccion.data, id_client=cliente.id)
                     db.session.add(nueva_dir)
                     db.session.commit()
                 session['checkout_direccion'] = form_nueva.direccion.data
