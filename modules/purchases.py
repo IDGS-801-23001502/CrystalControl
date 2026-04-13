@@ -53,7 +53,7 @@ def demand():
             for item in form.items:
                 material = Raw_Material.query.get(item.material_id.data)
                 cant_solicitada = float(item.quantity.data)
-                stock_actual = float(material.real_stock) 
+                stock_actual = float(material.available_stock) 
                 stock_limite = float(material.stock_max)
 
                 if (stock_actual + cant_solicitada) > stock_limite:
@@ -65,7 +65,7 @@ def demand():
                 requester_id=current_user.id,
                 request_date=date.today(),
                 status=1,
-                observations=form.admin_notes.data
+                admin_notes=form.admin_notes.data
             )
             db.session.add(new_purchase)
             db.session.flush()

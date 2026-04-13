@@ -1,92 +1,122 @@
 <!doctype html>
 <html lang="es">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iniciar Sesión Administrativa - CrystalControl</title>
+    <title>CrystalControl - Acceso Administrativo</title>
     <link rel="shortcut icon" href="{{url_for('static',filename='img/icons/logo.png')}}">
-    <link
-      rel="stylesheet"
-      href="{{url_for('static',filename='css/output.css')}}"
-    />
-  </head>
-  <body class="bg-gray-100 h-screen flex items-center justify-center p-4">
-    <div
-      class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
-    >
-      <div class="flex flex-col items-center mb-8">
-        <img
-          src="{{ url_for('static', filename='img/icons/logo.png') }}"
-          alt="Logo CrystalControl"
-          class="h-40 w-auto object-contain mb-4"
-        />
+    <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}" />
+    <style>
+        .bg-emerald-gradient {
+            background: linear-gradient(135deg, #065f46 0%, #10b981 50%, #34d399 100%);
+        }
+        .text-emerald-deep { color: #064e3b; }
+        .focus-emerald:focus { border-color: #10b981 !class; outline: none; }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex items-center justify-center p-4">
+    
+    <div class="flex w-full max-w-5xl bg-white rounded-[2rem] shadow-2xl overflow-hidden min-h-[650px] border border-emerald-100">
+        
+        <div class="hidden lg:flex lg:w-1/2 bg-emerald-gradient p-16 flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-20 -left-10 w-64 h-64 bg-emerald-900/20 rounded-full blur-3xl"></div>
 
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tighter">
-          CrystalControl
-        </h1>
-        <p
-          class="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold"
-        >
-          Panel Administrativo
-        </p>
-      </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-10">
+                    <img src="{{ url_for('static', filename='img/icons/logo.png') }}" alt="Logo" class="h-12 w-auto brightness-0 invert">
+                    <span class="text-white font-bold text-2xl tracking-tight">CrystalControl</span>
+                </div>
+                
+                <h2 class="text-white text-4xl font-extrabold leading-tight">
+                    Control de Producción <br> 
+                    <span class="text-emerald-100 opacity-90">y Suministros.</span>
+                </h2>
+                
+                <div class="mt-8 space-y-4">
+                    <div class="flex items-center gap-3 text-emerald-50">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Gestión de Fórmulas Químicas</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-emerald-50">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        <span>Inventario de Materia Prima</span>
+                    </div>
+                </div>
+            </div>
 
-      <div id="flash-container" class="mb-6">
-        {% with messages = get_flashed_messages(with_categories=true) %} {% if
-        messages %} {% for category, message in messages %}
-        <div
-          class="p-4 text-sm rounded-lg shadow-sm border-l-4 {% if category == 'danger' %} bg-red-50 text-red-700 border-red-500 {% elif category == 'success' %} bg-green-50 text-green-700 border-green-500 {% elif category == 'warning' %} bg-yellow-50 text-yellow-700 border-yellow-500 {% else %} bg-blue-50 text-blue-700 border-blue-500 {% endif %}"
-        >
-          {{ message }}
-        </div>
-        {% endfor %} {% endif %} {% endwith %}
-      </div>
-
-      <form action="{{url_for('login.login_employees')}}" method="POST" class="space-y-6">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div>
-          <label
-            for="username"
-            class="block text-sm font-medium text-slate-700 mb-1.5"
-            >Nombre de Usuario</label
-          >
-          <div class="relative">
-            <input
-              type="text"
-              name="username"
-              id="username"
-              required
-              autofocus
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm"
-            />
-          </div>
+            <div class="relative z-10 border-t border-white/20 pt-6">
+                <p class="text-emerald-100 text-sm">
+                    Acceso exclusivo para personal administrativo de planta.
+                </p>
+            </div>
         </div>
 
-        <div>
-          <label
-            for="password"
-            class="block text-sm font-medium text-slate-700 mb-1.5"
-            >Contraseña</label
-          >
-          <input
-            type="password"
-            name="password"
-            id="password"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm"
-            placeholder="••••••••"
-          />
+        <div class="w-full lg:w-1/2 p-10 md:p-20 flex flex-col justify-center bg-white">
+            <div class="mb-12">
+                <h3 class="text-3xl font-black text-slate-800 tracking-tight">Panel de Control</h3>
+                <p class="text-slate-500 mt-2 font-medium">Inicia sesión para administrar productos de limpieza.</p>
+            </div>
+
+            <div id="flash-container" class="mb-6">
+                {% with messages = get_flashed_messages(with_categories=true) %} 
+                {% if messages %} 
+                {% for category, message in messages %}
+                <div class="p-4 text-sm rounded-2xl border-l-4 mb-3 {% if category == 'danger' %} bg-red-50 text-red-700 border-red-500 {% else %} bg-emerald-50 text-emerald-700 border-emerald-500 {% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %} 
+                {% endif %} 
+                {% endwith %}
+            </div>
+
+            <form action="{{url_for('login.login_employees')}}" method="POST" class="space-y-8">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="group">
+                    <label for="username" class="block text-xs font-bold text-emerald-700 uppercase tracking-[0.2em] mb-2 transition-all group-focus-within:text-emerald-500">Usuario Administrativo</label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            name="username"
+                            id="username"
+                            required
+                            autofocus
+                            placeholder="usuario_erp"
+                            class="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-slate-200 focus:ring-0 focus:border-emerald-500 transition-all text-slate-800 placeholder-slate-300 font-medium"
+                        />
+                    </div>
+                </div>
+
+                <div class="group">
+                    <label for="password" class="block text-xs font-bold text-emerald-700 uppercase tracking-[0.2em] mb-2 transition-all group-focus-within:text-emerald-500">Contraseña de Acceso</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        required
+                        placeholder="••••••••"
+                        class="w-full px-0 py-3 bg-transparent border-0 border-b-2 border-slate-200 focus:ring-0 focus:border-emerald-500 transition-all text-slate-800 placeholder-slate-300 font-medium"
+                    />
+                </div>
+
+                <div class="pt-6">
+                    <button
+                        type="submit"
+                        class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold shadow-xl shadow-emerald-100 hover:shadow-emerald-200 transform active:scale-[0.98] transition-all uppercase tracking-widest text-xs"
+                    >
+                        Entrar al Sistema
+                    </button>
+                </div>
+                
+                <div class="flex justify-between items-center mt-10">
+                    <span class="h-px w-16 bg-slate-200"></span>
+                    <a href="#" class="text-xs font-bold text-slate-400 hover:text-emerald-600 uppercase tracking-tighter transition-colors">Soporte Técnico</a>
+                    <span class="h-px w-16 bg-slate-200"></span>
+                </div>
+            </form>
         </div>
 
-        <div>
-          <button
-            type="submit"
-            class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
-          >
-            Acceder al Sistema ERP
-          </button>
-        </div>
-      </form>
     </div>
-  </body>
+</body>
 </html>
