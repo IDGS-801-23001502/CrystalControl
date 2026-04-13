@@ -3,62 +3,23 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg {
-    background-color: rgba(16, 185, 129, 0.10);
-    border-color: rgba(16, 185, 129, 0.20);
-  }
-
-  .emerald-icon {
-    color: #059669;
-  }
-
-  .emerald-badge {
-    background-color: rgba(16, 185, 129, 0.10);
-    border-color: rgba(16, 185, 129, 0.20);
-    color: #047857;
-  }
-
-  .emerald-border-top {
-    border-top: 3px solid #10b981;
-  }
-
-  .emerald-btn {
-    background-color: #059669;
-    color: #fff;
-  }
-
-  .emerald-btn:hover {
-    background-color: #047857;
-  }
-
-  .cancel-btn {
-    background-color: transparent;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
-  }
-
-  .cancel-btn:hover {
-    background-color: #f3f4f6;
-    color: #374151;
-  }
-
-  .image-preview {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 0.5rem;
-    border: 1px solid #d1d5db;
-  }
+  .emerald-icon-bg { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon { color: #059669; }
+  .emerald-badge { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn { background-color: #059669; color: #fff; }
+  .emerald-btn:hover { background-color: #047857; }
+  .cancel-btn { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover { background-color: #f3f4f6; color: #374151; }
+  .remove-btn { color: #ef4444; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
 </style>
 
-<div class="max-w-2xl mx-auto mt-10 px-4">
+<div class="max-w-4xl mx-auto mt-10 px-4 mb-20">
 
   <div class="flex items-center gap-3 mb-6">
     <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
-      <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="1.8" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
+      <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
       </svg>
     </div>
     <div>
@@ -66,185 +27,129 @@
       <p class="text-xs text-slate-500">Actualizando datos de <strong>{{ producto.name }}</strong></p>
     </div>
     <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
-      Codigo: {{ producto.barcode }}
+      Código: {{ producto.barcode }}
     </span>
   </div>
 
-  <div class="emerald-border-top bg-white border border-slate-200 rounded-lg shadow-sm p-8">
-    <form action="{{ url_for('products.edit_product', id=producto.id) }}" method="post" enctype="multipart/form-data">
-      {{ form.csrf_token }}
-      {{ form.id }}
-      {{ form.hidden_tag()}}
+  <form action="{{ url_for('products.edit_product', id=producto.id) }}" method="post" enctype="multipart/form-data" id="edit-form">
+    {{ form.csrf_token }}
 
-      <div class="relative z-0 w-full mb-8 group">
-        {{ form.name(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-        border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-        ") }}
-        <label
-          class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-          Nombre del Producto
-        </label>
-      </div>
-
-      <div class="relative z-0 w-full mb-8 group">
-        {{ form.category(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-        border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-        ") }}
-        <label
-          class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-          Categoria
-        </label>
-      </div>
-
+    <div class="emerald-border-top bg-white border border-slate-200 rounded-lg shadow-sm p-8 mb-8">
+      <h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-6 flex items-center gap-2">
+        Información General
+      </h2>
       <div class="grid md:grid-cols-2 md:gap-8">
         <div class="relative z-0 w-full mb-8 group">
-          {{ form.cant_may(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-          border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer",
-          placeholder="") }}
-          <label
-            class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Pzas Venta Mayoreo
-          </label>
+          {{ form.name(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Nombre del Producto</label>
         </div>
-
         <div class="relative z-0 w-full mb-8 group">
-          {{ form.stock(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-          border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-          ") }}
-          <label
-            class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Stock Disponible
-          </label>
+          {{ form.category(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer") }}
+          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Categoría</label>
         </div>
       </div>
-
-      <div class="grid md:grid-cols-2 md:gap-8">
-        <div class="relative z-0 w-full mb-8 group">
-          {{ form.price_men(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-          border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-          ") }}
-          <label
-            class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Precio Menudeo ($)
-          </label>
-        </div>
-
-        <div class="relative z-0 w-full mb-8 group">
-          {{ form.price_may(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-          border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-          ") }}
-          <label
-            class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Precio Mayoreo ($)
-          </label>
-        </div>
+      
+      <div class="relative z-0 w-48 mb-4 group">
+          {{ form.status(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:border-emerald-600") }}
+          <label class="block mb-1 text-[10px] uppercase font-bold text-slate-400">Estatus del Producto</label>
       </div>
+    </div>
 
-      <div class="relative z-0 w-full mb-10 group">
-        {{ form.presentation(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2
-        border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder="
-        ") }}
-        <label
-          class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-          Presentación (ej. Botella 500ml)
-        </label>
-      </div>
-
-      <div class="grid md:grid-cols-2 md:gap-8 mb-8">
-
-        <div class="relative z-0 w-full group">
-          {{ form.unit_size(
-          class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300
-          appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer",
-          placeholder=" "
-          ) }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0]
-                  peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
-                  peer-focus:scale-75 peer-focus:-translate-y-6">
-            Tamaño por unidad (ej. 500, 1000)
-          </label>
-          <p class="mt-1 text-xs text-slate-400 italic">
-            Cantidad numérica de la presentación. Ej: si es "Botella 500ml", escribe 500
-          </p>
-          {% if form.unit_size.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.unit_size.errors[0] }}</p>
-          {% endif %}
-        </div>
-
-        <div class="relative z-0 w-full group">
-          {{ form.unit_type(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600") }}
-          <label class="block mb-1 text-xs text-slate-500">
-            Unidad base
-          </label>
-          {% if form.unit_type.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.unit_type.errors[0] }}</p>
-          {% endif %}
-        </div>
-
-      </div>
-
-      <div class="mb-10">
-        <label class="block mb-2 text-sm font-medium text-slate-700">Imagen del Producto</label>
-        <div class="flex items-center gap-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-          {% if producto.picture %}
-          <div class="text-center">
-            <img src="{{ url_for('static', filename='img/products/' + producto.picture) }}"
-              class="image-preview shadow-sm" alt="Actual">
-            <p class="text-[10px] text-slate-500 mt-2 font-medium">IMAGEN ACTUAL</p>
-          </div>
-          {% else %}
-          <div class="image-preview bg-slate-200 flex items-center justify-center text-slate-400 text-xs text-center">
-            Sin foto
-          </div>
-          {% endif %}
-
-          <div class="flex-1">
-            {{ form.picture(class="block w-full text-sm text-slate-900 border border-slate-300 rounded-lg cursor-pointer
-            bg-white focus:outline-none p-1") }}
-            <p class="mt-2 text-xs text-slate-500 italic">Selecciona un archivo solo si deseas reemplazar la imagen
-              actual.</p>
-          </div>
-        </div>
-      </div>
-
-      {% if producto.status == 'Inactivo' %}
-      <div
-        class="mb-10 p-4 {% if producto.status == 'Inactivo' %}bg-amber-50 border-amber-200{% else %}bg-slate-50 border-slate-200{% endif %} border rounded-lg">
-        <label
-          class="block mb-2 text-sm font-semibold {% if producto.status == 'Inactivo' %}text-amber-800{% else %}text-slate-700{% endif %}">
-          Estatus del Producto
-        </label>
-
-        <p class="text-xs text-amber-600 mb-3 font-medium">⚠ Este producto está actualmente desactivado.</p>
-
-        <div class="relative">
-          <select name="status" id="status"
-            class="block w-full py-2 px-3 text-sm text-slate-900 bg-white border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">
-            <option value="Activo" {% if producto.status=='Activo' %}selected{% endif %}>Activo</option>
-            <option value="Inactivo" {% if producto.status=='Inactivo' %}selected{% endif %}>Inactivo</option>
-          </select>
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="flex items-center gap-3">
-        <button type="submit"
-          class="emerald-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm focus:outline-none">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
-          Guardar Cambios
+    <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-8 mb-8">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">
+          Presentaciones y Precios
+        </h2>
+        <button type="button" id="add-presentation" class="text-xs emerald-btn px-3 py-1.5 rounded-md font-semibold transition-all active:scale-95 flex items-center gap-1">
+          + Añadir otra
         </button>
-        <a href="{{ url_for('products.products') }}"
-          class="cancel-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 focus:outline-none">
-          Cancelar
-        </a>
       </div>
 
-    </form>
-  </div>
+      <div id="presentaciones-container">
+        {% for p_form in form.presentaciones %}
+        <div class="presentacion-row bg-slate-50/50 border border-slate-100 p-6 rounded-xl mb-6 relative">
+          
+          <div class="grid md:grid-cols-2 md:gap-8 mb-6">
+            <div class="relative z-0 w-full group">
+              {{ p_form.presentation(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Nombre Presentación (ej. Botella 500ml)</label>
+            </div>
+            <div class="relative z-0 w-full group">
+              {{ p_form.unit_size(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Tamaño numérico</label>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 md:gap-8 mb-6">
+            <div class="relative z-0 w-full group">
+              {{ p_form.price_men(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Precio Menudeo</label>
+            </div>
+            <div class="relative z-0 w-full group">
+              {{ p_form.price_may(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Precio Mayoreo</label>
+            </div>
+            <div class="relative z-0 w-full group">
+              {{ p_form.cant_may(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Cant. Mayoreo</label>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 md:gap-8">
+            <div class="relative z-0 w-full group">
+              {{ p_form.unit_type(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600") }}
+              <label class="block mb-1 text-[10px] uppercase font-bold text-slate-400">Unidad Base</label>
+            </div>
+            <div class="relative z-0 w-full group">
+              {{ p_form.picture(class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100") }}
+              <label class="block mb-1 text-[10px] uppercase font-bold text-slate-400">Cambiar Foto (opcional)</label>
+            </div>
+          </div>
+
+          <button type="button" class="remove-btn absolute top-4 right-4 {% if loop.first and loop.length == 1 %}hidden{% endif %}" onclick="this.parentElement.remove()">
+            ✕ Eliminar
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="emerald-btn inline-flex items-center gap-1.5 px-6 py-3 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-md">
+        Actualizar Todo
+      </button>
+      <a href="{{ url_for('products.products') }}" class="cancel-btn inline-flex items-center gap-1.5 px-6 py-3 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150">
+        Cancelar
+      </a>
+    </div>
+
+  </form>
 </div>
+
+<script>
+  document.getElementById('add-presentation').addEventListener('click', function() {
+    const container = document.getElementById('presentaciones-container');
+    const rows = container.getElementsByClassName('presentacion-row');
+    const nextIndex = rows.length;
+
+    // Clonamos la primera fila
+    const newRow = rows[0].cloneNode(true);
+    
+    // Mostramos el botón eliminar en el clon
+    newRow.querySelector('.remove-btn').classList.remove('hidden');
+
+    // Limpiamos y renombramos inputs
+    const inputs = newRow.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      if (input.name) {
+        input.name = input.name.replace(/-\d+-/, `-${nextIndex}-`);
+        input.id = input.id.replace(/-\d+-/, `-${nextIndex}-`);
+        if (input.type !== 'select-one') input.value = '';
+      }
+    });
+
+    container.appendChild(newRow);
+  });
+</script>
 
 {% endblock %}

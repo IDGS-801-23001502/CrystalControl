@@ -5,6 +5,7 @@ from forms import FormProduct, FormPackagingMaterial
 from utils.decorators import roles_accepted
 from werkzeug.utils import secure_filename
 from utils.functions import generar_gs1_128
+from sqlalchemy.orm import joinedload
 
 module='products'
 
@@ -19,7 +20,7 @@ products_bp = Blueprint(
 @roles_accepted('Administrador')
 def products():
     # Consultamos los productos.
-    all_products = Producto.query.all()
+    all_products = Producto.query.options(joinedload(Producto.precios)).all()
     return render_template('products/catalog.html', all_products=all_products)
 
 @products_bp.route('/add_product', methods=['GET', 'POST'])
@@ -29,121 +30,154 @@ def add_product():
 
     if form.validate_on_submit():
         try:
-            #Creamos la instancia de la tabla principal
+            # 1. Crear producto base
             new_product = Producto(
                 name=form.name.data,
                 category=form.category.data,
-                stock=form.stock.data,
                 status='Activo'
             )
-
-            #Guardamos primero el producto para generar el ID
             db.session.add(new_product)
-            db.session.flush() # Flush envía a la base de datos sin cerrar la transacción
+            db.session.flush() 
 
-            #Generación automatica del código de barras
+            # Generar código de barras base
             id_str = str(new_product.id).zfill(3)
-            codigo_generado = f"C750{id_str}"
+            new_product.barcode = f"C750{id_str}"
 
-            new_product.barcode = codigo_generado
+            # 2. Iterar sobre las presentaciones enviadas
+            for p_form in form.presentaciones:
+                new_pricing = ProductoPresentacionPrecio(
+                    id_producto=new_product.id,
+                    presentation=p_form.presentation.data,
+                    price_men=p_form.price_men.data,
+                    price_may=p_form.price_may.data,
+                    cant_may=p_form.cant_may.data,
+                    stock=p_form.stock.data,
+                    unit_size=p_form.unit_size.data,
+                    unit_type=p_form.unit_type.data
+                )
 
-            #Creamos la instancia de la tabla de precios vinculada al ID del producto
-            new_pricing = ProductoPresentacionPrecio(
-                id_producto=new_product.id,
-                price_men=form.price_men.data,
-                price_may=form.price_may.data,
-                presentation=form.presentation.data,
-                cant_may = form.cant_may.data,
-                unit_size=form.unit_size.data,
-                unit_type=form.unit_type.data
-            )
-
-            #Manejo de la Imagen
-            if form.picture.data:
-                file = form.picture.data
-                filename = secure_filename(file.filename)
-                upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                if p_form.picture.data:
+                    file = p_form.picture.data
+                    filename = secure_filename(file.filename)
+                    upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                    os.makedirs(upload_path, exist_ok=True)
+                    file.save(os.path.join(upload_path, filename))
+                    new_pricing.picture = filename
                 
-                if not os.path.exists(upload_path):
-                    os.makedirs(upload_path)
-                
-                file.save(os.path.join(upload_path, filename))
-                new_pricing.picture = filename
-            
-            db.session.add(new_pricing)
+                db.session.add(new_pricing)
+
             db.session.commit()
-            
-            flash("Producto y precios registrados exitosamente", "success")
+            flash("Producto y presentaciones registradas", "success")
             return redirect(url_for('products.products'))
-            
+
         except Exception as e:
             db.session.rollback()
-            flash(f"Error al registrar: {str(e)}", "danger")
-            
+            # Log de error detallado en consola
+            print(f"DEBUG: Error de Base de Datos: {str(e)}")
+            flash(f"Error de base de datos: {str(e)}", "danger")
+
+    # --- BLOQUE DE DEPURACIÓN DE VALIDACIÓN ---
+    if request.method == 'POST' and not form.validate_on_submit():
+        print(f"DEBUG: Errores de validación: {form.errors}")
+        for fieldName, errorMessages in form.errors.items():
+            for err in errorMessages:
+                # Si el error es en una presentación específica, aparecerá como diccionario
+                flash(f"Error en campo {fieldName}: {err}", "warning")
+    # ------------------------------------------
+
     return render_template('products/add.html', form=form)
 
 @products_bp.route('/edit_product/<int:id>', methods=['GET', 'POST'])
 @roles_accepted('Administrador')
 def edit_product(id):
     producto = Producto.query.get_or_404(id)
-    precios_existentes = ProductoPresentacionPrecio.query.filter_by(id_producto=id).first()
-    precios = ProductoPresentacionPrecio.query.filter_by(id_producto=id).all()
-    
-    # Inicializamos con el objeto producto para cargar name, category, etc.
     form = FormProduct(obj=producto)
 
     if request.method == 'GET':
-        form.status.data = producto.status
-        if precios_existentes:
-            form.price_men.data = precios_existentes.price_men
-            form.price_may.data = precios_existentes.price_may
-            form.presentation.data = precios_existentes.presentation
-            form.cant_may.data = precios_existentes.cant_may
-            form.unit_size.data = precios_existentes.unit_size
-            form.unit_type.data = precios_existentes.unit_type
+        while len(form.presentaciones) > 0:
+            form.presentaciones.pop_entry()
+            
+        for pres in producto.precios:
+            form.presentaciones.append_entry({
+                'presentation': pres.presentation,
+                'price_men': pres.price_men,
+                'price_may': pres.price_may,
+                'cant_may': pres.cant_may,
+                'stock': pres.stock,
+                'unit_size': pres.unit_size,
+                'unit_type': pres.unit_type
+            })
 
     if form.validate_on_submit():
         try:
-            # Actualizar Producto
-            producto.status = form.status.data
+            # 1. Actualizar datos básicos
             producto.name = form.name.data
             producto.category = form.category.data
-            producto.stock = form.stock.data
+            producto.status = form.status.data
 
-            # Definir objeto de precios a actualizar
-            if precios_existentes:
-                target_precios = precios_existentes
-            else:
-                target_precios = ProductoPresentacionPrecio(id_producto=id)
-                db.session.add(target_precios)
+            # 2. Sincronizar Presentaciones sin romper FKs
+            presentaciones_actuales = producto.precios # Lista de objetos BD
+            nuevas_presentaciones_data = form.presentaciones.data # Lista de diccionarios del form
 
-            # Actualizar campos de precios
-            target_precios.price_men = form.price_men.data
-            target_precios.price_may = form.price_may.data
-            target_precios.presentation = form.presentation.data
-            target_precios.cant_may = form.cant_may.data
-            target_precios.unit_size = form.unit_size.data
-            target_precios.unit_type = form.unit_type.data
-            
-            # Lógica de imagen (Guardar en target_precios)
-            if form.picture.data:
-                file = form.picture.data
-                if file and file.filename != '':
-                    filename = secure_filename(file.filename)
-                    upload_path = os.path.join(current_app.root_path, 'static/img/products')
-                    os.makedirs(upload_path, exist_ok=True)
-                    file.save(os.path.join(upload_path, filename))
-                    target_precios.picture = filename
+            # Iteramos sobre los datos enviados por el formulario
+            for i, data_f in enumerate(nuevas_presentaciones_data):
+                if i < len(presentaciones_actuales):
+                    # ACTUALIZAR existente (mantiene el ID, no rompe packaging_materials)
+                    p_db = presentaciones_actuales[i]
+                    p_db.presentation = data_f['presentation']
+                    p_db.price_men = data_f['price_men']
+                    p_db.price_may = data_f['price_may']
+                    p_db.cant_may = data_f['cant_may']
+                    p_db.stock = data_f['stock']
+                    p_db.unit_size = data_f['unit_size']
+                    p_db.unit_type = data_f['unit_type']
+                    
+                    # Imagen: solo si subió una nueva
+                    foto_nueva = form.presentaciones[i].picture.data
+                    if foto_nueva:
+                        filename = secure_filename(foto_nueva.filename)
+                        upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                        foto_nueva.save(os.path.join(upload_path, filename))
+                        p_db.picture = filename
+                else:
+                    # CREAR nueva si el usuario añadió filas en el JS
+                    nueva_p = ProductoPresentacionPrecio(
+                        id_producto=producto.id,
+                        presentation=data_f['presentation'],
+                        price_men=data_f['price_men'],
+                        price_may=data_f['price_may'],
+                        cant_may=data_f['cant_may'],
+                        stock=data_f['stock'],
+                        unit_size=data_f['unit_size'],
+                        unit_type=data_f['unit_type']
+                    )
+                    
+                    foto_nueva = form.presentaciones[i].picture.data
+                    if foto_nueva:
+                        filename = secure_filename(foto_nueva.filename)
+                        upload_path = os.path.join(current_app.root_path, 'static/img/products')
+                        foto_nueva.save(os.path.join(upload_path, filename))
+                        nueva_p.picture = filename
+                        
+                    db.session.add(nueva_p)
+
+            # 3. Eliminar las que sobran (si el usuario borró filas en el JS)
+            if len(presentaciones_actuales) > len(nuevas_presentaciones_data):
+                for p_extra in presentaciones_actuales[len(nuevas_presentaciones_data):]:
+                    # CUIDADO: Esto solo funcionará si p_extra no tiene materiales asociados
+                    # o si configuraste la relación con cascade="all, delete-orphan"
+                    db.session.delete(p_extra)
 
             db.session.commit()
-            flash("Cambios guardados correctamente", "success")
+            flash("Producto actualizado correctamente", "success")
             return redirect(url_for('products.products'))
-            
+
         except Exception as e:
             db.session.rollback()
+            print(f"DEBUG Error: {str(e)}")
             flash(f"Error al actualizar: {str(e)}", "danger")
 
-    return render_template('products/edit.html', form=form, producto=producto, precios=precios)
+    return render_template('products/edit.html', form=form, producto=producto)
 
 @products_bp.route('/delete_product/<int:id>', methods=['GET','POST'])
 @roles_accepted('Administrador')

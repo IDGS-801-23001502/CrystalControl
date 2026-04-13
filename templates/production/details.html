@@ -2,32 +2,147 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon { color: #059669; }
-  .emerald-badge { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
-  
-  .status-pill { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border; }
+  .emerald-icon-bg {
+    background-color: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.20);
+  }
+
+  .emerald-icon {
+    color: #059669;
+  }
+
+  /* Ciclos */
+  .cycle-card {
+    transition: box-shadow .15s;
+  }
+
+  .cycle-card:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
+  }
+
+  /* Pasos */
+  .step-row {
+    transition: background .12s;
+  }
+
+  .step-row:hover {
+    background: rgba(248, 250, 252, .8);
+  }
+
+  /* Status badges */
+  .badge-prog {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+  }
+
+  .badge-pesaje {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+
+  .badge-proc {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+  }
+
+  .badge-done {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+
+  .badge-fail {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+  }
+
+  .step-pend {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+  }
+
+  .step-proc {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+
+  .step-done {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+
+  .step-block {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+  }
+
+  /* Progress dots */
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-pend {
+    background: #cbd5e1;
+  }
+
+  .dot-proc {
+    background: #3b82f6;
+  }
+
+  .dot-done {
+    background: #22c55e;
+  }
+
+  .dot-block {
+    background: #ef4444;
+  }
+
+  /* Connector line between steps */
+  .step-connector {
+    position: absolute;
+    left: 11px;
+    top: 20px;
+    bottom: -12px;
+    width: 1px;
+    background: rgba(203, 213, 225, .6);
+    z-index: 0;
+  }
 </style>
 
 <div class="max-w-7xl mx-auto mt-10 px-4 mb-10">
 
+  {# ── HEADER ── #}
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
     <div class="flex items-center gap-3">
       <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
-        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.375M9 18h3.375m4.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25L15 6z" />
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12h3.75M9 15h3.375M9 18h3.375m4.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25L15 6z" />
         </svg>
       </div>
       <div>
         <h1 class="text-xl font-semibold text-slate-800 leading-tight">Detalles de Producción</h1>
-        <p class="text-xs text-slate-500">Folio: <span class="font-bold text-slate-700">{{ order.folio }}</span> | Receta: <span class="font-medium">{{ order.recipe.final_name }}</span></p>
+        <p class="text-xs text-slate-500">Folio: <span class="font-bold text-slate-700">{{ order.folio }}</span> |
+          Receta: <span class="font-medium">{{ order.recipe.final_name }}</span></p>
       </div>
     </div>
-
     <div class="flex items-center gap-3">
-      <a href="{{ url_for('production.production') }}" 
-         class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-50 bg-emerald-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all active:scale-95 shadow-sm">
-        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <a href="{{ url_for('production.production') }}"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-50 bg-emerald-500 border border-slate-200 rounded-lg hover:bg-emerald-600 transition-all active:scale-95 shadow-sm">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+          stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
         </svg>
         Regresar al Listado
@@ -35,160 +150,450 @@
     </div>
   </div>
 
+  {# ── MÉTRICAS ── #}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white border border-slate-200 p-4 rounded-xl">
       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estatus Actual</p>
       <div class="mt-2">
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold 
-            {% if order.status == 2 %} bg-amber-50 text-amber-700 border-amber-100 
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border
+            {% if order.status == 2 %} bg-amber-50 text-amber-700 border-amber-100
             {% elif order.status == 3 %} bg-blue-50 text-blue-700 border-blue-100
             {% elif order.status == 4 %} bg-emerald-50 text-emerald-700 border-emerald-100
-            {% endif %} border">
-          {% if order.status == 2 %} Pendiente {% elif order.status == 3 %} En Proceso {% elif order.status == 4 %} Completado {% endif %}
+            {% endif %}">
+          {% if order.status == 2 %}Pendiente{% elif order.status == 3 %}En Proceso{% elif order.status == 4
+          %}Completado{% endif %}
         </span>
       </div>
     </div>
-    
+
     <div class="bg-white border border-slate-200 p-4 rounded-xl">
       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Volumen a Producir</p>
       <p class="text-xl font-bold text-slate-800 mt-1">
-        {{ "{:,.2f}".format(qty_total) }} <span class="text-xs font-normal text-slate-400">{% if order.recipe.unit_med == 1 %}KG{% elif order.recipe.unit_med == 2 %}LT{% else %}PZ{% endif %}</span>
+        {{ "{:,.2f}".format(qty_total) }}
+        <span class="text-xs font-normal text-slate-400">{% if order.recipe.unit_med == 1 %}KG{% elif
+          order.recipe.unit_med == 2 %}LT{% else %}PZ{% endif %}</span>
       </p>
-      <p class="text-[10px] text-slate-400 mt-1 italic">{{ num_lotes }} lote(s) de {{ order.recipe.produced_quantity }}</p>
+      <p class="text-[10px] text-slate-400 mt-1 italic">{{ num_lotes }} lote(s) de {{ order.recipe.produced_quantity }}
+      </p>
     </div>
 
     <div class="bg-white border border-slate-200 p-4 rounded-xl">
       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operador</p>
       <div class="flex items-center gap-2 mt-2">
-        <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-200 uppercase">
+        <div
+          class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-200 uppercase">
           {{ order.operator.username[0] }}
         </div>
         <span class="text-sm font-medium text-slate-700">{{ order.operator.nombre }}</span>
       </div>
     </div>
-
-    <div class="bg-white border border-slate-200 p-4 rounded-xl border-b-emerald-500 border-b-4 shadow-sm">
-      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Costo Total Insumos</p>
-      <p class="text-xl font-bold text-emerald-600 mt-1">${{ "{:,.2f}".format(total_cost) }}</p>
-    </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
-    <div class="lg:col-span-2">
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Explosión de Materia Prima</h3>
-            <span class="text-[10px] text-slate-400 font-bold uppercase">Consumo Real y Costeo</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50/30 border-b border-slate-200">
-                <th class="px-6 py-3 text-[11px] font-bold text-slate-500 uppercase">Insumo</th>
-                <th class="px-6 py-3 text-[11px] font-bold text-slate-500 uppercase text-right">Cantidad</th>
-                <th class="px-6 py-3 text-[11px] font-bold text-slate-500 uppercase text-right">Costo Unit.</th>
-                <th class="px-6 py-3 text-[11px] font-bold text-slate-500 uppercase text-right">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              {% for item in insumos_detalle %}
-              <tr class="hover:bg-slate-50/50 transition-colors">
-                <td class="px-6 py-4">
-                  <div class="text-sm font-bold text-slate-800">{{ item.nombre }}</div>
-                </td>
-                <td class="px-6 py-4 text-sm text-right font-mono text-slate-700">
-                  {{ "{:,.3f}".format(item.cantidad) }} <span class="text-[10px] text-slate-400 font-sans">{{ item.unidad }}</span>
-                </td>
-                <td class="px-6 py-4 text-sm text-right text-slate-500">
-                    ${{ "{:,.2f}".format(item.costo_unit) }}
-                </td>
-                <td class="px-6 py-4 text-sm text-right font-bold text-slate-700">
-                  ${{ "{:,.2f}".format(item.costo_total) }}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-            <tfoot class="bg-slate-50/50 font-bold">
-                <tr>
-                    <td colspan="3" class="px-6 py-3 text-right text-xs text-slate-500 uppercase">Costo Total de Producción</td>
-                    <td class="px-6 py-3 text-right text-emerald-600 text-base">${{ "{:,.2f}".format(total_cost) }}</td>
-                </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
+  {# ══════════════════════════════════════════════════════════════════════════ #}
+  {# ── SECCIÓN CICLOS ── #}
+  {# ══════════════════════════════════════════════════════════════════════════ #}
+  {% if order.cycles %}
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-blue-50 border border-blue-100">
+          <svg class="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.990" />
+          </svg>
+        </span>
+        Ciclos de Producción
+      </h2>
+      <span class="text-xs text-slate-400 font-medium">{{ order.cycles | length }} ciclo(s) en total</span>
     </div>
 
-    <div class="space-y-6">
-      
-      {% if lote %}
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden border-l-4 border-l-emerald-500">
-        <div class="p-5">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Lote de Producción Finalizado</p>
-            <h4 class="text-lg font-black text-slate-800 font-mono">{{ lote.lot_code }}</h4>
-            <div class="mt-4 grid grid-cols-2 gap-4 border-t border-slate-50 pt-4">
-                <div>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase">Fabricación</p>
-                    <p class="text-xs font-bold text-slate-700">{{ lote.manufacture_date.strftime('%d/%m/%Y') }}</p>
-                </div>
-                <div>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase">Caducidad</p>
-                    <p class="text-xs font-bold text-rose-600">{{ lote.expiry_date.strftime('%d/%m/%Y') if lote.expiry_date else 'N/A' }}</p>
-                </div>
-            </div>
-        </div>
-      </div>
-      {% endif %}
+    {# Tabs de ciclos #}
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-1" id="cycle-tabs">
+      {% for ciclo in order.cycles | sort(attribute='cycle_number') %}
+      <button onclick="showCycle({{ ciclo.id }})" id="tab-{{ ciclo.id }}"
+        class="cycle-tab flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all
+               {% if loop.first %}bg-slate-800 text-white border-slate-800{% else %}bg-white text-slate-600 border-slate-200 hover:border-slate-300{% endif %}">
+        <span class="w-1.5 h-1.5 rounded-full
+          {% if ciclo.status == 1 %}bg-slate-400
+          {% elif ciclo.status == 2 %}bg-blue-400
+          {% elif ciclo.status == 3 %}bg-orange-400
+          {% elif ciclo.status == 4 %}bg-emerald-400
+          {% else %}bg-red-400{% endif %}"></span>
+        Ciclo {{ ciclo.cycle_number }}
+      </button>
+      {% endfor %}
+    </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/50">
-            <h3 class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Rendimiento en Producto Terminado</h3>
-        </div>
-        <div class="p-5">
-            <div class="space-y-3">
+    {# Contenido de cada ciclo #}
+    {% for ciclo in order.cycles | sort(attribute='cycle_number') %}
+    <div id="cycle-panel-{{ ciclo.id }}" class="cycle-panel {% if not loop.first %}hidden{% endif %}">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {# ── INFO + INSUMOS ── #}
+        <div class="space-y-4">
+
+          {# Card info general del ciclo #}
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden cycle-card">
+            <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Ciclo {{ ciclo.cycle_number }}</h3>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border
+                {% if ciclo.status == 1 %}badge-prog
+                {% elif ciclo.status == 2 %}badge-pesaje
+                {% elif ciclo.status == 3 %}badge-proc
+                {% elif ciclo.status == 4 %}badge-done
+                {% else %}badge-fail{% endif %}">
+                {% if ciclo.status == 1 %}Programado
+                {% elif ciclo.status == 2 %}En Pesaje
+                {% elif ciclo.status == 3 %}En Proceso
+                {% elif ciclo.status == 4 %}Terminado
+                {% else %}Fallido{% endif %}
+              </span>
+            </div>
+            <div class="p-4 grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Cantidad</p>
+                <p class="font-bold text-slate-700 mt-0.5">{{ ciclo.quantity_to_produce }}
+                  <span class="font-normal text-slate-400">{{ order.recipe.nombre_unidad_lote }}</span>
+                </p>
+              </div>
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Operador</p>
+                <p class="font-medium text-slate-700 mt-0.5">
+                  {% if ciclo.assigned_operator %}{{ ciclo.assigned_operator.nombre }}{% else %}—{% endif %}
+                </p>
+              </div>
+              <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Inicio Producción</p>
+                <p class="font-medium text-slate-700 mt-0.5">
+                  {% if ciclo.actual_start_date %}{{ ciclo.actual_start_date.strftime('%d/%m/%Y %H:%M') }}{% else %}—{%
+                  endif %}
+                </p>
+              </div>
+              {% if ciclo.actual_end_date %}
+              <div class="col-span-2">
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Fin Producción</p>
+                <p class="font-medium text-emerald-600 mt-0.5">{{ ciclo.actual_end_date.strftime('%d/%m/%Y %H:%M') }}
+                </p>
+              </div>
+              {% endif %}
+            </div>
+
+            {# Botones de avance (solo si la orden está en proceso) #}
+            {% if order.status in [2, 3] and ciclo.status in [1, 2] %}
+            <div class="px-4 pb-4">
+              {% if ciclo.status == 1 %}
+              <form method="POST" action="{{ url_for('production.cycle_update', cycle_id=ciclo.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="status" value="2">
+                <button type="submit"
+                  class="w-full py-1.5 text-xs font-bold rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                  Iniciar Ciclo
+                </button>
+              </form>
+
+              {% elif ciclo.status == 2 %}
+              <form method="POST" action="{{ url_for('production.cycle_update', cycle_id=ciclo.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="status" value="3">
+                <button type="submit"
+                  class="w-full py-1.5 text-xs font-bold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors">
+                  Pasar a proceso
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+
+          {# Insumos del ciclo #}
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden cycle-card">
+            <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Insumos de este ciclo</h3>
+            </div>
+            <div class="divide-y divide-slate-50">
+              {% for insumo in ciclo.inputs %}
+              <div class="px-4 py-3 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-slate-800 truncate">{{ insumo.material.name }}</p>
+                  <p class="text-[10px] text-slate-400">{{ insumo.material.nombre_unidad }}</p>
+                </div>
+                <div class="text-right flex-none">
+                  <p class="text-xs font-bold text-slate-700 font-mono">{{ "{:,.3f}".format(insumo.estimated_quantity)
+                    }}</p>
+                  {% if insumo.actual_used_quantity and insumo.actual_used_quantity > 0 %}
+                  <p class="text-[9px] text-emerald-600 font-bold">Real: {{
+                    "{:,.3f}".format(insumo.actual_used_quantity) }}</p>
+                  {% else %}
+                  <p class="text-[9px] text-slate-400">estimado</p>
+                  {% endif %}
+                </div>
+              </div>
+              {% else %}
+              <p class="px-4 py-3 text-xs text-slate-400 italic">Sin insumos registrados.</p>
+              {% endfor %}
+            </div>
+
+            {# Costo del ciclo #}
+            {% set costo_ciclo = ciclo.inputs | sum(attribute='estimated_quantity') %}
+            <div class="px-4 py-2 bg-slate-50/50 border-t border-slate-100 text-right">
+              <span class="text-[10px] text-slate-400">Costo estimado: </span>
+              <span class="text-xs font-bold text-emerald-600">
+                ${{ "{:,.2f}".format(ciclo.inputs | selectattr('moment_unit_cost') | map(attribute='moment_unit_cost') |
+                map('float') | sum | default(0)) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+              <h3 class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Rendimiento en Producto
+                Terminado
+              </h3>
+            </div>
+            <div class="p-5">
+              <div class="space-y-3">
                 {% for p in piezas_estimadas %}
                 <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50 border border-slate-100">
-                    <div>
-                        <p class="text-xs font-bold text-slate-700">{{ p.presentacion }}</p>
-                        <p class="text-[9px] text-slate-400">Tamaño: {{ p.unit_size }}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-sm font-black text-blue-600">{{ p.piezas }}</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pzs</span>
-                    </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-700">{{ p.presentacion }}</p>
+                    <p class="text-[9px] text-slate-400">Tamaño: {{ p.unit_size }}</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-sm font-black text-blue-600">{{ p.piezas }}</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pzs</span>
+                  </div>
                 </div>
                 {% endfor %}
+              </div>
+              <p class="text-[9px] text-slate-400 mt-4 leading-tight italic">* Cantidad teórica sin considerar mermas de
+                envasado.</p>
             </div>
-            <p class="text-[9px] text-slate-400 mt-4 leading-tight italic">* Cantidad teórica basada en el volumen total sin considerar mermas de envasado.</p>
+          </div>
         </div>
-      </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Instrucciones de Receta</h3>
-        </div>
-        <div class="p-5 space-y-4">
-            {% for paso in order.recipe.steps | sort(attribute='step_order') %}
-            <div class="flex gap-3">
-                <div class="flex-none w-6 h-6 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[10px] font-black text-emerald-600">
-                    {{ paso.step_order }}
+        {# ── SEGUIMIENTO DE PASOS ── #}
+        <div class="lg:col-span-2">
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden cycle-card">
+            <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Seguimiento de pasos</h3>
+              {% set pasos_hechos = ciclo.steps_tracking | selectattr('status', 'equalto', 3) | list | length %}
+              {% set pasos_total = ciclo.steps_tracking | length %}
+              <div class="flex items-center gap-2">
+                <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-400 rounded-full transition-all"
+                    style="width: {{ (pasos_hechos / pasos_total * 100) | int if pasos_total > 0 else 0 }}%"></div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">{{ paso.stage_name }}</p>
-                    <p class="text-[10px] text-slate-500 leading-relaxed mt-0.5">{{ paso.description }}</p>
-                    <span class="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded uppercase">
-                        {{ paso.estimated_time }} min
-                    </span>
-                </div>
+                <span class="text-[10px] text-slate-400 font-bold">{{ pasos_hechos }}/{{ pasos_total }}</span>
+              </div>
             </div>
-            {% endfor %}
-        </div>
-      </div>
 
+            <div class="p-5">
+              <div class="space-y-3">
+                {% for paso in ciclo.steps_tracking | sort(attribute='execution_order') %}
+                <div class="relative flex gap-3 step-row rounded-lg p-2 -mx-2">
+                  {# Línea conectora #}
+                  {% if not loop.last %}
+                  <div class="step-connector"></div>
+                  {% endif %}
+
+                  {# Dot de estado #}
+                  <div class="flex-none pt-0.5 z-10">
+                    <div class="step-dot
+                      {% if paso.status == 1 %}dot-pend
+                      {% elif paso.status == 2 %}dot-proc
+                      {% elif paso.status == 3 %}dot-done
+                      {% else %}dot-block{% endif %}
+                      ring-2 ring-white"></div>
+                  </div>
+
+                  {# Contenido del paso #}
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="min-w-0">
+                        <p class="text-xs font-bold text-slate-800 leading-tight">
+                          {{ paso.execution_order }}. {{ paso.step_name_snapshot }}
+                        </p>
+                        {% if paso.description %}
+                        <p class="text-[10px] text-slate-500 leading-relaxed mt-0.5 line-clamp-2">{{ paso.description }}
+                        </p>
+                        {% endif %}
+                        <div class="flex items-center gap-2 mt-1">
+                          {% if paso.recipe_step_ref %}
+                          <span
+                            class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold uppercase">
+                            {{ paso.recipe_step_ref.nombre_proceso }}
+                          </span>
+                          <span class="text-[9px] text-slate-400">{{ paso.recipe_step_ref.estimated_time }} min</span>
+                          {% endif %}
+                          {% if paso.requires_verification %}
+                          <span
+                            class="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 border border-amber-100 text-amber-600 font-bold uppercase">
+                            Requiere verificación
+                          </span>
+                          {% endif %}
+                        </div>
+                        {% if paso.start_date %}
+                        <p class="text-[9px] text-slate-400 mt-1">
+                          Inicio: {{ paso.start_date.strftime('%d/%m %H:%M') }}
+                          {% if paso.end_date %} · Fin: {{ paso.end_date.strftime('%H:%M') }}{% endif %}
+                        </p>
+                        {% endif %}
+                        {% if paso.notes %}
+                        <p
+                          class="text-[10px] text-slate-500 italic mt-1 bg-slate-50 rounded px-2 py-1 border border-slate-100">
+                          {{ paso.notes }}</p>
+                        {% endif %}
+                      </div>
+
+                      {# Badge + control de estado #}
+                      <div class="flex-none flex flex-col items-end gap-1.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border
+                          {% if paso.status == 1 %}step-pend
+                          {% elif paso.status == 2 %}step-proc
+                          {% elif paso.status == 3 %}step-done
+                          {% else %}step-block{% endif %}">
+                          {% if paso.status == 1 %}Pendiente
+                          {% elif paso.status == 2 %}En proceso
+                          {% elif paso.status == 3 %}Completado
+                          {% else %}Bloqueado{% endif %}
+                        </span>
+
+                        {# Botones de acción según estado actual #}
+                        {% if order.status in [2, 3] and ciclo.status in [2, 3] %}
+                        {% if paso.status == 1 %}
+                        <button onclick="updateStep({{ paso.id }}, 2, {{ ciclo.id }})"
+                          class="text-[9px] px-2 py-0.5 rounded bg-blue-500 text-white font-bold hover:bg-blue-600 transition-colors">
+                          Iniciar
+                        </button>
+                        {% elif paso.status == 2 %}
+                        <div class="flex gap-1">
+                          <button onclick="openNotesModal({{ paso.id }}, {{ ciclo.id }}, 3)"
+                            class="text-[9px] px-2 py-0.5 rounded bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-colors">
+                            Completar
+                          </button>
+                          <button onclick="updateStep({{ paso.id }}, 4, {{ ciclo.id }})"
+                            class="text-[9px] px-2 py-0.5 rounded bg-red-100 text-red-600 font-bold hover:bg-red-200 transition-colors">
+                            Bloquear
+                          </button>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            {# Lote asociado al ciclo #}
+            {% if ciclo.lot_reference %}
+            <div
+              class="mx-5 mb-5 p-3 rounded-lg border border-emerald-200 bg-emerald-50/50 flex items-center justify-between">
+              <div>
+                <p class="text-[9px] font-bold text-emerald-700 uppercase">Lote generado</p>
+                <p class="text-xs font-black text-emerald-800 font-mono mt-0.5">{{ ciclo.lot_reference.lot_code }}</p>
+              </div>
+              <span
+                class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold uppercase">
+                {{ ciclo.lot_reference.value_status }}
+              </span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{# ── MODAL DE NOTAS ── #}
+<div id="notes-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,.4)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-800">Completar paso</h3>
+      <button onclick="closeModal()"
+        class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 text-xs font-bold">✕</button>
+    </div>
+    <div class="p-6">
+      <label class="block text-xs font-bold text-slate-600 mb-2">Observaciones del operador (opcional)</label>
+      <textarea id="modal-notes" rows="3" placeholder="Anotar cualquier observación relevante..."
+        class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none"></textarea>
+    </div>
+    <div class="px-6 pb-5 flex gap-2">
+      <button onclick="closeModal()"
+        class="flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">Cancelar</button>
+      <button onclick="confirmStep()"
+        class="flex-1 py-2 text-xs font-bold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">Confirmar</button>
     </div>
   </div>
-
 </div>
+
+<script>
+  // ── Tabs de ciclos ──────────────────────────────────────────────────────────
+  function showCycle(id) {
+    document.querySelectorAll('.cycle-panel').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.cycle-tab').forEach(t => {
+      t.classList.remove('bg-slate-800', 'text-white', 'border-slate-800');
+      t.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+    });
+    document.getElementById('cycle-panel-' + id).classList.remove('hidden');
+    const tab = document.getElementById('tab-' + id);
+    tab.classList.add('bg-slate-800', 'text-white', 'border-slate-800');
+    tab.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+  }
+
+  // ── Actualización de pasos via AJAX ────────────────────────────────────────
+  let _pendingStepId = null;
+  let _pendingCycleId = null;
+  let _pendingStatus = null;
+
+  function updateStep(stepId, status, cycleId, notes = '') {
+    const form = new FormData();
+    form.append('status', status);
+    form.append('notes', notes);
+    form.append('csrf_token', '{{ csrf_token() }}');
+    fetch(`{{ url_for('production.cycle_step_update', step_id=0) }}`.replace('0', stepId), {
+      method: 'POST',
+      body: form
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo actualizar'));
+        }
+      });
+  }
+
+  function openNotesModal(stepId, cycleId, status) {
+    _pendingStepId = stepId;
+    _pendingCycleId = cycleId;
+    _pendingStatus = status;
+    document.getElementById('modal-notes').value = '';
+    const modal = document.getElementById('notes-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('notes-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function confirmStep() {
+    const notes = document.getElementById('modal-notes').value;
+    closeModal();
+    updateStep(_pendingStepId, _pendingStatus, _pendingCycleId, notes);
+  }
+
+  // Cerrar modal con Escape
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
 
 {% endblock %}

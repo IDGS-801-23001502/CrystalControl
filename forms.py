@@ -111,54 +111,31 @@ class FormRaw_Materials_Supplier(FlaskForm):
         validators.DataRequired(message="La unidad de medida es obligatoria")
     ])
 
+class FormPresentacion(FlaskForm):
+    # Formulario "hijo"
+    presentation = StringField('Presentación (Ej. Botella 500ml)', [validators.DataRequired()])
+    price_men = DecimalField('Precio Menudeo', [validators.DataRequired()])
+    price_may = DecimalField('Precio Mayoreo', [validators.DataRequired()])
+    cant_may = IntegerField('Pzas Mayoreo', [validators.DataRequired()])
+    unit_size = DecimalField('Contenido Numérico', [validators.DataRequired()])
+    unit_type = SelectField('Unidad', choices=[(1, 'ml'), (2, 'g')], coerce=int)
+    picture = FileField('Foto')
+
+    class Meta:
+        csrf = False # Desactivamos CSRF interno para que el FieldList no falle
+
 class FormProduct(FlaskForm):
-    id = HiddenField('id')
-    
-    name = StringField('Nombre del producto', [
-        validators.DataRequired(message="El nombre del producto es requerido"),
-        validators.Length(min=3, max=100)
-    ])
-    
+    name = StringField('Nombre del Producto', [validators.DataRequired()])
     category = SelectField('Categoria', choices=[
         ('Cuidado del Hogar', 'Cuidado del Hogar'),
         ('Lavanderia', 'Lavanderia'),
         ('Cocina', 'Cocina'),
         ('Cuidado Personal', 'Cuidado Personal')
     ])
-    cant_may = IntegerField('Pzas para Mayoreo', [
-        validators.Optional(),
-        validators.NumberRange(min=0, message="Las piezas para venta a mayoreo debe ser positiva")  
-    ])
-    stock = IntegerField('Stock disponible', [
-        validators.Optional(),
-        validators.Disabled()
-    ], default=0)
-    picture = FileField('Foto del producto', [
-        validators.Optional()
-    ])
     status = HiddenField('Estatus', default='Activo')
-    price_men = DecimalField('Precio de menudeo', [
-        validators.DataRequired(message="El precio de menudeo es requerido"),
-        validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
-    ], places=2)
-    
-    price_may = DecimalField('Precio de mayoreo', [
-        validators.DataRequired(message="El precio de mayoreo es requerido"),
-        validators.NumberRange(min=0, message="El precio de menudeo no puede ser negativo")
-    ], places=2)
-    presentation = StringField('Presentación (Ej: Botella, Caja)', [
-        validators.DataRequired(message="La presentación es requerida"),
-        validators.Length(max=50)
-    ])
-    unit_size = DecimalField('Tamaño por Unidad', [
-        validators.DataRequired(message="El tamaño por unidad es requerido"),
-        validators.NumberRange(min = 0, message="La cantidad no puede ser negativa")
-        ])
-    unit_type = SelectField('Unidad Base', choices=[
-            (1, 'Mililitros (ml) — líquidos'),
-            (2, 'Gramos (g) — sólidos')
-        ], coerce=int
-    )
+    # Lista de presentaciones (inicia con 1 por defecto)
+    presentaciones = FieldList(FormField(FormPresentacion), min_entries=1)
+
 class PurchaseItemForm(FlaskForm):
     material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
     quantity = DecimalField('Cantidad', validators=[validators.DataRequired()])

@@ -1,0 +1,115 @@
+{% extends "layout_employees.html" %}
+{% block title %} Estado de Inventario a Granel {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg  { background-color: rgba(16,185,129,.10); border-color: rgba(16,185,129,.20); }
+  .emerald-icon     { color: #059669; }
+  .emerald-btn      { background-color: #059669; color: #fff; }
+  .emerald-btn:hover{ background-color: #047857; }
+  .critical-border  { border-color: #f87171; background-color: #fef2f2; }
+</style>
+
+<div class="max-w-7xl mx-auto mt-10 px-4 mb-20">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" 
+                d="M20.25 6.375c0 1.035-.84 1.875-1.875 1.875S16.5 7.41 16.5 6.375 17.34 4.5 18.375 4.5s1.875.84 1.875 1.875ZM6.75 7.375c0-1.035.84-1.875 1.875-1.875s1.875.84 1.875 1.875-.84 1.875-1.875 1.875-1.875-.84-1.875-1.875ZM12.75 12c0 1.242-1.008 2.25-2.25 2.25S8.25 13.242 8.25 12s1.008-2.25 2.25-2.25 2.25 1.008 2.25 2.25Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.25c0 1.242-1.008 2.25-2.25 2.25s-2.25-1.008-2.25-2.25 1.008-2.25 2.25-2.25 2.25 1.008 2.25 2.25ZM3.375 19.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-slate-800 leading-tight">Consolidado de Graneles</h1>
+        <p class="text-xs text-slate-500">Stock total disponible para envasar agrupado por producto</p>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+        <a href="{{ url_for('production.lots_list') }}"
+           class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600
+                  border border-slate-200 rounded-lg hover:bg-slate-50 active:scale-95 transition-all">
+          Ver Lotes Individuales
+        </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for item in results %}
+    <div class="bg-white border {{ 'critical-border' if item.is_low else 'border-slate-200' }} rounded-2xl shadow-sm overflow-hidden flex flex-col">
+      
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Producto</p>
+            <h3 class="text-lg font-bold text-slate-800 leading-tight">{{ item.product_name }}</h3>
+          </div>
+          {% if item.is_low %}
+          <span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-md uppercase tracking-wide animate-pulse">
+            Stock Bajo
+          </span>
+          {% else %}
+          <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md uppercase tracking-wide">
+            Óptimo
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="mt-6">
+          <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total en Cuarentena/Aprobado</p>
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-black text-slate-800">{{ "%.2f"|format(item.total_bulk) }}</span>
+            <span class="text-sm font-bold text-slate-500">{{ 'L' if item.unit_med == '2' else ('kg' if item.unit_med == '1' else 'uds') }}</span>
+          </div>
+        </div>
+
+        {% if item.threshold > 0 %}
+          {% set pct = (item.total_bulk / item.threshold * 100) | round(0) %}
+          <div class="mt-6">
+            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
+              <span class="text-slate-400">Nivel vs Receta</span>
+              <span class="{{ 'text-red-600' if item.is_low else 'text-emerald-600' }}">{{ pct }}%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="h-2 rounded-full transition-all {{ 'bg-red-500' if item.is_low else 'bg-emerald-500' }}" 
+                   style="width: {{ [pct, 100]|min }}%"></div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2">Referencia de lote: {{ item.threshold }} {{ 'L/kg' }}</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="mt-auto border-t border-slate-100 p-4 bg-slate-50/50">
+        {% if item.is_low %}
+        <a href="{{ url_for('production.add_order') }}" 
+           class="emerald-btn w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-all">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Nueva Orden de Producción
+        </a>
+        {% else %}
+        <div class="py-2 text-center">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Inventario suficiente</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="col-span-full py-20 bg-white border border-slate-200 rounded-3xl text-center">
+        <div class="flex flex-col items-center gap-3 text-slate-400">
+            <svg class="w-12 h-12 text-slate-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+            </svg>
+            <p class="text-sm font-medium text-slate-500">No hay producto granel disponible</p>
+            <p class="text-xs text-slate-400">Inicia una orden de producción para generar stock.</p>
+        </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

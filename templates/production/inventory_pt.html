@@ -2,16 +2,16 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon       { color: #059669; }
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
   .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
-  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn         { background-color: #059669; color: #fff; }
   .emerald-btn:hover  { background-color: #047857; }
   .emerald-border-top { border-top: 3px solid #10b981; }
   .emerald-thead      { background-color: rgba(16, 185, 129, 0.05); }
   .emerald-row:hover  { background-color: rgba(16, 185, 129, 0.05); }
-  .emerald-link       { color: #059669; }
-  .product-thumb      { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .emerald-link        { color: #059669; }
+  .product-thumb       { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
   
   .filter-pill {
     display: inline-flex; align-items: center; gap: 6px;
@@ -22,8 +22,6 @@
   }
   .filter-pill:hover { background-color: #e2e8f0; color: #334155; }
   .filter-pill.active-all      { background-color: #1e293b; color: #fff; border-color: #1e293b; }
-  .filter-pill.active-active   { background-color: rgba(16,185,129,0.12); color: #047857; border-color: rgba(16,185,129,0.35); }
-  .filter-pill.active-inactive { background-color: rgba(239,68,68,0.10); color: #dc2626; border-color: rgba(239,68,68,0.30); }
   .pill-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .dot-active   { background-color: #10b981; }
   .dot-inactive { background-color: #ef4444; }
@@ -40,16 +38,13 @@
       </div>
       <div>
         <h1 class="text-xl font-semibold text-slate-800 leading-tight">Inventario de Producto Terminado</h1>
-        <p class="text-xs text-slate-500">Stock disponible y movimientos de almacén central</p>
+        <p class="text-xs text-slate-500">Stock disponible por presentación y movimientos de almacén</p>
       </div>
     </div>
 
     <div class="flex gap-2">
         <a href="{{ url_for('production.lots_pt') }}"
           class="emerald-btn inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
           Ver Lotes
         </a>
 
@@ -72,19 +67,7 @@
         </div>
         <input type="text" id="inventory-search"
           class="block w-full max-w-72 ps-9 pe-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg shadow-sm placeholder:text-slate-400"
-          placeholder="Buscar por nombre o categoría...">
-      </div>
-
-      <div class="h-6 w-px bg-slate-200"></div>
-
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-slate-400 font-medium me-1">Stock:</span>
-        <button class="filter-pill active-all" data-filter="all">
-          <span class="pill-dot dot-all"></span> Todos
-        </button>
-        <button class="filter-pill" data-filter="Bajo">
-          <span class="pill-dot dot-inactive"></span> Stock Bajo
-        </button>
+          placeholder="Buscar producto...">
       </div>
     </div>
 
@@ -93,7 +76,7 @@
         <tr>
           <th scope="col" class="px-6 py-3 font-semibold">Producto</th>
           <th scope="col" class="px-6 py-3 font-semibold">Categoría</th>
-          <th scope="col" class="px-6 py-3 font-semibold text-center">Stock Actual</th>
+          <th scope="col" class="px-6 py-3 font-semibold">Stock por Presentación</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Lotes Listos</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Estatus</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Acciones</th>
@@ -102,19 +85,18 @@
       <tbody id="inventory-tbody">
         {% for prod in productos %}
         <tr class="inventory-row emerald-row bg-white border-b border-slate-100 transition-colors duration-100"
-            data-stock="{{ prod.stock }}"
             data-name="{{ prod.name | lower }}">
           
           <th scope="row" class="px-6 py-4">
             <div class="flex items-center gap-3">
-                {% if info and info.picture %}
-                    <img src="{{ url_for('static', filename='img/products/' + info.picture) }}" class="product-thumb" alt="">
+                {% if prod.precios and prod.precios[0].picture %}
+                    <img src="{{ url_for('static', filename='img/products/' + prod.precios[0].picture) }}" class="product-thumb" alt="">
                 {% else %}
                     <div class="product-thumb bg-slate-100 flex items-center justify-center text-slate-400 text-[10px]">PT</div>
                 {% endif %}
                 <div>
                     <span class="font-bold text-slate-800 block">{{ prod.name }}</span>
-                    <span class="text-[10px] text-slate-400">ID: #{{ prod.barcode }}</span>
+                    <span class="text-[10px] text-slate-400">Barcode: {{ prod.barcode or 'N/A' }}</span>
                 </div>
             </div>
           </th>
@@ -123,25 +105,28 @@
               <span class="px-2 py-1 bg-slate-100 rounded text-[11px] font-medium uppercase">{{ prod.category }}</span>
           </td>
 
-          <td class="px-6 py-4 text-center">
-            {% if prod.stock <= 0 %}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                    Sin Stock
-                </span>
-            {% elif prod.stock <= 10 %}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
-                    {{ prod.stock }} pzas (Bajo)
-                </span>
-            {% else %}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                    {{ prod.stock }} pzas
-                </span>
-            {% endif %}
+          <td class="px-6 py-4">
+            <div class="space-y-1">
+                {% for pres in prod.precios %}
+                <div class="flex justify-between items-center gap-4 border-b border-slate-50 last:border-0 pb-1">
+                    <span class="text-xs text-slate-500">{{ pres.presentation }}:</span>
+                    {% set p_stock = pres.stock | default(0) %}
+                    {% if p_stock <= 0 %}
+                        <span class="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Sin Stock</span>
+                    {% elif p_stock <= 10 %}
+                        <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ p_stock }} pz</span>
+                    {% else %}
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{{ p_stock }} pz</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <span class="text-xs text-slate-400 italic">No hay presentaciones</span>
+                {% endfor %}
+            </div>
           </td>
 
           <td class="px-6 py-4 text-center text-slate-500 font-medium">
-             {# Conteo de lotes con status 1 (Aprobados) #}
-             {{ prod.production_lots|selectattr("status", "equalto", 1)|list|length }}
+             {{ prod.production_lots|selectattr("status", "equalto", 5)|list|length }}
           </td>
           
           <td class="px-6 py-4 text-center">
@@ -152,7 +137,7 @@
 
           <td class="px-6 py-4 text-center">
             <div class="flex items-center justify-center gap-2">
-                <a href="{{url_for('production.inventory_pt_history',product_id=prod.id)}}" class="text-slate-500 hover:text-slate-800 text-xs font-medium">Historial</a>
+                <a href="{{url_for('production.inventory_pt_history', product_id=prod.id)}}" class="text-slate-500 hover:text-slate-800 text-xs font-medium underline">Historial</a>
             </div>
           </td>
         </tr>
@@ -171,7 +156,6 @@
 </div>
 
 <script>
-// Lógica simple de búsqueda rápida para el Inventario
 document.getElementById('inventory-search').addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('.inventory-row');
@@ -192,4 +176,3 @@ document.getElementById('inventory-search').addEventListener('keyup', function()
 </script>
 
 {% endblock %}
-

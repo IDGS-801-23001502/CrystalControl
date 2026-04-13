@@ -2,40 +2,122 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon       { color: #059669; }
-  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
-  .emerald-btn        { background-color: #059669; color: #fff; }
-  .emerald-btn:hover  { background-color: #047857; }
-  .emerald-border-top { border-top: 3px solid #10b981; }
-  .emerald-thead      { background-color: rgba(16, 185, 129, 0.05); }
-  .emerald-row:hover  { background-color: rgba(16, 185, 129, 0.05); }
-  .emerald-link       { color: #059669; }
-  .product-thumb      { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
-  
-  .filter-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 999px; font-size: 0.75rem;
-    font-weight: 600; border: 1.5px solid transparent;
-    cursor: pointer; transition: all 0.15s ease; user-select: none;
-    background-color: #f1f5f9; color: #64748b; border-color: #e2e8f0;
+  .emerald-icon-bg {
+    background-color: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.20);
   }
-  .filter-pill:hover { background-color: #e2e8f0; color: #334155; }
-  .filter-pill.active-all      { background-color: #1e293b; color: #fff; border-color: #1e293b; }
-  .filter-pill.active-active   { background-color: rgba(16,185,129,0.12); color: #047857; border-color: rgba(16,185,129,0.35); }
-  .filter-pill.active-inactive { background-color: rgba(239,68,68,0.10); color: #dc2626; border-color: rgba(239,68,68,0.30); }
-  .pill-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-  .dot-active   { background-color: #10b981; }
-  .dot-inactive { background-color: #ef4444; }
-  .dot-all      { background: linear-gradient(135deg, #10b981 50%, #ef4444 50%); }
+
+  .emerald-icon {
+    color: #059669;
+  }
+
+  .emerald-badge {
+    background-color: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.20);
+    color: #047857;
+  }
+
+  .emerald-btn {
+    background-color: #059669;
+    color: #fff;
+  }
+
+  .emerald-btn:hover {
+    background-color: #047857;
+  }
+
+  .emerald-border-top {
+    border-top: 3px solid #10b981;
+  }
+
+  .emerald-thead {
+    background-color: rgba(16, 185, 129, 0.05);
+  }
+
+  .emerald-row:hover {
+    background-color: rgba(16, 185, 129, 0.05);
+  }
+
+  .emerald-link {
+    color: #059669;
+  }
+
+  .product-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    background-color: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+  }
+
+  .filter-pill:hover {
+    background-color: #e2e8f0;
+    color: #334155;
+  }
+
+  .filter-pill.active-all {
+    background-color: #1e293b;
+    color: #fff;
+    border-color: #1e293b;
+  }
+
+  .filter-pill.active-active {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  .filter-pill.active-inactive {
+    background-color: rgba(239, 68, 68, 0.10);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.30);
+  }
+
+  .pill-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot-active {
+    background-color: #10b981;
+  }
+
+  .dot-inactive {
+    background-color: #ef4444;
+  }
+
+  .dot-all {
+    background: linear-gradient(135deg, #10b981 50%, #ef4444 50%);
+  }
 </style>
 
 <div class="py-20 relative overflow-x-auto sm:rounded-lg">
   <div class="flex items-center justify-between mb-6">
     <div class="flex items-center gap-3">
       <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
-        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
         </svg>
       </div>
       <div>
@@ -46,7 +128,8 @@
 
     <a href="{{ url_for('products.add_product') }}"
       class="emerald-btn inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg active:scale-95 transition-all duration-150 shadow-sm">
-      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
       Nuevo producto
@@ -58,7 +141,10 @@
     <div class="p-4 flex flex-wrap items-center gap-4">
       <div class="relative">
         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+          <svg class="w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+              d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+          </svg>
         </div>
         <input type="text" id="product-search"
           class="block w-full max-w-72 ps-9 pe-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg shadow-sm placeholder:text-slate-400"
@@ -71,15 +157,18 @@
         <span class="text-xs text-slate-400 font-medium me-1">Estatus:</span>
         <button class="filter-pill active-all" data-filter="all">
           <span class="pill-dot dot-all"></span> Todos
-          <span id="count-all" class="ml-1 bg-slate-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+          <span id="count-all"
+            class="ml-1 bg-slate-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
         </button>
         <button class="filter-pill" data-filter="Activo">
           <span class="pill-dot dot-active"></span> Activos
-          <span id="count-active" class="ml-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+          <span id="count-active"
+            class="ml-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
         </button>
         <button class="filter-pill" data-filter="Inactivo">
           <span class="pill-dot dot-inactive"></span> Inactivos
-          <span id="count-inactive" class="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+          <span id="count-inactive"
+            class="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
         </button>
       </div>
     </div>
@@ -90,8 +179,8 @@
           <th scope="col" class="px-6 py-3 font-semibold">Foto</th>
           <th scope="col" class="px-6 py-3 font-semibold">Producto</th>
           <th scope="col" class="px-6 py-3 font-semibold">Categoria</th>
-          <th scope="col" class="px-6 py-3 font-semibold text-center">Stock</th>
           <th scope="col" class="px-6 py-3 font-semibold">Presentación</th>
+          <th scope="col" class="px-6 py-3 font-semibold text-center">Stock</th>
           <th scope="col" class="px-6 py-3 font-semibold">Precio Men.</th>
           <th scope="col" class="px-6 py-3 font-semibold">Precio May.</th>
           <th scope="col" class="px-6 py-3 font-semibold">Pzas. May.</th>
@@ -102,14 +191,15 @@
       <tbody id="products-tbody">
         {% for prod in all_products %}
         <tr class="product-row emerald-row bg-white border-b border-slate-100 transition-colors duration-100"
-            data-status="{{ prod.status }}"
-            data-name="{{ prod.name | lower }}">
-          {%set info = prod.precios[0] if prod.precios else None%}
+          data-status="{{ prod.status }}" data-name="{{ prod.name | lower }}">
+
           <td class="px-6 py-3">
-            {% if info and info.picture %}
-              <img src="{{ url_for('static', filename='img/products/' + info.picture) }}" class="product-thumb" alt="{{ prod.name }}">
+            {% if prod.precios and prod.precios[0].picture %}
+            <img src="{{ url_for('static', filename='img/products/' + prod.precios[0].picture) }}" class="product-thumb"
+              alt="{{ prod.name }}">
             {% else %}
-              <div class="product-thumb bg-slate-100 flex items-center justify-center text-slate-400 text-[10px]">Sin foto</div>
+            <div class="product-thumb bg-slate-100 flex items-center justify-center text-slate-400 text-[10px]">Sin foto
+            </div>
             {% endif %}
           </td>
 
@@ -117,44 +207,63 @@
             {{ prod.name }}
             <p class="text-[10px] font-normal text-slate-400 italic">Código: {{ prod.barcode or 'N/A' }}</p>
           </th>
-          
+
           <td class="px-6 py-4 text-slate-600">
-              {{ prod.category }}
+            {{ prod.category }}
+          </td>
+
+          <td class="px-6 py-4 text-slate-600 text-xs">
+            {% for pres in prod.precios %}
+            <div class="border-b last:border-0 border-slate-100 py-1">{{ pres.presentation }}</div>
+            {% else %}
+            <span class="text-slate-400">Sin presentaciones</span>
+            {% endfor %}
+          </td>
+
+          <td class="px-6 py-4 text-center text-xs">
+            {% for pres in prod.precios %}
+            <div class="border-b last:border-0 border-slate-100 py-1">
+              <span class="font-bold {{ 'text-emerald-600' if pres.stock > 5 else 'text-red-500' }}">
+
+                <span class="font-bold {{ 'text-emerald-600' if (pres.stock | default(0)) > 5 else 'text-red-500' }}">
+                  {{ pres.stock | default(0) }} pz
+                </span>
+            </div>
+            {% endfor %}
+          </td>
+
+          <td class="px-6 py-4 font-semibold text-emerald-600 text-xs">
+            {% for pres in prod.precios %}
+            <div class="border-b last:border-0 border-slate-100 py-1">${{ pres.price_men }}</div>
+            {% endfor %}
+          </td>
+
+          <td class="px-6 py-4 text-slate-600 text-xs">
+            {% for pres in prod.precios %}
+            <div class="border-b last:border-0 border-slate-100 py-1">${{ pres.price_may }}</div>
+            {% endfor %}
+          </td>
+
+          <td class="px-6 py-4 font-medium text-slate-700 text-xs text-center">
+            {% for pres in prod.precios %}
+            <div class="border-b last:border-0 border-slate-100 py-1">{{ pres.cant_may }} pz</div>
+            {% endfor %}
           </td>
 
           <td class="px-6 py-4 text-center">
-            <span class="font-medium {{ 'text-slate-700' if prod.stock > 0 else 'text-red-500' }}">
-              {{ prod.stock }}
-            </span>
-          </td>
-
-          {# Accedemos a la tabla de precios mediante la relación 'precios' #}
-          {% set info = prod.precios[0] if prod.precios else None %}
-          <td class="px-6 py-4 text-slate-600">
-            {{ info.presentation if info else 'Sin datos' }}
-          </td>
-          <td class="px-6 py-4 font-semibold text-emerald-600">
-            {{ '$' ~ info.price_men if info else '-' }}
-          </td>
-          <td class="px-6 py-4 text-slate-600">
-            {{ '$' ~ info.price_may if info else '-' }}
-          </td>
-          <td class="px-6 py-4 font-medium text-slate-700">
-              {{ info.cant_may }}
-          </td>
-          
-          <td class="px-6 py-4 text-center">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {{ 'bg-emerald-50 text-emerald-700 border-emerald-200' if prod.status == 'Activo' else 'bg-red-50 text-red-600 border-red-200' }} border">
-              <span class="w-1.5 h-1.5 rounded-full {{ 'bg-emerald-500' if prod.status == 'Activo' else 'bg-red-500' }}"></span>
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {{ 'bg-emerald-50 text-emerald-700 border-emerald-200' if prod.status == 'Activo' else 'bg-red-50 text-red-600 border-red-200' }} border">
+              <span
+                class="w-1.5 h-1.5 rounded-full {{ 'bg-emerald-500' if prod.status == 'Activo' else 'bg-red-500' }}"></span>
               {{ prod.status }}
             </span>
           </td>
 
           <td class="px-6 py-4 flex items-center justify-center gap-3">
-            <a href="{{ url_for('products.edit_product', id=prod.id) }}" 
-               class="emerald-link inline-flex items-center gap-1 text-xs font-medium transition-colors">Editar</a>
+            <a href="{{ url_for('products.edit_product', id=prod.id) }}"
+              class="emerald-link inline-flex items-center gap-1 text-xs font-medium transition-colors">Editar</a>
             <a href="{{ url_for('products.delete_product', id=prod.id) }}"
-               class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">Eliminar</a>
+              class="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 hover:underline transition-colors">Eliminar</a>
           </td>
         </tr>
         {% endfor %}
@@ -162,8 +271,10 @@
     </table>
 
     <div id="no-results" class="hidden py-12 text-center text-slate-400 text-sm">
-      <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+      <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
       </svg>
       No se encontraron productos coincidentes
     </div>
@@ -174,5 +285,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('static', filename='js/products.js') }}"></script>
+<script src="{{ url_for('static', filename='js/products.js') }}"></script>
 {% endblock %}
