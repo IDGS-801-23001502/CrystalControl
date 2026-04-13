@@ -917,12 +917,12 @@ document.addEventListener('DOMContentLoaded', function () {
     [4,  'Emulsificación'],
     [5,  'Reposo / Desaireación'],
     [6,  'Filtrado'],
-    [7,  'Control de Calidad (Muestreo)'],
+    //[7,  'Control de Calidad (Muestreo)'],
     //[8,  'Envasado'],
     //[9,  'Etiquetado y Codificado'],
     //[10, 'Paletizado / Emplayado'],
-    [8, 'Dilución de Concentrados'],
-    [9, 'Neutralización'],
+    [7, 'Dilución de Concentrados'],
+    [8, 'Neutralización'],
   ];
 
   function buildStepSelect(name, selectedVal) {
@@ -1026,9 +1026,9 @@ document.addEventListener('DOMContentLoaded', function () {
       if (t) tiempoTotal += parseInt(t.value) || 0;
       const MERMA_PASOS = {
         1: 1.2, 2: 0.8, 3: 1.5, 4: 1.0,
-        5: 0.1, 6: 0.6, 7: 0.05, 
-        //8: 0.5, 9: 0.2, 10: 0.1, 
-        8: 0.8, 9: 0.9
+        5: 0.1, 6: 0.6, 
+        //7: 0.05, 8: 0.5, 9: 0.2, 10: 0.1, 
+        7: 0.8, 8: 0.9
       };
       const tipo = parseInt(row.querySelector('select[name$="-process_type"]')?.value || '0');
       merma += MERMA_PASOS[tipo] || 0;

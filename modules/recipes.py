@@ -40,12 +40,12 @@ def add_recipe():
     (4,  'Emulsificación'),
     (5,  'Reposo / Desaireación'),
     (6,  'Filtrado'),
-    (7,  'Control de Calidad (Muestreo)'),
+    #(7,  'Control de Calidad (Muestreo)'),
     #(8,  'Envasado'),
     #(9,  'Etiquetado y Codificado'),
     #(10, 'Paletizado / Emplayado'),
-    (8, 'Dilución de Concentrados'),
-    (9, 'Neutralización'),
+    (7, 'Dilución de Concentrados'),
+    (8, 'Neutralización'),
     ]
 
     form = FormRecipe()
@@ -90,12 +90,12 @@ def add_recipe():
                 4: 1.0,
                 5: 0.1,
                 6: 0.6,
-                7: 0.05,
+                #7: 0.05,
                 #8: 0.5,
                 #9: 0.2,
                 #10: 0.1,
-                8: 0.8,
-                9: 0.9,
+                7: 0.8,
+                8: 0.9,
             }
             for s in form.steps.data:
                 t_proc = int(s.get('process_type') or 1)
@@ -155,12 +155,12 @@ def edit_recipe(id):
     (4,  'Emulsificación'),
     (5,  'Reposo / Desaireación'),
     (6,  'Filtrado'),
-    (7,  'Control de Calidad (Muestreo)'),
+    #(7,  'Control de Calidad (Muestreo)'),
     #(8,  'Envasado'),
     #(9,  'Etiquetado y Codificado'),
     #(10, 'Paletizado / Emplayado'),
-    (8, 'Dilución de Concentrados'),
-    (9, 'Neutralización'),
+    (7, 'Dilución de Concentrados'),
+    (8, 'Neutralización'),
     ]
 
     form = FormRecipe(obj=old_recipe)
@@ -213,12 +213,12 @@ def edit_recipe(id):
                 4: 1.0,
                 5: 0.1,
                 6: 0.6,
-                7: 0.05,
+                #7: 0.05,
                 #8: 0.5,
                 #9: 0.2,
                 #10: 0.1,
-                8: 0.8,
-                9: 0.9,
+                7: 0.8,
+                8: 0.9,
             }
             for s in form.steps.data:
                 t_proc = int(s.get('process_type') or 1)
