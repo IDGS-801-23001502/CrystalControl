@@ -195,12 +195,12 @@ class RecipeStep(db.Model):
         4:  'Emulsificación',
         5:  'Reposo / Desaireación',
         6:  'Filtrado',
-        7:  'Control de Calidad (Muestreo)',
+        #7:  'Control de Calidad (Muestreo)',
         #8:  'Envasado',
         #9:  'Etiquetado y Codificado',
         #10: 'Paletizado / Emplayado',
-        8: 'Dilución de Concentrados',
-        9: 'Neutralización',
+        7: 'Dilución de Concentrados',
+        8: 'Neutralización',
     }
         return procesos.get(self.process_type, 'Otro')
 
@@ -213,7 +213,7 @@ class Producto(db.Model):
     barcode = db.Column('codigo_barras', db.String(20))
     name = db.Column('nombre', db.String(100), nullable=False)
     category = db.Column('categoria', db.String(50), nullable=False)
-    stock = db.Column('stock_disponible', db.Integer, default=0)
+    #stock = db.Column('stock_disponible', db.Integer, default=0)
     status = db.Column('estatus', db.Enum('Activo', 'Inactivo'), default='Activo')
     #stock_real = db.Column('stock_real', db.Integer)
 

@@ -197,14 +197,14 @@ class FormRecipeStep(FlaskForm):
         # ACABADO
         (5,  'Reposo / Desaireación'),
         (6,  'Filtrado'),
-        (7,  'Control de Calidad (Muestreo)'),
+        #(7,  'Control de Calidad (Muestreo)'),
         # ACONDICIONAMIENTO
         #(8,  'Envasado'),
         #(9,  'Etiquetado y Codificado'),
         #(10, 'Paletizado / Emplayado'),
         # ESPECIALES
-        (8, 'Dilución de Concentrados'),
-        (9, 'Neutralización'),
+        (7, 'Dilución de Concentrados'),
+        (8, 'Neutralización'),
     ])
 # --- FORMULARIO PRINCIPAL ---
 class FormRecipe(FlaskForm):
