@@ -344,7 +344,7 @@ class FavoriteProduct(db.Model):
     id_product = db.Column('id_producto', db.Integer, db.ForeignKey('productos.id_producto'))
     id_client = db.Column('id_cliente', db.Integer, db.ForeignKey('Clientes.id_cliente'))
     __table_args__ = (db.UniqueConstraint('id_producto', 'id_cliente', name='_customer_product_uc'),)
-
+    producto = db.relationship('Producto', backref='marcado_por_clientes')
 
 class CashRegisters(db.Model):
     __tablename__ = 'cortes_cajas'

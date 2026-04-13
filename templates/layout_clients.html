@@ -179,11 +179,17 @@
       </div>
     </nav>
 
-    <main class="flex-grow pt-32 pb-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {% block content %}{% endblock %}
-      </div>
-    </main>
+<main class="flex-grow pt-32 pb-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    {% include 'includes/_alerts.html' %}
+
+    <div class="py-10">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+</main>
 
     <footer class="bg-[#243c60] text-slate-300 py-16 mt-auto">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

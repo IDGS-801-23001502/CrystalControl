@@ -1,196 +1,171 @@
-{% extends "layout_clients.html" %} {% block title %}Configuración de Cuenta{%
-endblock %} {% block content %}
-<div class="max-w-4xl mx-auto">
-  <div class="mb-10">
-    <h1 class="text-3xl font-black text-[#243c60] uppercase tracking-tighter">
-      Configuración de <span class="text-[#9ec946]">Cuenta</span>
-    </h1>
-    <p class="text-slate-500 text-sm font-bold uppercase tracking-widest mt-2">
-      Gestiona tu identidad y seguridad en Express And Clean
-    </p>
-  </div>
+{% extends "layout_clients.html" %} 
+{% block title %}Configuración de Cuenta{% endblock %} 
 
-  <div class="space-y-8">
-    <section
-      class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100"
-    >
-      <div class="flex items-center gap-4 mb-10">
-        <div
-          class="w-12 h-12 bg-[#f4faf5] rounded-2xl flex items-center justify-center text-[#9ec946]"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </div>
-        <h2
-          class="text-lg font-black text-[#243c60] uppercase tracking-tighter"
-        >
-          Información Personal
-        </h2>
+{% block content %}
+<div class="max-w-4xl mx-auto pb-20">
+    <div class="mb-10">
+        <h1 class="text-3xl font-black text-[#243c60] uppercase tracking-tighter">
+            Configuración de <span class="text-[#9ec946]">Cuenta</span>
+        </h1>
+        <p class="text-slate-500 text-sm font-bold uppercase tracking-widest mt-2">
+            Gestiona tu identidad y seguridad en Express And Clean
+        </p>
+    </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="mb-4 px-4 py-3 rounded-xl text-sm font-bold
+        {% if category == 'success' %}bg-[#9ec946]/10 text-[#243c60] border border-[#9ec946]/30
+        {% elif category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+        {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+        {{ message }}
       </div>
+    {% endfor %}
+  {% endwith %}
 
-      <form
-        action="#"
-        method="POST"
-        class="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        <div class="space-y-2">
-          <label
-            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
-            >Nombre Completo</label
-          >
-          <input
-            type="text"
-            name="nombre"
-            value="{{ current_user.nombre }}"
-            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
-          />
-        </div>
-        <div class="space-y-2">
-          <label
-            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
-            >Correo Electrónico</label
-          >
-          <input
-            type="email"
-            name="email"
-            value="{{ current_user.email }}"
-            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
-          />
-        </div>
-        <div class="space-y-2 md:col-span-2">
-          <label
-            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
-            >Dirección de Entrega Industrial</label
-          >
-          <input
-            type="text"
-            name="direccion"
-            placeholder="Calle, Número, Colonia..."
-            class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
-          />
-        </div>
-        <div class="md:col-span-2 pt-4">
-          <button
-            type="submit"
-            class="bg-[#243c60] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1a2d4a] transition-all active:scale-95 shadow-lg shadow-[#243c60]/20"
-          >
-            Guardar Cambios
-          </button>
-        </div>
-      </form>
-    </section>
+    <div class="space-y-8">
+        <section class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="w-12 h-12 bg-[#f4faf5] rounded-2xl flex items-center justify-center text-[#9ec946]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <h2 class="text-lg font-black text-[#243c60] uppercase tracking-tighter">Información Personal</h2>
+            </div>
 
-    <section
-      class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100"
-    >
-      <div class="flex items-center gap-4 mb-10">
-        <div
-          class="w-12 h-12 bg-[#f4faf5] rounded-2xl flex items-center justify-center text-[#7dc6e9]"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        </div>
-        <h2
-          class="text-lg font-black text-[#243c60] uppercase tracking-tighter"
-        >
-          Seguridad
-        </h2>
-      </div>
+            <form action="{{ url_for('e-commerce.configuracion') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{ form_perfil.csrf_token }}
+                <input type="hidden" name="accion" value="update_profile">
+                
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Usuario</label>
+                    {{ form_perfil.email(class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 text-sm font-bold text-[#243c60] outline-none transition-all") }}
+                </div>
+                <div class="space-y-2 md:col-span-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Teléfono</label>
+                    {{ form_perfil.telefono(class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 text-sm font-bold text-[#243c60] outline-none transition-all") }}
+                </div>
+                <div class="md:col-span-2 pt-4">
+                    <button type="submit" class="bg-[#243c60] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1a2d4a] transition-all shadow-lg shadow-[#243c60]/20">
+                        Guardar Perfil
+                    </button>
+                </div>
+            </form>
+        </section>
 
-      <form action="#" method="POST" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-2">
-            <label
-              class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
-              >Contraseña Actual</label
-            >
-            <input
-              type="password"
-              name="old_password"
-              class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
-            />
-          </div>
-          <div class="hidden md:block"></div>
-          <div class="space-y-2">
-            <label
-              class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
-              >Nueva Contraseña</label
-            >
-            <input
-              type="password"
-              name="new_password"
-              class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
-            />
-          </div>
-          <div class="space-y-2">
-            <label
-              class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4"
-              >Confirmar Nueva Contraseña</label
-            >
-            <input
-              type="password"
-              name="confirm_password"
-              class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]"
-            />
-          </div>
-        </div>
-        <div class="pt-4 flex items-center justify-between">
-          <button
-            type="submit"
-            class="bg-[#9ec946] text-[#243c60] px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#8bb33d] transition-all active:scale-95 shadow-lg shadow-[#9ec946]/10"
-          >
-            Actualizar Contraseña
-          </button>
-          <p
-            class="text-[9px] text-slate-400 font-bold uppercase tracking-widest"
-          >
-            [este tambien]
-          </p>
-        </div>
-      </form>
-    </section>
 
-    <section
-      class="border-2 border-red-50 rounded-[2.5rem] p-8 md:p-12 transition-colors hover:bg-red-50/30"
-    >
-      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <h3 class="text-sm font-black text-red-400 uppercase tracking-widest">
-            Eliminar Cuenta
-          </h3>
-          <p class="text-xs text-slate-400 font-medium mt-1">
-            Esta acción es permanente y borrará tu historial de pedidos.
-          </p>
+        <section class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="w-12 h-12 bg-[#f4faf5] rounded-2xl flex items-center justify-center text-[#9ec946]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="text-lg font-black text-[#243c60] uppercase tracking-tighter">Seguridad</h2>
+            </div>
+
+            <form action="{{ url_for('e-commerce.configuracion') }}" method="POST" class="space-y-6">
+                {{ form_password.csrf_token }}
+                <input type="hidden" name="accion" value="change_password">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Contraseña Actual</label>
+                        {{ form_password.old_password(class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]") }}
+                    </div>
+                    <div></div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nueva Contraseña</label>
+                        {{ form_password.new_password(class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]") }}
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Confirmar Nueva</label>
+                        {{ form_password.confirm(class="w-full bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-sm font-bold text-[#243c60]") }}
+                    </div>
+                </div>
+                <button type="submit" class="bg-[#9ec946] text-[#243c60] px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#8bb33d] transition-all shadow-lg shadow-[#9ec946]/10">
+                    Actualizar Contraseña
+                </button>
+            </form>
+        </section>
+
+
+        <section class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="w-12 h-12 bg-[#f4faf5] rounded-2xl flex items-center justify-center text-[#7dc6e9]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-lg font-black text-[#243c60] uppercase tracking-tighter">Direcciones Guardadas</h2>
+            </div>
+
+            <div class="space-y-3 mb-8">
+                {% for dir in mis_direcciones %}
+                <div class="flex items-center justify-between p-5 bg-[#f4faf5] rounded-2xl border-2 border-transparent hover:border-[#7dc6e9]/20 transition-all">
+                    <p class="text-sm font-bold text-[#243c60]">{{ dir.address }}</p>
+                    <form action="{{ url_for('e-commerce.eliminar_direccion', id_dir=dir.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="text-red-400 p-2 hover:bg-red-50 rounded-xl transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form action="{{ url_for('e-commerce.configuracion') }}" method="POST" class="flex flex-col md:flex-row gap-4">
+                {{ form_direccion.csrf_token }}
+                <input type="hidden" name="accion" value="add_address">
+                {{ form_direccion.direccion(placeholder="Nueva dirección industrial...", class="flex-grow bg-[#f4faf5] border-2 border-transparent focus:border-[#7dc6e9] focus:bg-white rounded-2xl py-4 px-6 text-sm font-bold text-[#243c60] outline-none transition-all") }}
+                <button type="submit" class="bg-[#7dc6e9] text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#6bb5d8] transition-all">
+                    Añadir
+                </button>
+            </form>
+        </section>
+
+
+
+        <section class="bg-red-50 rounded-[2.5rem] p-8 md:p-12 border border-red-100 mt-12">
+    <h3 class="text-lg font-black text-red-700 uppercase tracking-tighter mb-4">Zona de Peligro</h3>
+    <p class="text-sm text-red-600/70 font-bold mb-6">Una vez que desactives tu cuenta, no podrás realizar compras hasta que un administrador la reactive.</p>
+    
+    <button type="button" onclick="document.getElementById('modal-desactivar').classList.remove('hidden')" 
+            class="bg-red-600 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20">
+        Desactivar mi cuenta
+    </button>
+</section>
+
+<div id="modal-desactivar" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="fixed inset-0 bg-[#243c60]/80 backdrop-blur-sm"></div>
+    
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="relative bg-white rounded-[3rem] max-w-sm w-full p-10 shadow-2xl">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mx-auto mb-6">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-black text-[#243c60] uppercase tracking-tighter mb-2">¿Estás seguro?</h3>
+                <p class="text-slate-500 text-sm font-bold mb-8 italic">Tu sesión se cerrará y tu cuenta quedará inactiva.</p>
+                
+                <div class="flex flex-col gap-3">
+                    <form action="{{ url_for('e-commerce.desactivar_cuenta') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="w-full bg-red-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all">
+                            Sí, desactivar cuenta
+                        </button>
+                    </form>
+                    <button type="button" onclick="document.getElementById('modal-desactivar').classList.add('hidden')" 
+                            class="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
         </div>
-        <button
-          class="text-red-400 border-2 border-red-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-400 hover:text-white transition-all"
-        >
-          Desactivar Cuenta
-        </button>
-      </div>
-    </section>
-  </div>
+    </div>
+</div>
+    </div>
 </div>
 {% endblock %}
