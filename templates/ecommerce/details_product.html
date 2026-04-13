@@ -33,9 +33,23 @@
         <span class="text-[#243c60]">{{ producto.category }}</span>
       </nav>
 
-      <h1 class="text-4xl font-black text-[#243c60] leading-tight mb-4">
+      <div class="flex justify-between items-start mb-4">
+    <h1 class="text-4xl font-black text-[#243c60] leading-tight">
         {{ producto.name }}
-      </h1>
+    </h1>
+    
+    <form action="{{ url_for('e-commerce.toggle_favorito', id_producto=producto.id) }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="p-3 rounded-2xl bg-[#f4faf5] hover:bg-white border border-slate-100 shadow-sm transition-all group">
+            <svg class="w-6 h-6 {{ 'text-red-500' if is_favorite else 'text-slate-300' }} group-hover:scale-110 transition-transform" 
+                 fill="{{ 'currentColor' if is_favorite else 'none' }}" 
+                 stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+        </button>
+    </form>
+</div>
+
 
       <div class="flex items-center gap-4 mb-8">
         <span class="text-3xl font-black text-[#243c60]" id="price-display">
@@ -76,12 +90,14 @@
     <div class="w-full sm:w-32">
       <label class="block text-[10px] font-black text-[#243c60] uppercase mb-2 ml-1">Cantidad</label>
       <div class="flex items-center bg-[#f4faf5] rounded-2xl p-1 border border-slate-100">
-        <button type="button" onclick="this.nextElementSibling.stepDown()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">-</button>
+        <button type="button" onclick="ajustarCantidad(-1)" 
+                class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">-</button>
         
-        {# Renderizamos el input de cantidad del form de Flask #}
-        {{ form.quantity(class="w-full bg-transparent text-center font-black text-sm outline-none border-none", min="1", max=producto.stock, value="1") }}
+        {# Input del Form #}
+        {{ form.quantity(id="quantity-input", class="w-full bg-transparent text-center font-black text-sm outline-none border-none", min="1", max=producto.stock, value="1", readonly=True) }}
         
-        <button type="button" onclick="this.previousElementSibling.stepUp()" class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">+</button>
+        <button type="button" onclick="ajustarCantidad(1)" 
+                class="w-10 h-10 flex items-center justify-center text-[#243c60] hover:bg-white rounded-xl transition-all font-bold">+</button>
       </div>
     </div>
 
@@ -127,6 +143,17 @@
 </div>
 
 <script>
+  function ajustarCantidad(cambio) {
+    const input = document.getElementById('quantity-input');
+    const valorActual = parseInt(input.value);
+    const maximo = parseInt(input.getAttribute('max'));
+    
+    if (cambio === 1 && valorActual < maximo) {
+        input.stepUp();
+    } else if (cambio === -1 && valorActual > 1) {
+        input.stepDown();
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     const selector = document.getElementById('presentation-selector');
     const priceDisplay = document.getElementById('price-display');

@@ -53,17 +53,6 @@
     </div>
   </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for cat, msg in messages %}
-        <div class="mb-4 flex items-start gap-3 px-5 py-3 rounded-xl border text-sm font-medium
-          {% if cat == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
-          <span>{{ msg|safe }}</span>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
   <div class="emerald-border-top relative overflow-x-auto bg-white shadow-sm rounded-lg border border-slate-200">
     
     <div class="p-4 flex flex-wrap items-center justify-between gap-4">

@@ -1,0 +1,27 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+      {% for category, message in messages %}
+        <div class="mb-4 px-6 py-4 rounded-[2rem] text-sm font-bold flex items-center gap-4 shadow-sm animate-bounce-short
+          {% if category == 'success' %}bg-[#9ec946]/10 text-[#243c60] border border-[#9ec946]/30
+          {% elif category == 'danger' %}bg-red-50 text-red-700 border border-red-200
+          {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+          
+          {% if category == 'success' %}
+            <span class="w-6 h-6 bg-[#9ec946] text-white rounded-full flex items-center justify-center text-xs">✓</span>
+          {% endif %}
+          
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<style>
+  @keyframes bounce-short {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .animate-bounce-short { animation: bounce-short 0.5s ease-out; }
+</style>

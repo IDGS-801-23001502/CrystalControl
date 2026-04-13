@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask_security import current_user, login_required
 from models import db, Sales, SaleDetail, SalePayment, Producto, ProductoPresentacionPrecio, Cliente, Address, FavoriteProduct,verificar_cancelaciones
-from forms import AddToCartForm, AddressForm
+from forms import AddToCartForm, AddressForm, FormEditProfile, FormChangePassword
 import uuid
-from utils.functions import sale_out
-
+from utils.functions import sale_out, register_log_auto, object_to_dict
+from utils.decorators import only_client
+from flask_security import verify_password, hash_password
 
 modulo = 'e-commerce'
 ecommerce_bp = Blueprint(
@@ -14,23 +15,42 @@ ecommerce_bp = Blueprint(
     static_folder='static'
 )
 
+@ecommerce_bp.route('/')
+def index():
+    productos = Producto.query.filter_by(status='Activo').all()
+    categorias_db = db.session.query(Producto.category).distinct().all()
+    categorias = [c[0] for c in categorias_db]
+    return render_template('ecommerce/index.html', productos=productos, categorias=categorias)
+
 @ecommerce_bp.route("/catalog")
 def catalog():
     categorias_unicas = db.session.query(Producto.category).distinct().all()
     lista_categorias = [c[0] for c in categorias_unicas if c[0]]
     search_query = request.args.get('q', '')
     cat_seleccionadas = request.args.getlist('cat')
+    cat_index = request.args.get('category')
+    if cat_index and cat_index not in cat_seleccionadas:
+        cat_seleccionadas.append(cat_index)
+
     query = Producto.query.filter_by(status='Activo')
     if search_query:
         query = query.filter(Producto.name.ilike(f'%{search_query}%'))
     if cat_seleccionadas:
         query = query.filter(Producto.category.in_(cat_seleccionadas))
     productos = query.all()
+    fav_ids = []
+    if current_user.is_authenticated:
+        cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
+        if cliente:
+            fav_ids = [f.id_product for f in FavoriteProduct.query.filter_by(id_client=cliente.id).all()]
+            
     return render_template("ecommerce/catalog.html",
                            productos=productos,
                            categorias=lista_categorias,
                            search_query=search_query,
-                           cat_seleccionadas=cat_seleccionadas)
+                           cat_seleccionadas=cat_seleccionadas,
+                           fav_ids=fav_ids)
+
 
 @ecommerce_bp.route("/producto_details")
 def product_detail():
@@ -42,9 +62,24 @@ def product_detail():
     form.id_presentacion_precio.choices = [
         (p.id, f"{p.presentation} - ${p.price_men}") for p in producto.precios
     ]
-    return render_template("ecommerce/details_product.html", producto=producto, form=form)
+    is_favorite = False
+    if current_user.is_authenticated:
+        cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
+        if cliente:
+            exists = FavoriteProduct.query.filter_by(id_client=cliente.id, id_product=producto.id).first()
+            is_favorite = True if exists else False
+
+    form = AddToCartForm(id_product=producto.id)
+    form.id_presentacion_precio.choices = [
+        (p.id, f"{p.presentation} - ${p.price_men}") for p in producto.precios
+    ]
+    return render_template("ecommerce/details_product.html", 
+                           producto=producto, 
+                           form=form,
+                           is_favorite=is_favorite)
 
 @ecommerce_bp.route("/carrito/add", methods=['POST'])
+@only_client
 def add_to_cart():
     producto_id = request.form.get('id_product')
     producto = Producto.query.get_or_404(producto_id)
@@ -58,6 +93,10 @@ def add_to_cart():
             session['cart'] = {}
         cart = session['cart']
         cart_key = f"{producto.id}_{id_pres}"
+        cantidad_en_carrito = cart[cart_key]['cantidad'] if cart_key in cart else 0
+        if (cantidad_en_carrito + cantidad) > producto.stock:
+            flash(f"No puedes agregar más. Ya tienes {cantidad_en_carrito} en el carrito y el stock total es {producto.stock}.", "danger")
+            return redirect(url_for('e-commerce.product_detail', id=producto.id))
         if cart_key in cart:
             cart[cart_key]['cantidad'] += cantidad
         else:
@@ -75,6 +114,7 @@ def add_to_cart():
     return redirect(url_for('e-commerce.catalog'))
 
 @ecommerce_bp.route("/carrito")
+@only_client
 def carrito():
     cart = session.get('cart', {})
     subtotal = sum(item['precio'] * item['cantidad'] for item in cart.values())
@@ -83,6 +123,7 @@ def carrito():
     return render_template("ecommerce/carrito.html", cart=cart, subtotal=subtotal, iva=iva, total=total)
 
 @ecommerce_bp.route("/carrito/remove/<path:cart_key>")
+@only_client
 def remove_from_cart(cart_key):
     cart = session.get('cart', {})
     if cart_key in cart:
@@ -93,19 +134,31 @@ def remove_from_cart(cart_key):
     return redirect(url_for('e-commerce.carrito'))
 
 @ecommerce_bp.route("/carrito/update", methods=['POST'])
+@only_client
 def update_cart():
     cart_key = request.form.get('cart_key')
     nueva_cantidad = int(request.form.get('cantidad', 1))
     cart = session.get('cart', {})
+
     if cart_key in cart:
+        producto_id = cart[cart_key].get('id_producto') 
+        producto = Producto.query.get(producto_id)
+
+        if producto and nueva_cantidad > producto.stock:
+            flash(f'¡Stock insuficiente! Solo hay {producto.stock} disponibles.', 'danger')
+            return redirect(url_for('e-commerce.carrito'))
+
         if nueva_cantidad > 0:
             cart[cart_key]['cantidad'] = nueva_cantidad
         else:
             cart.pop(cart_key)
+            
         session.modified = True
+        
     return redirect(url_for('e-commerce.carrito'))
 
 @ecommerce_bp.route("/checkout/direccion", methods=['GET', 'POST'])
+@only_client
 @login_required
 def checkout_direccion():
     cart = session.get('cart', {})
@@ -130,18 +183,15 @@ def checkout_direccion():
                 flash("Dirección no válida.", "danger")
                 return redirect(url_for('e-commerce.checkout_direccion'))
             
-            # Guardamos el ID y el texto en la sesión
             session['checkout_id_direccion'] = dir_obj.id
             session['checkout_direccion_texto'] = dir_obj.address
             return redirect(url_for('e-commerce.checkout_pago'))
         elif accion == 'nueva_direccion':
             if form_nueva.validate_on_submit():
-                # 1. Asegurar que el objeto Cliente existe
                 if not cliente:
                     cliente = Cliente(id_usuario=current_user.id, telefono=form_nueva.telefono.data or '')
                     db.session.add(cliente)
-                    db.session.flush() # Para obtener el id_cliente inmediatamente
-                # 2. Crear la nueva dirección ligada al cliente
+                    db.session.flush() 
                 nueva_dir = Address(address=form_nueva.direccion.data, id_client=cliente.id)
                 db.session.add(nueva_dir)
                 db.session.commit()
@@ -156,10 +206,11 @@ def checkout_direccion():
     total = subtotal + iva
     return render_template("ecommerce/checkout_direccion.html", 
                            cart=cart, 
-                           subtotal=subtotal, # <--- ¡IMPORTANTE PASARLO!
+                           subtotal=subtotal,
                            iva=iva, total=total, mis_direcciones=mis_direcciones, form_nueva=form_nueva)
 
 @ecommerce_bp.route("/checkout/pago", methods=['GET', 'POST'])
+@only_client
 @login_required
 def checkout_pago():
     cart = session.get('cart', {})
@@ -174,56 +225,54 @@ def checkout_pago():
     if request.method == 'POST':
         card_number = request.form.get('card_number', '').replace(' ', '')
         cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
-        # Crear la venta principal
         nueva_venta = Sales(
             folio=str(uuid.uuid4())[:8].upper(),
             id_user=current_user.id,
             id_client_sold=cliente.id if cliente else None,
-            id_address=id_direccion, # Relación directa
-            shipping_address_text=direccion_texto, # Snapshot histórico
+            id_address=id_direccion,
+            shipping_address_text=direccion_texto,
             gross_total=total,
-            status=3  # Pagada
+            status=3 
         )
         db.session.add(nueva_venta)
         db.session.flush()
-        # Crear los detalles (incluyendo la presentación corregida)
+        register_log_auto('Creación', 'Ventas', obj_puro_nuevo=nueva_venta)
         for item in cart.values():
             detalle = SaleDetail(
                 id_sale=nueva_venta.id,
                 id_product=item['id_producto'],
-                id_presentation=item['id_presentacion'], # ¡Importante!
+                id_presentation=item['id_presentacion'],
                 lot=item['cantidad'],
                 unit_price_moment=item['precio'],
-                moment_utility=0 # Aquí puedes calcular (precio - costo) si lo agregas luego
+                moment_utility=0 
             )
             db.session.add(detalle)
-        # Registrar el pago
         ultimos_4 = card_number[-4:] if len(card_number) >= 4 else 'N/A'
         pago = SalePayment(
             id_sale=nueva_venta.id,
-            payment_method=3, # Tarjeta Crédito según tu dict
+            payment_method=3,
             paid_amount=total,
             payment_reference=f"**** {ultimos_4}"
         )
         db.session.add(pago)
-        
+        db.session.flush()
+        register_log_auto('Creación', 'Pagos', obj_puro_nuevo=pago)
         db.session.commit()
         success_almacen, mensaje_almacen = sale_out(nueva_venta.id)
         if not success_almacen:
-            # Si algo sale mal con el stock, avisamos al admin pero no matamos la venta
             print(f"ALERTA INVENTARIO: {mensaje_almacen}")
 
-        # Limpiar sesión
         session.pop('cart', None)
         session.pop('checkout_id_direccion', None)
         session.pop('checkout_direccion_texto', None)
         flash(f"✓ ¡Compra exitosa! Pedido #{nueva_venta.folio} confirmado.", "success")
         return redirect(url_for('e-commerce.pedidos'))
     return render_template("ecommerce/checkout_pago.html", cart=cart, 
-                           subtotal=subtotal, # <--- Agregado
+                           subtotal=subtotal,
                            iva=iva, total=total, direccion=direccion_texto)
 
 @ecommerce_bp.route("/pedidos/<int:id_venta>/pagar", methods=['GET', 'POST'])
+@only_client
 @login_required
 def pagar_venta(id_venta):
     venta = Sales.query.filter_by(id=id_venta, id_user=current_user.id).first_or_404()
@@ -240,7 +289,7 @@ def pagar_venta(id_venta):
             payment_reference=f"**** {ultimos_4}"
         )
         db.session.add(pago)
-        venta.status = 3  # Pagada
+        venta.status = 3 
         db.session.commit()
         success_almacen, mensaje_almacen = sale_out(venta.id)
         if success_almacen:
@@ -251,6 +300,7 @@ def pagar_venta(id_venta):
     return render_template("ecommerce/pagar_venta.html", venta=venta)
 
 @ecommerce_bp.route("/pedidos")
+@only_client
 @login_required
 def pedidos():
     try:
@@ -263,13 +313,124 @@ def pedidos():
                            mis_ventas=mis_ventas,
                            filtro=filtro)
 
-@ecommerce_bp.route("/favoritos")
-def favoritos():
-    return render_template("ecommerce/favoritos.html")
+@ecommerce_bp.route("/favoritos/toggle/<int:id_producto>", methods=['POST'])
+@only_client
+@login_required
+def toggle_favorito(id_producto):
+    cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
+    if not cliente:
+        flash("Perfil de cliente no encontrado.", "danger")
+        return redirect(url_for('e-commerce.catalog'))
+    fav = FavoriteProduct.query.filter_by(id_client=cliente.id, id_product=id_producto).first()
 
-@ecommerce_bp.route("/configuracion")
+    if fav:
+        db.session.delete(fav)
+        flash("Eliminado de favoritos.", "info")
+    else:
+        nuevo_fav = FavoriteProduct(id_product=id_producto, id_client=cliente.id)
+        db.session.add(nuevo_fav)
+        flash("¡Agregado a tus favoritos!", "success")
+    
+    db.session.commit()
+    return redirect(request.referrer or url_for('e-commerce.catalog'))
+
+@ecommerce_bp.route("/favoritos")
+@only_client
+@login_required
+def favoritos():
+    cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
+    mis_favs = FavoriteProduct.query.filter_by(id_client=cliente.id).all()
+    return render_template("ecommerce/favoritos.html", favoritos=mis_favs)
+
+@ecommerce_bp.route("/configuracion", methods=['GET', 'POST'])
+@only_client
+@login_required
 def configuracion():
-    return render_template("ecommerce/configuracion.html")
+    cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
+    if not cliente:
+        cliente = Cliente(id_usuario=current_user.id)
+        db.session.add(cliente)
+        db.session.commit()
+
+    form_perfil = FormEditProfile(obj=current_user)
+    form_password = FormChangePassword()
+    form_direccion = AddressForm()
+
+    if request.method == 'GET':
+        form_perfil.email.data = current_user.username
+        form_perfil.telefono.data = cliente.telefono
+
+    accion = request.form.get('accion')
+
+    if request.method == 'POST':
+
+        if accion == 'update_profile' and form_perfil.validate_on_submit():
+            user_original = object_to_dict(current_user) 
+            estado_anterior = object_to_dict(current_user)
+            current_user.username = form_perfil.email.data 
+            cliente.telefono = form_perfil.telefono.data
+            register_log_auto('Actualización', 'Perfil', 
+                      obj_puro_original=estado_anterior, 
+                      obj_puro_nuevo=current_user)
+            
+            db.session.commit()
+
+        elif accion == 'change_password' and form_password.validate_on_submit():
+            if verify_password(form_password.old_password.data, current_user.password):
+                user_original = object_to_dict(current_user)
+                current_user.password = hash_password(form_password.new_password.data)
+                
+                register_log_auto('Actualización', 'Seguridad/Password', 
+                                obj_puro_original=user_original, 
+                                obj_puro_nuevo=current_user)
+                
+                db.session.commit()
+
+        elif accion == 'add_address' and form_direccion.validate_on_submit():
+            nueva_dir = Address(address=form_direccion.direccion.data, id_client=cliente.id)
+            db.session.add(nueva_dir)
+            db.session.flush()
+            register_log_auto('Creación', 'Direcciones', obj_puro_nuevo=nueva_dir)
+            db.session.commit()
+            flash("✓ Dirección agregada.", "success")
+            return redirect(url_for('e-commerce.configuracion'))
+
+    mis_direcciones = Address.query.filter_by(id_client=cliente.id).all()
+
+    return render_template("ecommerce/configuracion.html",
+                           form_perfil=form_perfil,
+                           form_password=form_password,
+                           form_direccion=form_direccion,
+                           mis_direcciones=mis_direcciones)
+
+@ecommerce_bp.route("/configuracion/direccion/eliminar/<int:id_dir>", methods=['POST'])
+@only_client
+@login_required
+def eliminar_direccion(id_dir):
+    cliente = Cliente.query.filter_by(id_usuario=current_user.id).first()
+    direccion = Address.query.get_or_404(id_dir)
+    dir_eliminada = object_to_dict(direccion)
+
+    if dir_eliminada.id_client == cliente.id:
+        db.session.delete(direccion)
+        register_log_auto('Eliminación', 'Direcciones', obj_puro_original=direccion)
+        db.session.commit()
+        flash("Dirección eliminada.", "info")
+    
+    return redirect(url_for('e-commerce.configuracion'))
+
+@ecommerce_bp.route("/configuracion/desactivar", methods=['POST'])
+@only_client
+@login_required
+def desactivar_cuenta():
+    current_user.estatus = 'Inactivo'
+    db.session.commit()
+    
+    from flask_security import logout_user
+    logout_user()
+    
+    flash("Tu cuenta ha sido desactivada correctamente. Lamentamos verte partir.", "info")
+    return redirect(url_for('e-commerce.catalog'))
 
 @ecommerce_bp.route("/ayuda")
 def ayuda():

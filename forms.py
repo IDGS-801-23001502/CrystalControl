@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField, SubmitField, DateField
 from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
-from wtforms import validators
+from wtforms import validators, ValidationError
 
 class FormUsuarios(FlaskForm):
     id = HiddenField('id')
@@ -24,7 +24,6 @@ class FormUsuarios(FlaskForm):
         ('Activo', 'Active'),
         ('Inactivo', 'Inactive')
     ], default='Activo')
-
 
 class FormSupplier(FlaskForm):
     id = HiddenField('id')
@@ -154,18 +153,22 @@ class FormProduct(FlaskForm):
             (2, 'Gramos (g) — sólidos')
         ], coerce=int
     )
+
 class PurchaseItemForm(FlaskForm):
     material_id = SelectField('Material', coerce=int, validators=[validators.DataRequired()])
     quantity = DecimalField('Cantidad', validators=[validators.DataRequired()])
     class Meta:
         csrf = False
+
 # Este es el formulario principal
 class PurchaseRequestForm(FlaskForm):
     items = FieldList(FormField(PurchaseItemForm), min_entries=1)
     admin_notes = TextAreaField('Notas')
+
 class AnalysisForm(FlaskForm):
     status = SelectField('Decisión Final', coerce=int, validators=[validators.DataRequired()])
     analysis_notes = TextAreaField('Notas de Análisis')
+
 # --- SUB-FORMULARIOS PARA FILAS DINÁMICAS ---
 class FormRecipeDetail(FlaskForm):
     """Formulario para una fila de material/insumo"""
@@ -176,6 +179,7 @@ class FormRecipeDetail(FlaskForm):
         validators.InputRequired(message="Requerido")
     ], places=2)
     # unit_med ha sido eliminado de aquí porque se traerá del modelo MateriaPrima
+
 class FormRecipeStep(FlaskForm):
     """Formulario para una fila de pasos de la receta"""
     step_order = IntegerField('Orden', [validators.Optional()])
@@ -200,6 +204,7 @@ class FormRecipeStep(FlaskForm):
         (11, 'Dilución de Concentrados'),
         (12, 'Neutralización'),
     ])
+
 # --- FORMULARIO PRINCIPAL ---
 class FormRecipe(FlaskForm):
     id = HiddenField('id')
@@ -254,9 +259,11 @@ class FormInventoryMovementItem(FlaskForm):
     ], places=2)
     class Meta:
         csrf = False # se deshabilita CSRF interno para las filas de la lista
+
 class FormBulkInventoryMovement(FlaskForm):
     # Lista dinámica de movimientos
     movements = FieldList(FormField(FormInventoryMovementItem), min_entries=1)
+
 class FormProductionOrder(FlaskForm):
     id = HiddenField('id')
     
@@ -280,6 +287,7 @@ class FormProductionOrder(FlaskForm):
         validators=[validators.Optional()]
     )
     status = HiddenField('Estatus', default=2)
+
 class FormCloseProductionOrder(FlaskForm):
     # Campos informativos (Readonly) para que el operador compare
     requested_quantity = DecimalField('Cantidad Programada', render_kw={'readonly': True})
@@ -303,6 +311,7 @@ class FormCloseProductionOrder(FlaskForm):
         validators.Length(max=50)
     ], default="Almacén de Cuarentena")
     notes = TextAreaField('Observaciones de la Producción')
+
 class FormQualityCheck(FlaskForm):
     # El ID del lote es oculto
     lot_id = HiddenField('lot_id')
@@ -323,6 +332,7 @@ class FormQualityCheck(FlaskForm):
     ])
     
     comments = TextAreaField('Notas de Laboratorio')
+
 # --- VENTAS ONLINE --- #
 class AddToCartForm(FlaskForm):
     id_product = HiddenField('ID Producto', validators=[validators.DataRequired()])
@@ -330,11 +340,20 @@ class AddToCartForm(FlaskForm):
     id_presentacion_precio = SelectField('Selecciona Presentación', coerce=int, validators=[validators.DataRequired()])
     quantity = IntegerField('Cantidad', validators=[validators.DataRequired(), validators.NumberRange(min=1)], default=1)
     submit = SubmitField('Añadir al Carrito')
+# Validación personalizada
+    def validate_quantity(self, field):
+        from models import Producto # Importa tu modelo aquí o arriba
+        producto = Producto.query.get(self.id_product.data)
+        if producto and field.data > producto.stock:
+            raise ValidationError(f'Solo quedan {producto.stock} unidades disponibles.')
+
+
 class CheckoutForm(FlaskForm):
     # Para la dirección de envío y completar la tabla 'Ventas'
     shipping_address = StringField('Dirección de Envío', validators=[validators.DataRequired(), validators.Length(max=50)])
     # El status se manejará internamente (1: Solicitada / 2: Esperando pago)
     submit = SubmitField('Confirmar Pedido')
+
 class PaymentForm(FlaskForm):
     # Para la tabla 'ventas_pagos'
     id_sale = HiddenField('ID Venta')
@@ -345,6 +364,7 @@ class PaymentForm(FlaskForm):
     paid_amount = DecimalField('Monto a Pagar', validators=[validators.DataRequired()])
     reference = StringField('Referencia (opcional)')
     submit = SubmitField('Finalizar Pago')
+
 class FormInventoryAdjustment(FlaskForm):
     product_id = SelectField('Producto', coerce=int, validators=[
         validators.DataRequired(message="Debe seleccionar un producto")
@@ -368,6 +388,7 @@ class FormInventoryAdjustment(FlaskForm):
         validators.Optional(),
         validators.Length(max=255)
     ])
+
 class AddressForm(FlaskForm):
     direccion = StringField('Dirección Completa', validators=[
         validators.DataRequired(message="La dirección es obligatoria"),
@@ -379,4 +400,17 @@ class AddressForm(FlaskForm):
     ])
     submit = SubmitField('Guardar y continuar')
 
+class FormEditProfile(FlaskForm):
+    email = EmailField('Correo Electrónico', [validators.DataRequired(), validators.Email()])
+    telefono = StringField('Teléfono', [validators.Optional(), validators.Length(max=20)])
+    submit = SubmitField('Actualizar Perfil')
 
+class FormChangePassword(FlaskForm):
+    old_password = PasswordField('Contraseña Actual', [validators.DataRequired()])
+    new_password = PasswordField('Nueva Contraseña', [
+        validators.DataRequired(),
+        validators.Length(min=8),
+        validators.EqualTo('confirm', message='Las contraseñas deben coincidir')
+    ])
+    confirm = PasswordField('Repite la Nueva Contraseña')
+    submit = SubmitField('Cambiar Contraseña')

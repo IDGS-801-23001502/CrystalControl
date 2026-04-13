@@ -1,58 +1,26 @@
 {% extends "layout_clients.html" %} {% block title %}Catálogo de Insumos{%
 endblock %} {% block content %}
 <div class="flex flex-col md:flex-row gap-8">
-  <aside class="w-full md:w-64 flex-shrink-0">
-    <form
-      action="{{ url_for('e-commerce.catalog') }}"
-      method="GET"
-      class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 sticky top-32"
-    >
-      <input type="hidden" name="q" value="{{ search_query }}" />
 
-      <h3
-        class="text-[#243c60] font-black uppercase text-xs tracking-widest mb-6 border-b border-slate-50 pb-4"
-      >
+  <aside class="w-full md:w-64 flex-shrink-0">
+    <form action="{{ url_for('e-commerce.catalog') }}" method="GET" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 sticky top-32">
+      <input type="hidden" name="q" value="{{ search_query }}" />
+      <h3 class="text-[#243c60] font-black uppercase text-xs tracking-widest mb-6 border-b border-slate-50 pb-4">
         Filtrar por
       </h3>
 
       <div class="mb-8">
-        <label
-          class="block text-[10px] font-black text-[#7dc6e9] uppercase mb-3"
-        >
+        <label class="block text-[10px] font-black text-[#7dc6e9] uppercase mb-3">
           Categoría
         </label>
         <div class="space-y-2">
           {% for cat in categorias %}
-          <label
-            class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-[#243c60] cursor-pointer"
-          >
-            <input
-              type="checkbox"
-              name="cat"
-              value="{{ cat }}"
-              class="rounded text-[#9ec946] focus:ring-[#9ec946]"
-              {#
-              Mantenemos
-              el
-              check
-              marcado
-              si
-              el
-              usuario
-              ya
-              lo
-              seleccionó
-              #}
-              {%
-              if
-              cat
-              in
-              cat_seleccionadas
-              %}
+          <label class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-[#243c60] cursor-pointer">
+            <input type="checkbox" name="cat" value="{{ cat }}" class="rounded text-[#9ec946] focus:ring-[#9ec946]" {# Mantenemos
+              el check marcado si el usuario ya lo seleccionó #}
+              {% if cat in cat_seleccionadas %}
               checked
-              {%
-              endif
-              %}
+              {% endif %}
             />
             {{ cat }}
           </label>
@@ -115,7 +83,16 @@ endblock %} {% block content %}
           <div
             class="bg-[#f4faf5] rounded-3xl h-48 mb-6 flex items-center justify-center relative overflow-hidden">
             {% set info = producto.precios[0] if producto.precios else None %}
-            
+              <form action="{{ url_for('e-commerce.toggle_favorito', id_producto=producto.id) }}" method="POST" class="absolute top-3 right-3 z-10">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="p-2 rounded-full bg-white/80 hover:bg-white shadow-sm transition-colors group/heart">
+                      <svg class="w-5 h-5 {{ 'text-red-500' if producto.id in fav_ids else 'text-slate-400' }} transition-colors" 
+                          fill="{{ 'currentColor' if producto.id in fav_ids else 'none' }}" 
+                          stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                  </button>
+              </form>
             <img
               src="{{ url_for('static', filename='img/products/' + (info.picture if info.picture else 'default.png')) }}"
               class="w-32 h-32 object-contain group-hover:scale-110 transition-transform duration-500"

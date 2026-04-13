@@ -33,17 +33,6 @@
     </p>
   </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-      <div class="mb-4 px-4 py-3 rounded-xl text-sm font-bold
-        {% if category == 'success' %}bg-[#9ec946]/10 text-[#243c60] border border-[#9ec946]/30
-        {% elif category == 'danger' %}bg-red-50 text-red-700 border border-red-200
-        {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endwith %}
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
     <!-- LISTA DE PRODUCTOS -->

@@ -28,17 +28,6 @@
     </div>
   </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for cat, msg in messages %}
-        <div class="px-5 py-3 rounded-xl border text-sm font-medium
-          {% if cat == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-red-50 border-red-200 text-red-700{% endif %}">
-          {{ msg|safe }}
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
   <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
     <div class="flex items-center gap-2 mb-8 text-emerald-700">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
