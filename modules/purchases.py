@@ -39,29 +39,41 @@ def index():
 @roles_accepted('Administrador', 'Almacenista')
 def demand():
     form = PurchaseRequestForm()
-    try:
-        materials = [(m.id, m.name) for m in Raw_Material.query.filter_by(estatus="Activo")]
-        for item in form.items:
-            item.material_id.choices = materials
-    except Exception as e:
-        print(f"Error al cargar materiales: {e}")
-        materials = []
+    # Obtenemos materiales y creamos un mapeo de ID -> Unidad para el JS
+    raw_materials = Raw_Material.query.filter_by(estatus="Activo").all()
+    unidades_map = {m.id: m.nombre_unidad for m in raw_materials}
+    
+    materials_choices = [(m.id, m.name) for m in raw_materials]
+    for item in form.items:
+        item.material_id.choices = materials_choices
 
     if form.validate_on_submit():
         try:
-            # 1. Crear el encabezado de la compra
+            # VALIDACIÓN DE STOCK MÁXIMO
+            for item in form.items:
+                material = Raw_Material.query.get(item.material_id.data)
+                cant_solicitada = float(item.quantity.data)
+                stock_actual = float(material.real_stock) 
+                stock_limite = float(material.stock_max)
+
+                if (stock_actual + cant_solicitada) > stock_limite:
+                    flash(f"Error: {material.name} superaría el stock máximo ({stock_limite}). Actual: {stock_actual}", "danger")
+                    return render_template('purchases/demand.html', form=form)
+
+            # 1. Crear el encabezado
             new_purchase = Purchase(
                 requester_id=current_user.id,
-                request_date= date.today(),
-                status=1  # Estatus Solicitud
+                request_date=date.today(),
+                status=1,
+                observations=form.admin_notes.data
             )
             db.session.add(new_purchase)
-            
-            # El flush es necesario para obtener el ID antes del commit final
             db.session.flush()
 
             # 2. Crear los detalles
+            detalles_audit = []
             for item in form.items:
+                material = Raw_Material.query.get(item.material_id.data)
                 detail = PurchaseDetail(
                     purchase_id=new_purchase.id,
                     material_id=item.material_id.data,
@@ -71,38 +83,27 @@ def demand():
                     status=1
                 )
                 db.session.add(detail)
-            # Si todo salió bien, guardamos permanentemente
-            db.session.commit()
-
-            #Registro de logs
-            detalles_audit = []
-            for d in new_purchase.details:
                 detalles_audit.append({
-                    "material": d.material.name, # ¡Incluso puedes guardar el nombre!
-                    "cantidad": float(d.demand_quantity),
-                    "status": d.status
+                    "material": material.name,
+                    "cantidad": float(item.quantity.data)
                 })
 
-            datos_completos = {
-                "id": new_purchase.id,
-                "folio": new_purchase.folio,
-                "detalles_articulos": detalles_audit # Metemos la lista aquí
-            }
+            db.session.commit()
 
             register_log_auto(
                 accion="Creación", 
                 modulo="Compras", 
-                obj_puro_nuevo=datos_completos
+                obj_puro_nuevo={"id": new_purchase.id, "detalles": detalles_audit}
             )
 
-            flash("Solicitud de compra generada con éxito", "success")
+            flash("Solicitud generada con éxito", "success")
             return redirect(url_for('purchases.index'))
+
         except Exception as e:
-            # Si algo falla (como el id_unidad null), deshacemos todo lo pendiente
             db.session.rollback()
-            print(f"Error al registrar compra: {e}")
-            flash("Hubo un error al procesar la solicitud. Verifica los datos.", "danger")
-    return render_template('purchases/demand.html', form=form)
+            flash(f"Error crítico: {str(e)}", "danger")
+
+    return render_template('purchases/demand.html', form=form, unidades_map=unidades_map)
 
 
 @purchases_bp.route("/analyze/<int:id>", methods=['GET', 'POST'])
