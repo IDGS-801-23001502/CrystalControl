@@ -45,7 +45,7 @@ def login_client():
         
         if user and verify_password(password, user.password):
             # Verificamos que el usuario sea realmente un cliente (por rol o flag)
-            if hasattr(user, 'id_perfil') and user.id_perfil == 2: # Asumiendo 2 como ID de rol Cliente
+            if hasattr(user, 'id_perfil') and user.id_perfil == 6: # Asumiendo 2 como ID de rol Cliente
                 cliente_data = Cliente.query.filter_by(id_usuario=user.id).first()
                 
                 if cliente_data and cliente_data.telefono:

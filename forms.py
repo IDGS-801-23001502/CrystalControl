@@ -114,6 +114,7 @@ class FormPresentacion(FlaskForm):
     cant_may = IntegerField('Pzas Mayoreo', [validators.DataRequired()])
     unit_size = DecimalField('Contenido Numérico', [validators.DataRequired()])
     unit_type = SelectField('Unidad', choices=[(1, 'ml'), (2, 'g')], coerce=int)
+    stock = HiddenField('stock', default=0)
     picture = FileField('Foto')
 
     class Meta:
