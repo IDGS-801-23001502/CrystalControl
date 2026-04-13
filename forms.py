@@ -96,11 +96,6 @@ class FormRaw_Materials_Supplier(FlaskForm):
         validators.NumberRange(min=0, message="El precio no puede ser negativo")
     ], places=2)
     
-    lot = DecimalField('Cantidad / Lote', [
-        validators.InputRequired(message="La cantidad es obligatoria"),
-        validators.NumberRange(min=0, message="La cantidad debe ser mayor a 0")
-    ], places=2)
-    
     # Basado en el diccionario que definiste en el modelo
     unidad_medida = SelectField('Unidad de Medida', coerce=int, choices=[
         (1, 'Kilos'),

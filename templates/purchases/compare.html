@@ -106,14 +106,14 @@
           <table class="w-full text-left border-separate border-spacing-y-2">
             <thead>
               <tr
-                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2"
+                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
               >
-                <th class="pb-2 pl-4">¿Ganador?</th>
+                <th class="pb-2 pl-4">Seleccionar</th>
                 <th class="pb-2">Proveedor</th>
-                <th class="pb-2">Costo Proveedor</th>
-                <th class="pb-2 text-emerald-600">Costo Real (Tu Unidad)</th>
-                <th class="pb-2">Días Entrega</th>
-                <th class="pb-2 text-right pr-4">Cantidad Final</th>
+                <th class="pb-2 text-amber-600">Pedido al Proveedor</th>
+                <th class="pb-2 text-emerald-600">Equivalente Sistema</th>
+                <th class="pb-2">Costo Unitario</th>
+                <th class="pb-2 text-right pr-4">Subtotal Compra</th>
               </tr>
             </thead>
             <tbody>
@@ -126,71 +126,62 @@
                     type="radio"
                     name="winner_{{ detail.id }}"
                     value="{{ offer.supplier_id }}"
-                    class="w-5 h-5 text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
                     required
                   />
                 </td>
 
                 <td class="py-4">
-                  <span class="font-bold text-slate-700 text-sm block"
+                  <span class="font-bold text-slate-700 block"
                     >{{ offer.supplier_name }}</span
                   >
                   <span class="text-[9px] text-slate-400 uppercase"
-                    >Empaque: {{ offer.supplier_unit }}</span
+                    >Factor: 1 {{ offer.supplier_unit_name }} = {{
+                    offer.conversion_factor }} {{ offer.system_unit_name
+                    }}</span
                   >
                 </td>
 
                 <td class="py-4">
-                  <div class="relative w-32">
-                    <span class="absolute left-0 top-2 text-slate-400 text-sm"
-                      >$</span
-                    >
+                  <div class="flex items-center gap-2">
                     <input
                       type="number"
-                      step="0.0001"
-                      name="price_{{ detail.id }}_{{ offer.supplier_id }}"
-                      class="block w-full py-1.5 pl-4 text-sm font-mono font-bold text-slate-700 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:border-emerald-500 peer"
-                      value="{{ offer.price_per_supplier_unit }}"
+                      step="0.01"
+                      name="qty_prov_{{ detail.id }}_{{ offer.supplier_id }}"
+                      value="{{ '{:.2f}'.format(offer.qty_to_order_supplier) }}"
+                      class="w-20 p-1 text-sm font-bold border-b-2 border-amber-200 bg-transparent focus:border-amber-500 outline-none"
                     />
-                    <label
-                      class="absolute text-[9px] text-slate-400 top-2 -z-10 duration-300 transform -translate-y-4 scale-75 origin-[0]"
+                    <span class="text-[10px] font-bold text-amber-600"
+                      >{{ offer.supplier_unit_name }}</span
                     >
-                      Por {{ offer.supplier_unit }}
-                    </label>
                   </div>
                 </td>
 
                 <td class="py-4">
                   <div class="flex flex-col">
-                    <span class="text-xs font-mono font-black text-emerald-700">
-                      ${{ "{:,.2f}".format(offer.price_per_system_unit) }}
+                    <span class="text-sm font-black text-emerald-700">
+                      {{ "{:,.2f}".format(detail.demand_quantity) }}
                     </span>
                     <span class="text-[9px] text-slate-400 uppercase"
-                      >Por {{ offer.system_unit }}</span
+                      >{{ offer.system_unit_name }} (Base)</span
                     >
                   </div>
                 </td>
 
                 <td class="py-4">
-                  <input
-                    type="number"
-                    name="days_{{ detail.id }}_{{ offer.supplier_id }}"
-                    class="w-16 py-1 text-sm text-center border-b-2 border-slate-200 focus:outline-none focus:border-emerald-500 bg-transparent"
-                    value="3"
-                  />
+                  <div class="flex flex-col">
+                    <span class="text-sm font-mono font-bold text-slate-600"
+                      >${{ "{:,.2f}".format(offer.reference_price) }}</span
+                    >
+                    <span class="text-[9px] text-slate-400"
+                      >Por {{ offer.supplier_unit_name }}</span
+                    >
+                  </div>
                 </td>
 
                 <td class="py-4 text-right pr-4 rounded-r-lg">
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="qty_{{ detail.id }}_{{ offer.supplier_id }}"
-                    class="w-32 py-1.5 px-2 text-right font-mono font-black text-slate-800 bg-slate-100 rounded border-b-2 border-slate-300 focus:bg-emerald-50 focus:border-emerald-500 outline-none"
-                    value="{{ detail.demand_quantity }}"
-                  />
-                  <p class="text-[9px] text-slate-400 mt-1 uppercase">
-                    {{ offer.system_unit }}
-                  </p>
+                  <span class="text-base font-black text-slate-800">
+                    ${{ "{:,.2f}".format(offer.total_estimated) }}
+                  </span>
                 </td>
               </tr>
               {% endfor %}

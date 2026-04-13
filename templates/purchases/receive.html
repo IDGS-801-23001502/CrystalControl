@@ -1,104 +1,178 @@
-{% extends "layout_employees.html" %}
-{% block title %} Recepción de Mercancía - {{ purchase.folio }} {% endblock %}
-{% block content %}
+{% extends "layout_employees.html" %} {% block title %} Recepción de Mercancía -
+{{ purchase.folio }} {% endblock %} {% block content %}
 
 <div class="max-w-6xl mx-auto mt-10 px-4 mb-20">
-    <form action="{{ url_for('purchases.confirm_reception', id=purchase.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <form
+    action="{{ url_for('purchases.confirm_reception', id=purchase.id) }}"
+    method="post"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-            <div>
-                <h1 class="text-2xl font-black text-slate-800">Registrar Entrada de Almacén</h1>
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Orden: {{ purchase.folio }}</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Fecha de Arribo</label>
-                    <input type="date" name="arrival_date" class="text-sm font-bold text-slate-700 border-b border-slate-200 outline-none focus:border-emerald-500" value="{{ hoy_str }}">
+    <div
+      class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"
+    >
+      <div>
+        <h1 class="text-2xl font-black text-slate-800">
+          Registrar Entrada de Almacén
+        </h1>
+        <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">
+          Orden: {{ purchase.folio }}
+        </p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-tighter"
+            >Fecha de Arribo (Hoy)</label
+          >
+          <p
+            class="text-sm font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100"
+          >
+            <i class="fas fa-calendar-alt mr-1"></i> {{ hoy_str }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+    >
+      <table class="w-full text-left">
+        <thead
+          class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-200"
+        >
+          <tr>
+            <th class="px-6 py-4">Insumo / Proveedor</th>
+            <th class="px-6 py-4 text-center">Original</th>
+            <th class="px-6 py-4 text-center text-amber-600">Pendiente</th>
+            <th class="px-6 py-4 text-center text-emerald-600">
+              Recibir Ahora
+            </th>
+            <th class="px-6 py-4">Resolución</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for d in purchase.details %}
+          <tr
+            class="transition-colors {{ 'bg-slate-50/80 opacity-60' if d.status in [5, 6] else 'hover:bg-slate-50/50' }}"
+          >
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-2">
+                <div>
+                  <span class="font-bold text-slate-800 block"
+                    >{{ d.material.name }}</span
+                  >
+                  <span
+                    class="text-[10px] text-slate-400 font-medium uppercase"
+                  >
+                    {{ d.supplier.name if d.supplier else 'Sin Proveedor' }}
+                  </span>
                 </div>
-            </div>
-        </div>
+                {# Indicador de retraso visual #} {% if d.status not in [5,6] %}
+                {% set base_d = purchase.generate_date or purchase.request_date
+                %} {% if base_d and (hoy_dt > base_d +
+                timedelta(days=d.delivery_days)) %}
+                <span title="Entrega fuera de tiempo" class="text-amber-500">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                </span>
+                {% endif %} {% endif %}
+              </div>
+            </td>
+            <td class="px-6 py-5 text-center text-xs font-mono text-slate-400">
+              {{ "{:,.2f}".format(d.approved_quantity) }}
+            </td>
+            <td class="px-6 py-5 text-center">
+              <span class="font-mono font-black text-amber-600">
+                {{ "{:,.2f}".format(d.approved_quantity - d.received_quantity)
+                }}
+              </span>
+            </td>
+            <td class="px-6 py-5">
+              <div class="flex justify-center">
+                {% if d.status in [5, 6] %}
+                <span
+                  class="{{ 'text-emerald-600' if d.status == 5 else 'text-amber-600' }} font-black uppercase text-[10px]"
+                >
+                  {{ 'Entregado' if d.status == 5 else 'Retraso' }}
+                </span>
+                {% else %} {% set max_posible = d.approved_quantity -
+                d.received_quantity %}
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="{{ max_posible }}"
+                  name="qty_{{ d.id }}"
+                  class="w-28 py-2 px-3 text-right font-black text-emerald-700 bg-white border-2 border-emerald-100 rounded-lg focus:border-emerald-500 outline-none"
+                  placeholder="0.00"
+                  required
+                />
+                {% endif %}
+              </div>
+            </td>
+            <td class="px-6 py-5">
+              {% if d.status not in [5, 6] %}
+              <select
+                name="res_{{ d.id }}"
+                class="text-[10px] font-bold uppercase bg-white border border-slate-200 rounded px-2 py-2"
+              >
+                <option value="completo">Completo</option>
+                <option value="incompleto" selected>
+                  Incompleto / Parcial
+                </option>
+                <option value="rechazado">No Aceptado / Dañado</option>
+              </select>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-200">
-                    <tr>
-                        <th class="px-6 py-4">Insumo / Proveedor</th>
-                        <th class="px-6 py-4 text-center">Pendiente Original</th>
-                        <th class="px-6 py-4 text-center text-emerald-600">Recibir Ahora</th>
-                        <th class="px-6 py-4">Estado de Partida</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    {% for d in purchase.details %}
-                    <tr class="transition-colors {{ 'bg-slate-50/80 opacity-60' if d.status == 4 else 'hover:bg-slate-50/50' }}">
-                        <td class="px-6 py-5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg {{ 'bg-emerald-100 text-emerald-600' if d.status == 4 else 'bg-slate-100 text-slate-400' }} flex items-center justify-center text-xs font-bold">
-                                    {% if d.status == 4 %}
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
-                                    {% else %}
-                                        {{ loop.index }}
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">{{ d.material.name }}</span>
-                                    <span class="text-[10px] text-slate-400 font-medium uppercase">{{ d.supplier.name if d.supplier else 'Sin Proveedor' }}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-5 text-center">
-                            <span class="font-mono font-bold text-slate-500 text-sm">
-                                {{ "{:,.2f}".format(d.approved_quantity) }} {{ d.material.nombre_unidad }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <div class="flex justify-center">
-                                {% if d.status == 4 %}
-                                    <span class="text-[10px] font-black text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full uppercase tracking-tighter">Entregado</span>
-                                {% else %}
-                                    <input type="number" step="0.01" 
-                                           name="receive_qty_{{ d.id }}" 
-                                           placeholder="0.00"
-                                           class="w-32 py-2 px-3 text-right font-mono font-black text-emerald-700 bg-emerald-50 border-b-2 border-emerald-200 rounded-lg focus:border-emerald-500 outline-none transition-all"
-                                           max="{{ d.approved_quantity }}"
-                                           required>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="px-6 py-5">
-                            {% if d.status == 4 %}
-                                <div class="text-[10px] font-bold text-slate-400 uppercase italic">Partida Finalizada</div>
-                                <input type="hidden" name="status_{{ d.id }}" value="completo">
-                            {% else %}
-                                <select name="status_{{ d.id }}" class="text-[10px] font-bold uppercase bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-500/20">
-                                    <option value="parcial" selected>Parcial / Pendiente</option>
-                                    <option value="completo">Completado / Todo</option>
-                                    <option value="daniado">Dañado / Rechazado</option>
-                                </select>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="mt-8 flex items-center justify-between">
+      <div
+        class="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-lg border border-amber-100"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            stroke-width="2"
+          ></path>
+        </svg>
+        <span class="text-[10px] font-bold uppercase tracking-tight"
+          >Nota: Las partidas en gris ya han sido completadas y no pueden
+          modificarse.</span
+        >
+      </div>
 
-        <div class="mt-8 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-lg border border-amber-100">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2"></path></svg>
-                <span class="text-[10px] font-bold uppercase tracking-tight">Nota: Las partidas en gris ya han sido completadas y no pueden modificarse.</span>
-            </div>
-            
-            <div class="flex gap-4">
-                <a href="{{ url_for('purchases.scheduled_deliveries') }}" class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all">Regresar</a>
-                
-                <button type="submit" class="px-10 py-2.5 bg-slate-800 text-white text-sm font-black rounded-xl hover:bg-slate-900 shadow-lg active:scale-95 transition-all uppercase tracking-widest">
-                    Finalizar Recepción
-                </button>
-            </div>
-        </div>
-    </form>
+      <div class="flex gap-4">
+        <a
+          href="{{ url_for('purchases.scheduled_deliveries') }}"
+          class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all"
+          >Regresar</a
+        >
+
+        <button
+          type="submit"
+          class="px-10 py-2.5 bg-slate-800 text-white text-sm font-black rounded-xl hover:bg-slate-900 shadow-lg active:scale-95 transition-all uppercase tracking-widest"
+        >
+          Finalizar Recepción
+        </button>
+      </div>
+    </div>
+  </form>
 </div>
 
 {% endblock %}

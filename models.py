@@ -110,11 +110,10 @@ class Raw_Material_Supplier(db.Model):
                             db.ForeignKey('MateriaPrima.id_materia'), 
                             primary_key=True, nullable=False)
     
-    id_supplier = db.Column('id_proveedor', db.Integer, 
+    id_supplier = db.Column('id_proveedor', db.Integer,
                             db.ForeignKey('Proveedores.id_proveedor'), 
                             primary_key=True, nullable=False)
     price = db.Column('precio_referencia', db.Numeric(10, 2), nullable=False)
-    lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
     # (1: Kilos, 2: Litros, etc.)
     unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
     @property
@@ -263,6 +262,7 @@ class PurchaseDetail(db.Model):
     # Campo de Unidad de Medida (1: Kilos, 2: Litros, 3: Galones, 4: Piezas)
     demand_quantity = db.Column('cantidad_solicitada', db.Numeric(10,2), nullable=False)
     approved_quantity = db.Column('cantidad_aprobada', db.Numeric(10, 2), default=0.0)
+    received_quantity = db.Column('cantidad_recibida', db.Numeric(10, 2), default=0.0)
     unit_price = db.Column('precio_unitario_final', db.Numeric(10, 2), default=0.0)
     delivery_days = db.Column('dias_entrega', db.Integer)
     # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: En camino, 5: Recibido, 6:Recibido con retraso
@@ -476,7 +476,7 @@ class InventoryMovementMP(db.Model):
     # 1: Merma, 2: Consumo, 3: Ajuste, 4: Abasto
     reason = db.Column('motivo', db.Integer, nullable=False)
     quantity = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
-    resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=True) 
+    resulting_stock = db.Column('stock_resultante', db.Numeric(10, 2), nullable=True)
     pending_quantity = db.Column('cantidad_pendiente', db.Numeric(10, 2), default=0.00)
     # 1: Aplicado, 2: Pendiente
     status = db.Column('status_movimiento', db.Integer, default=1)

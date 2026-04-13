@@ -119,7 +119,7 @@ def suppliers_material(id):
     
     form = FormRaw_Materials_Supplier(request.form)
     
-    proveedores = Supplier.query.all() 
+    proveedores = Supplier.query.filter_by(status="Activo").all()
     form.id_supplier.choices = [(p.id, p.name) for p in proveedores]
     
     if request.method == 'GET':
@@ -131,7 +131,6 @@ def suppliers_material(id):
                 id_material = id, 
                 id_supplier = form.id_supplier.data,
                 price = form.price.data,
-                lot = form.lot.data,
                 unidad_medida = form.unidad_medida.data
             )
             

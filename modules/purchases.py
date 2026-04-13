@@ -1,11 +1,12 @@
-from flask import Blueprint, render_template, request, g, redirect, url_for, flash, make_response
+from flask import Blueprint, render_template, request, g, redirect, url_for, flash
 from flask_login import current_user
-from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier, InventoryMovementPT as RawMaterialMovement
+from models import db, Purchase, PurchaseDetail, Raw_Material, Supplier, Raw_Material_Supplier, InventoryMovementMP
 from utils.decorators import roles_accepted
 from utils.functions import register_log_auto
 from forms import PurchaseRequestForm, AnalysisForm
 from datetime import date, datetime
 import copy
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 module = 'purchases'
@@ -197,23 +198,28 @@ def compare_suppliers(id):
         offers_list = []
         
         for rel in suppliers_relation:
-            prov = Supplier.query.get(rel.id_supplier)
-            
-            # Calculamos el factor para mostrar el precio convertido en la tabla
+            # Obtenemos el factor: (Unidad Proveedor -> Unidad Sistema)
+            # Si el proveedor vende en Galones (3) y el sistema es Litros (2), factor = 3.78
             factor = CONVERSION_FACTORS.get((rel.unidad_medida, detail.material.unidad_medida), 1.0)
-            precio_en_mi_unidad = (float(rel.price) / float(rel.lot)) / factor
+            
+            # Cantidad que debemos pedirle al proveedor para cubrir nuestra demanda
+            # Pedido Prov = Demanda Sistema / Factor
+            qty_to_order_supplier = float(detail.demand_quantity) / factor
 
             offers_list.append({
                 'supplier_id': rel.id_supplier,
-                'supplier_name': prov.name if prov else "Desconocido",
-                'supplier_unit': rel.nombre_unidad, # Unidad del proveedor (ej: Galón)
-                'system_unit': detail.material.nombre_unidad, # Tu unidad (ej: Litro)
-                'price_per_supplier_unit': float(rel.price) / float(rel.lot),
-                'price_per_system_unit': precio_en_mi_unidad
+                'supplier_name': rel.proveedor_asociado.name,
+                'supplier_unit_name': rel.nombre_unidad,
+                'system_unit_name': detail.material.nombre_unidad,
+                'conversion_factor': factor,
+                'reference_price': float(rel.price),
+                'qty_to_order_supplier': qty_to_order_supplier,
+                'total_estimated': float(rel.price) * qty_to_order_supplier
             })
         offers_by_detail[detail.id] = offers_list
 
     return render_template("purchases/compare.html", purchase=purchase, offers_by_detail=offers_by_detail)
+
 # 5. FINALIZE ORDER Y Ponerla en transito (Paso 4: Generar Orden de Compra final y Paso 5: La mercancía ha sido despachada)
 @purchases_bp.route("/order/manage/<int:id>", methods=['GET', 'POST'])
 @roles_accepted('Administrador', 'Compras')
@@ -281,72 +287,86 @@ def receive_purchase_view(id):
     if purchase.status not in [4, 5, 8]:
         flash("Esta orden no está en un estado válido para recepción.", "warning")
         return redirect(url_for('purchases.scheduled_deliveries'))
-        
-    return render_template("purchases/receive.html", purchase=purchase)
+    
+    return render_template("purchases/receive.html", 
+                           purchase=purchase, 
+                           hoy_str=datetime.now().strftime('%d/%m/%Y'),
+                           hoy_dt=datetime.now(), # Para comparaciones
+                           timedelta=timedelta)   # Para cálculos en el template
 
-@purchases_bp.route("/receive/confirm/<int:id>", methods=['POST'])
+@purchases_bp.route("/confirm-reception/<int:id>", methods=['POST'])
 @roles_accepted('Administrador', 'Almacenista')
 def confirm_reception(id):
     purchase = Purchase.query.get_or_404(id)
+    fecha_actual = datetime.now()
+    all_details_completed = True
     
     try:
         for detail in purchase.details:
-            # 1. SALTAR si ya está cerrado (Status 4)
-            if detail.status == 4:
+            if detail.status in [5, 6]:
                 continue
-
-            # 2. CAPTURAR datos del formulario
-            qty_received_str = request.form.get(f'receive_qty_{detail.id}', '0')
-            qty_received = Decimal(qty_received_str) if qty_received_str else Decimal('0')
-            status_input = request.form.get(f'status_{detail.id}') 
-
-            # --- EL FILTRO CRÍTICO ---
-            # Si la cantidad es 0 y NO es un reporte de 'dañado', 
-            # ignoramos este registro completamente. No guardamos NADA en la DB.
-            if qty_received <= 0 and status_input != 'dañado':
-                continue
-            # -------------------------
-
-            # 3. Lógica de cálculo 
-            total_a_comprar = Decimal(str(detail.approved_quantity))
+                
+            qty_received = float(request.form.get(f'qty_{detail.id}', 0))
+            resolution = request.form.get(f'res_{detail.id}')
             
-            if status_input == 'completo':
-                pendiente_para_db = Decimal('0.00')
-                detail.status = 4 
-            elif status_input == 'dañado':
-                pendiente_para_db = total_a_comprar 
-                qty_received = Decimal('0.00')
-            else: # CASO PARCIAL
-                pendiente_para_db = total_a_comprar - qty_received
-                detail.status = 5  # <--- AQUÍ: Marcamos como PARCIAL / PENDIENTE
+            if qty_received > 0 and resolution != 'rechazado':
+                # --- ACTUALIZACIÓN DE MATERIA PRIMA ---
+                material = detail.material
+                
+                # Actualizamos ambos stocks
+                old_real = float(material.real_stock or 0)
+                old_available = float(material.available_stock or 0)
+                
+                material.real_stock = old_real + qty_received
+                material.available_stock = old_available + qty_received
+                
+                # --- ACTUALIZACIÓN DE DETALLE DE COMPRA ---
+                detail.received_quantity = float(detail.received_quantity or 0) + qty_received
+                pending = float(detail.approved_quantity) - float(detail.received_quantity)
+                
+                # --- REGISTRO DE MOVIMIENTO ---
+                mov = InventoryMovementMP(
+                    material_id=detail.material_id,
+                    movement_type=1, 
+                    reason=4, 
+                    quantity=qty_received,
+                    resulting_stock=material.real_stock, # Reflejamos el nuevo stock real
+                    pending_quantity=max(0, pending),
+                    status=1, 
+                    user_id=current_user.id,
+                    timestamp=fecha_actual
+                )
+                db.session.add(mov)
 
-            # 4. INSERTAR en movimientosinventariomp
-            # Solo llegamos aquí si pasó el filtro de arriba
-            new_move = RawMaterialMovement(
-                material_id=detail.material_id,
-                movement_type=1,
-                reason=4,
-                quantity=qty_received,
-                pending_quantity=max(Decimal('0.00'), pendiente_para_db),
-                status=1 if status_input == 'completo' else 2,
-                user_id=current_user.id,
-                timestamp=datetime.utcnow()
-            )
-            db.session.add(new_move)
+                # --- LÓGICA DE ESTATUS Y RETRASO ---
+                if pending <= 0 or resolution == 'completo':
+                    base_date = purchase.generate_date or purchase.request_date
+                    promesse_date = base_date + timedelta(days=(detail.delivery_days or 0))
+                    
+                    if fecha_actual > promesse_date:
+                        detail.status = 6 # Recibido con retraso
+                    else:
+                        detail.status = 5 # Recibido a tiempo
+                else:
+                    detail.status = 4 # Incompleto
+                    all_details_completed = False
+            else:
+                if resolution == 'rechazado':
+                    detail.status = 3
+                else:
+                    all_details_completed = False
 
-            # 6. Actualizar stock del material
-            if status_input != 'dañado' and qty_received > 0:
-                detail.material.real_stock += qty_received
-                detail.material.available_stock += qty_received
-
-        # 7. Estatus de la compra: 6=Recibido completo, 8=Incompleto
-        purchase.status = 6 if all(d.status == 4 for d in purchase.details) else 8
+        # Actualizar estatus de la compra general
+        if all_details_completed:
+            purchase.status = 6
+        else:
+            purchase.status = 8
 
         db.session.commit()
-        flash(f"Movimiento registrado. Folio: {purchase.folio}", "success")
-        return redirect(url_for('purchases.scheduled_deliveries'))
-
+        flash(f"Recepción de la orden {purchase.folio} exitosa. Stocks actualizados.", "success")
+        
     except Exception as e:
         db.session.rollback()
         flash(f"Error: {str(e)}", "danger")
-        return redirect(url_for('purchases.receive_purchase_view', id=id))
+
+    return redirect(url_for('purchases.scheduled_deliveries'))

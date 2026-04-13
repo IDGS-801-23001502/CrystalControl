@@ -72,13 +72,6 @@
             Precio de Referencia ($) <span class="text-red-500">*</span>
           </label>
         </div>
-
-        <div class="relative z-0 w-full group">
-          {{ form.lot(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
-          <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Cantidad / Lote <span class="text-red-500">*</span>
-          </label>
-        </div>
       </div>
 
       <div class="flex justify-end mt-10">
@@ -104,7 +97,6 @@
                 <tr>
                     <th class="px-6 py-4">Proveedor</th>
                     <th class="px-6 py-4 text-center">Precio Unit.</th>
-                    <th class="px-6 py-4 text-center">Lote Sugerido</th>
                     <th class="px-6 py-4 text-center">Unidad</th>
                     <th class="px-6 py-4 text-center">Estatus</th>
                 </tr>
@@ -118,7 +110,6 @@
                     <td class="px-6 py-4 text-center">
                         <span class="text-sm font-bold text-emerald-600">${{ item.price }}</span>
                     </td>
-                    <td class="px-6 py-4 text-center text-sm text-slate-600">{{ item.lot }}</td>
                     <td class="px-6 py-4 text-center">
                         <span class="emerald-badge px-2.5 py-0.5 rounded text-[10px] font-bold border uppercase">
                             {{ item.nombre_unidad }}

@@ -80,6 +80,11 @@
     color: #9a3412;
     border: 1px solid #fed7aa;
   }
+  .status-6 {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
   .status-7 {
     background-color: #ffedd5;
     color: #e30d0d;
@@ -155,6 +160,7 @@
         <button class="filter-pill" data-filter="1">Solicitudes</button>
         <button class="filter-pill" data-filter="4">Generadas</button>
         <button class="filter-pill" data-filter="5">En Tránsito</button>
+        <button class="filter-pill" data-filter="6">Recibidas</button>
       </div>
     </div>
 
@@ -220,6 +226,16 @@
               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold status-7"
               >Cancelada / Rechazada</span
             >
+            {% elif purchase.status == 6 %}
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold status-6"
+              >Recibido Total</span
+            >
+            {% elif purchase.status == 8 %}
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700"
+              >Entrega Parcial</span
+            >
             {% endif %}
           </td>
           <td class="px-6 py-4">
@@ -256,6 +272,23 @@
               <span class="text-slate-400 text-[10px] italic"
                 >En Tránsito...</span
               >
+
+              {% elif purchase.status == 6 %}
+              <span class="text-emerald-500">
+                <svg
+                  class="w-5 h-5 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+              </span>
               {% endif %} {% endif %} {% endif %}
             </div>
           </td>
