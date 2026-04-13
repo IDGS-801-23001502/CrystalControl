@@ -223,7 +223,7 @@ class FormRecipe(FlaskForm):
     
     estimated_time = IntegerField('Tiempo Total (min)', [validators.Optional()])
     
-    expected_utility = DecimalField('Utilidad Esperada (%)', [validators.Optional()], places=2)
+    estimated_cost = DecimalField('Costo Estimado de Producción', [validators.Optional()], places=2)
     
     estimated_waste = DecimalField('Merma Estimada (%)', [validators.Optional()], places=2)
     

@@ -5,6 +5,7 @@ from utils.decorators import roles_accepted
 from flask_security import current_user
 from decimal import Decimal
 from datetime import datetime
+from utils.functions import register_log_auto
 
 module = 'raw_materials'
 
@@ -232,6 +233,12 @@ def add_bulk_movement():
                     material.available_stock -= qty
                 
                 db.session.add(new_move)
+
+                register_log_auto(
+                    accion="Actualización", 
+                    modulo="Inventario Materia Prima", 
+                    obj_puro_nuevo=material 
+                )
 
             db.session.commit()
             flash("Ajustes aplicados correctamente.", "success")

@@ -114,7 +114,7 @@ class Raw_Material_Supplier(db.Model):
                             db.ForeignKey('Proveedores.id_proveedor'), 
                             primary_key=True, nullable=False)
     price = db.Column('precio_referencia', db.Numeric(10, 2), nullable=False)
-    lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    #lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)  ESTA ERA LA CANTIDAD QUE QUITASTE GIO
     # (1: Kilos, 2: Litros, etc.)
     unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
     @property
@@ -146,7 +146,8 @@ class Recipe(db.Model):
     final_name = db.Column('nombre_final', db.String(100), nullable=False)
     general_instructions = db.Column('instrucciones_generales', db.Text)
     estimated_time = db.Column('tiempo_total_estimado_min', db.Integer)
-    expected_utility = db.Column('utilidad_esperada_porcent', db.Numeric(5, 2))
+    #expected_utility = db.Column('utilidad_esperada_porcent', db.Numeric(5, 2)) ESTA ERA LA UTILIDAD QUE YA NO SE OCUPA
+    estimated_cost = db.Column('costo_estimado_produccion', db.Numeric(10, 2)) #ESTE ES EL COSTO ESTIMADO DE LA RECETA
     estimated_waste = db.Column('merma_estimada_porcent', db.Numeric(5, 2))
     produced_quantity = db.Column('cantidad_producida', db.Integer)
     unit_med = db.Column('unidad_medida', TINYINT) # 1-Kilos 2-Litros 3-Piezas

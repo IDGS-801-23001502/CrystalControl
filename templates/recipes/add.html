@@ -101,7 +101,10 @@
     border-color:var(--em); background:var(--white);
     box-shadow:0 0 0 3px rgba(16,185,129,0.12);
   }
-  .rf-input.is-invalid, .rf-select.is-invalid { border-color:var(--red); }
+  .rf-input.is-invalid, .rf-select.is-invalid, .rf-textarea.is-invalid {
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(239,68,68,0.08);
+  }
   .rf-textarea { resize:vertical; min-height:68px; }
 
   .rf-grid-3 { display:grid; grid-template-columns:2fr 1fr 1fr; gap:0.875rem; }
@@ -135,6 +138,41 @@
     transition:background 0.15s, border-color 0.15s, color 0.15s; flex-shrink:0;
   }
   .rf-remove:hover { background:var(--red-bg); border-color:var(--red-bd); color:var(--red); }
+
+  /* ── Mensajes de error por campo ── */
+  .rf-field-error {
+    font-size:11px; color:var(--red);
+    font-family:'JetBrains Mono',monospace;
+    display:flex; align-items:center; gap:4px;
+    margin-top:2px;
+  }
+  .rf-field-error::before { content:'⚠'; font-size:10px; }
+
+  /* ── Banner de errores global ── */
+  .rf-error-banner {
+    display:none;
+    background:var(--red-bg);
+    border:1px solid var(--red-bd);
+    border-left:4px solid var(--red);
+    border-radius:var(--radius-lg);
+    padding:1rem 1.25rem;
+    margin-bottom:1.25rem;
+  }
+  .rf-error-banner.visible { display:block; }
+  .rf-error-banner-title {
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--red); display:flex; align-items:center; gap:6px;
+    margin-bottom:0.5rem;
+  }
+  .rf-error-banner ul {
+    margin:0; padding-left:1.25rem;
+    display:flex; flex-direction:column; gap:3px;
+  }
+  .rf-error-banner ul li {
+    font-size:12.5px; color:var(--red);
+    font-family:'Sora',sans-serif;
+  }
 
   /* ── Search / Autocomplete ── */
   .search-wrap { position:relative; }
@@ -185,6 +223,12 @@
   }
   .selected-chip .chip-remove:hover { color:var(--red); }
 
+  /* ── chip inválido (producto no seleccionado) ── */
+  .prod-invalid .rf-input {
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(239,68,68,0.08);
+  }
+
   /* ── Materials table ── */
   .rf-table-head {
     display:grid; grid-template-columns:3fr 1fr 1fr 36px;
@@ -221,6 +265,7 @@
     transition:border-color 0.15s, box-shadow 0.15s;
   }
   .step-row:hover { border-color:rgba(59,130,246,0.35); box-shadow:0 0 0 3px var(--blue-bg); }
+  .step-row.has-error { border-color:var(--red) !important; box-shadow:0 0 0 3px rgba(239,68,68,0.08) !important; }
   .step-num {
     font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600;
     color:var(--slate-400); letter-spacing:0.06em; margin-bottom:0.6rem;
@@ -309,7 +354,13 @@
     </div>
   </div>
 
-  <form method="POST" id="recipe-form">
+  <!-- ── Banner de errores (se llena dinámicamente) ── -->
+  <div class="rf-error-banner" id="error-banner">
+    <p class="rf-error-banner-title">⚠ Corrige los siguientes errores antes de continuar</p>
+    <ul id="error-banner-list"></ul>
+  </div>
+
+  <form method="POST" id="recipe-form" novalidate>
     {{ form.csrf_token }}
 
     <!-- ── Información General ── -->
@@ -321,18 +372,20 @@
       </div>
       <div class="rf-section-body">
 
+        <!-- Nombre -->
         <div class="rf-field">
           <label class="rf-label">
             {{ form.final_name.label.text }}
             <span class="rf-badge">requerido</span>
           </label>
-          {{ form.final_name(class="rf-input" + (" is-invalid" if form.final_name.errors else ""), placeholder="ej. Vanish") }}
+          {{ form.final_name(class="rf-input" + (" is-invalid" if form.final_name.errors else ""), placeholder="ej. Vanish", id="final_name") }}
+          <span class="rf-field-error" id="error-final_name" style="display:none"></span>
         </div>
 
         <div class="rf-grid-3 mt-1">
 
           <!-- Producto con buscador -->
-          <div class="rf-field">
+          <div class="rf-field" id="prod-field">
             <label class="rf-label">
               Producto
               <span class="rf-badge">requerido</span>
@@ -354,13 +407,18 @@
                 </div>
               {% endif %}
             </div>
+            <span class="rf-field-error" id="error-product_id" style="display:none"></span>
             {{ form.product_id(style="display:none", id="product_id_hidden") }}
           </div>
 
+          <!-- Cantidad -->
           <div class="rf-field">
             <label class="rf-label">{{ form.produced_quantity.label.text }}</label>
             {{ form.produced_quantity(class="rf-input", placeholder="0", id="produced_quantity") }}
+            <span class="rf-field-error" id="error-produced_quantity" style="display:none"></span>
           </div>
+
+          <!-- Unidad -->
           <div class="rf-field">
             <label class="rf-label">Unidad de Medida</label>
             {{ form.unit_med(class="rf-select", id="unit_med") }}
@@ -376,7 +434,7 @@
     </div>
 
     <!-- ── Materiales e Insumos ── -->
-    <div class="rf-section em-top">
+    <div class="rf-section em-top" id="section-materiales">
       <div class="rf-section-head">
         <span class="rf-section-title materiales">
           <span class="pill-dot"></span> Materiales e Insumos
@@ -385,8 +443,7 @@
       </div>
       <div class="rf-section-body">
 
-        <!-- Buscador de materiales (se muestra al pulsar el botón) -->
-          <div id="mat-search-wrap" style="display:block; margin-bottom:12px;">
+        <div id="mat-search-wrap" style="display:block; margin-bottom:12px;">
           <div class="search-wrap">
             <input class="rf-input" id="mat-search-input"
                    placeholder="Escribe para buscar una materia prima..."
@@ -428,7 +485,7 @@
     </div>
 
     <!-- ── Pasos del Proceso ── -->
-    <div class="rf-section bl-top">
+    <div class="rf-section bl-top" id="section-pasos">
       <div class="rf-section-head">
         <span class="rf-section-title pasos">
           <span class="pill-dot"></span> Pasos del Proceso
@@ -489,7 +546,7 @@
 
     <!-- ── Acciones ── -->
     <div class="rf-actions">
-      <button type="submit" class="rf-submit">
+      <button type="submit" class="rf-submit" id="btn-submit">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
@@ -518,6 +575,162 @@ document.addEventListener('DOMContentLoaded', function () {
   let matIndex       = matContainer.querySelectorAll('.material-row').length;
 
   // ─────────────────────────────────────────────
+  // VALIDACIÓN
+  // ─────────────────────────────────────────────
+
+  function showFieldError(fieldId, msg) {
+    const el = document.getElementById('error-' + fieldId);
+    const input = document.getElementById(fieldId);
+    if (el) { el.textContent = msg; el.style.display = 'flex'; }
+    if (input) input.classList.add('is-invalid');
+  }
+
+  function clearFieldError(fieldId) {
+    const el = document.getElementById('error-' + fieldId);
+    const input = document.getElementById(fieldId);
+    if (el) { el.textContent = ''; el.style.display = 'none'; }
+    if (input) input.classList.remove('is-invalid');
+  }
+
+  function clearAllErrors() {
+    // Campos simples
+    ['final_name', 'product_id', 'produced_quantity'].forEach(clearFieldError);
+    // Banner
+    const banner = document.getElementById('error-banner');
+    banner.classList.remove('visible');
+    document.getElementById('error-banner-list').innerHTML = '';
+    // Materiales
+    matContainer.querySelectorAll('.material-row input[type=number]').forEach(i => i.classList.remove('is-invalid'));
+    // Pasos
+    document.querySelectorAll('.step-row').forEach(r => r.classList.remove('has-error'));
+  }
+
+  function validateForm() {
+    clearAllErrors();
+    let isValid = true;
+    const bannerErrors = [];
+
+    // ── 1. Nombre ──
+    const nombre = document.getElementById('final_name');
+    if (!nombre.value.trim()) {
+      showFieldError('final_name', 'El nombre de la receta es obligatorio');
+      isValid = false;
+    } else if (nombre.value.trim().length < 3) {
+      showFieldError('final_name', 'El nombre debe tener al menos 3 caracteres');
+      isValid = false;
+    }
+
+    // ── 2. Producto ──
+    const prodHidden = document.getElementById('product_id_hidden');
+    if (!prodHidden.value) {
+      showFieldError('product_id', 'Debes seleccionar un producto');
+      // marcar también el input de búsqueda visualmente
+      document.getElementById('prod-search-input').classList.add('is-invalid');
+      isValid = false;
+    }
+
+    // ── 3. Cantidad producida ──
+    const cantidad = document.getElementById('produced_quantity');
+    const cantVal  = parseInt(cantidad.value);
+    if (!cantidad.value || isNaN(cantVal)) {
+      showFieldError('produced_quantity', 'Ingresa la cantidad a producir');
+      isValid = false;
+    } else if (!Number.isInteger(Number(cantidad.value))) {
+      showFieldError('produced_quantity', 'La cantidad debe ser un número entero');
+      isValid = false;
+    } else if (cantVal <= 0) {
+      showFieldError('produced_quantity', 'La cantidad debe ser mayor a 0');
+      isValid = false;
+    }
+
+    // ── 4. Materiales ──
+    const matRows = matContainer.querySelectorAll('.material-row');
+    if (matRows.length === 0) {
+      bannerErrors.push('Agrega al menos una materia prima a la receta');
+      isValid = false;
+    } else {
+      matRows.forEach((row, i) => {
+        const qtyInput = row.querySelector('input[type=number]');
+        const qtyVal   = parseFloat(qtyInput?.value);
+        if (!qtyInput.value || isNaN(qtyVal) || qtyVal <= 0) {
+          qtyInput.classList.add('is-invalid');
+          const matName = row.querySelector('p')?.textContent?.trim() || `Material ${i + 1}`;
+          bannerErrors.push(`"${matName}": la cantidad debe ser mayor a 0`);
+          isValid = false;
+        }
+      });
+    }
+
+    // ── 5. Pasos ──
+    const stepRows = document.querySelectorAll('.step-row');
+    if (stepRows.length === 0) {
+      bannerErrors.push('Agrega al menos un paso al proceso');
+      isValid = false;
+    } else {
+      stepRows.forEach((row, i) => {
+        const stepNum  = i + 1;
+        let stepError  = false;
+
+        const etapa = row.querySelector('input[name$="-stage_name"]');
+        if (!etapa?.value.trim()) {
+          etapa.classList.add('is-invalid');
+          bannerErrors.push(`Paso ${stepNum}: el nombre de la etapa es obligatorio`);
+          stepError = true;
+          isValid = false;
+        }
+
+        const tiempo = row.querySelector('input[name$="-estimated_time"]');
+        const tVal   = parseInt(tiempo?.value);
+        if (!tiempo.value || isNaN(tVal) || tVal <= 0) {
+          tiempo.classList.add('is-invalid');
+          bannerErrors.push(`Paso ${stepNum}: el tiempo estimado debe ser mayor a 0`);
+          stepError = true;
+          isValid = false;
+        }
+
+        if (stepError) row.classList.add('has-error');
+      });
+    }
+
+    // ── Mostrar banner si hay errores de materiales/pasos ──
+    if (bannerErrors.length > 0) {
+      const banner = document.getElementById('error-banner');
+      const list   = document.getElementById('error-banner-list');
+      bannerErrors.forEach(msg => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        list.appendChild(li);
+      });
+      banner.classList.add('visible');
+    }
+
+    return isValid;
+  }
+
+  // ── Limpiar errores de campo al escribir ──
+  document.getElementById('final_name').addEventListener('input', () => clearFieldError('final_name'));
+  document.getElementById('produced_quantity').addEventListener('input', () => clearFieldError('produced_quantity'));
+  document.getElementById('product_id_hidden').addEventListener('change', () => {
+    clearFieldError('product_id');
+    document.getElementById('prod-search-input').classList.remove('is-invalid');
+  });
+
+  // ── Submit ──
+  document.getElementById('recipe-form').addEventListener('submit', function(e) {
+    const valid = validateForm();
+    if (!valid) {
+      e.preventDefault();
+      // Scroll al banner o al primer error visible
+      const banner = document.getElementById('error-banner');
+      if (banner.classList.contains('visible')) {
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        document.querySelector('.is-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });
+
+  // ─────────────────────────────────────────────
   // Utilidad: renderiza items en un dropdown
   // ─────────────────────────────────────────────
   function showDropdown(dropEl, items, labelFn, metaFn, onSelect) {
@@ -537,7 +750,6 @@ document.addEventListener('DOMContentLoaded', function () {
         <span style="font-weight:500;color:var(--slate-800)">${labelFn(item)}</span>
         <span style="font-size:11px;font-family:monospace;color:var(--slate-500)">${metaFn(item)}</span>
       `;
-      // mousedown en lugar de click para que no se dispare el blur antes
       d.addEventListener('mousedown', e => {
         e.preventDefault();
         onSelect(item);
@@ -587,8 +799,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function selectProduct(item) {
     prodHidden.value   = item.id;
+    prodHidden.dispatchEvent(new Event('change')); // dispara limpieza de error
     prodInput.value    = '';
     prodInput.disabled = true;
+    prodInput.classList.remove('is-invalid');
     prodInput.placeholder = 'Producto seleccionado';
     hideDropdown(prodDrop);
     prodWrap.innerHTML = `
@@ -603,11 +817,11 @@ document.addEventListener('DOMContentLoaded', function () {
     prodHidden.value      = '';
     prodWrap.innerHTML    = '';
     prodInput.disabled    = false;
+    prodInput.classList.remove('is-invalid');
     prodInput.placeholder = 'Escribe para buscar un producto...';
     prodInput.focus();
   }
 
-  // Si ya hay producto cargado (modo edición), conectar el botón de limpiar
   document.getElementById('btn-clear-product')?.addEventListener('click', clearProduct);
 
   // ─────────────────────────────────────────────
@@ -630,7 +844,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!q) { hideDropdown(matDrop); return; }
     matTimer = setTimeout(async () => {
       try {
-        // IDs ya agregados para excluirlos del resultado
         const usados = [...matContainer.querySelectorAll('.material-row')]
           .map(r => parseInt(r.dataset.materialId))
           .filter(Boolean);
@@ -659,9 +872,7 @@ document.addEventListener('DOMContentLoaded', function () {
     matInput.value = '';
     hideDropdown(matDrop);
     if (matEmpty) matEmpty.style.display = 'none';
-
-    // Ocultar el buscador después de agregar el primero
-    matSearchWrap.style.display = 'none';   
+    matSearchWrap.style.display = 'none';
 
     const row = document.createElement('div');
     row.className = 'material-row';
@@ -673,16 +884,19 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
       <input class="rf-input" type="number"
              name="materials-${idx}-required_quantity"
-             placeholder="0.00" min="0" step="0.01">
+             placeholder="0.00" min="0.01" step="0.01">
       <div class="unit-pill">${item.unit || '---'}</div>
       <button type="button" class="rf-remove remove-mat-row">✕</button>
     `;
     matContainer.appendChild(row);
+    // Limpiar is-invalid al escribir en la cantidad
+    row.querySelector('input[type=number]').addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+    });
     row.querySelector('input[type=number]').focus();
     calcularTotalesDinamicos();
   }
 
-  // Eliminar fila de material
   matContainer.addEventListener('click', e => {
     if (e.target.classList.contains('remove-mat-row')) {
       e.target.closest('.material-row').remove();
@@ -696,21 +910,20 @@ document.addEventListener('DOMContentLoaded', function () {
   // ─────────────────────────────────────────────
   // PASOS
   // ─────────────────────────────────────────────
-
   const processChoices = [
-  [1,  'Mezclado / Homogeneización'],
-  [2,  'Disolución (Sólido a Líquido)'],
-  [3,  'Reacción Química (Control de Temp/pH)'],
-  [4,  'Emulsificación'],
-  [5,  'Reposo / Desaireación'],
-  [6,  'Filtrado'],
-  [7,  'Control de Calidad (Muestreo)'],
-  [8,  'Envasado'],
-  [9,  'Etiquetado y Codificado'],
-  [10, 'Paletizado / Emplayado'],
-  [11, 'Dilución de Concentrados'],
-  [12, 'Neutralización'],
-];
+    [1,  'Mezclado / Homogeneización'],
+    [2,  'Disolución (Sólido a Líquido)'],
+    [3,  'Reacción Química (Control de Temp/pH)'],
+    [4,  'Emulsificación'],
+    [5,  'Reposo / Desaireación'],
+    [6,  'Filtrado'],
+    [7,  'Control de Calidad (Muestreo)'],
+    [8,  'Envasado'],
+    [9,  'Etiquetado y Codificado'],
+    [10, 'Paletizado / Emplayado'],
+    [11, 'Dilución de Concentrados'],
+    [12, 'Neutralización'],
+  ];
 
   function buildStepSelect(name, selectedVal) {
     const opts = processChoices.map(([v, l]) =>
@@ -734,9 +947,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  document.getElementById('add-step').addEventListener('click', () => {
-    const container = document.getElementById('steps-container');
-    const idx = container.querySelectorAll('.step-row').length;
+  function buildStepRow(idx) {
     const div = document.createElement('div');
     div.className = 'step-row';
     div.innerHTML = `
@@ -756,7 +967,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         <div class="rf-field">
           <label class="rf-label">Tiempo (min)</label>
-          <input class="rf-input" type="number" name="steps-${idx}-estimated_time" placeholder="30">
+          <input class="rf-input" type="number" name="steps-${idx}-estimated_time" placeholder="30" min="1">
         </div>
         <button type="button" class="rf-remove remove-step-row" style="margin-top:22px">✕</button>
       </div>
@@ -768,7 +979,22 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         <div></div>
       </div>`;
-    container.appendChild(div);
+    // Limpiar errores al escribir en campos del paso
+    div.querySelector('input[name$="-stage_name"]').addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      div.classList.remove('has-error');
+    });
+    div.querySelector('input[name$="-estimated_time"]').addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      div.classList.remove('has-error');
+    });
+    return div;
+  }
+
+  document.getElementById('add-step').addEventListener('click', () => {
+    const container = document.getElementById('steps-container');
+    const idx = container.querySelectorAll('.step-row').length;
+    container.appendChild(buildStepRow(idx));
     calcularTotalesDinamicos();
   });
 
