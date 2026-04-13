@@ -3,25 +3,40 @@
 <div class="min-h-[70vh] flex items-center justify-center">
     <div class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-10 border border-slate-100">
         <div class="text-center mb-8">
-            <h2 class="text-2xl font-black text-[#243c60] uppercase">Verificación SMS</h2>
-            <p class="text-slate-500 text-sm">Ingresa el código de 6 dígitos enviado a tu celular.</p>
+            <div class="w-16 h-16 bg-[#f4faf5] text-[#9ec946] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-black text-[#243c60] uppercase">Verificación</h2>
+            <p class="text-slate-500 text-sm">Ingresa el código enviado a tu celular registrado.</p>
         </div>
         
         <form action="{{ url_for('login.verify_otp') }}" method="POST" class="space-y-6">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
             <div class="flex justify-center">
-                <input type="text" name="otp_code" maxlength="6" required
-                    class="w-full text-center text-4xl font-black tracking-[0.5rem] py-4 bg-[#f4faf5] border-2 border-transparent focus:border-[#9ec946] rounded-2xl outline-none transition-all"
-                    placeholder="000000">
+                <input type="text" 
+                       name="otp_code" 
+                       maxlength="6" 
+                       inputmode="numeric" 
+                       pattern="[0-9]*" 
+                       required
+                       autofocus
+                       class="w-full text-center text-4xl font-black tracking-[1rem] py-5 bg-[#f4faf5] border-2 border-transparent focus:border-[#9ec946] focus:bg-white rounded-2xl outline-none transition-all placeholder:tracking-normal text-[#243c60]"
+                       placeholder="000000">
             </div>
             
             <button type="submit" 
-                class="w-full bg-[#9ec946] text-[#243c60] py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-[#8bb33d] transition-all">
+                class="w-full bg-[#9ec946] text-[#243c60] py-4 rounded-2xl font-black text-lg shadow-xl shadow-[#9ec946]/20 hover:bg-[#8bb33d] hover:-translate-y-1 transition-all active:scale-95">
                 Verificar y Entrar
             </button>
             
-            <div class="text-center mt-4">
-                <a href="{{ url_for('login.login_client') }}" class="text-xs text-slate-400 hover:text-[#243c60]">Volver al inicio</a>
+            <div class="text-center mt-6">
+                <p class="text-xs text-slate-400 mb-2">¿No recibiste el código?</p>
+                <a href="{{ url_for('login.login_client') }}" class="text-xs font-bold text-[#243c60] hover:text-[#9ec946] transition-colors">
+                    Reintentar envío
+                </a>
             </div>
         </form>
     </div>

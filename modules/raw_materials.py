@@ -5,6 +5,7 @@ from utils.decorators import roles_accepted
 from flask_security import current_user
 from decimal import Decimal
 from datetime import datetime
+from utils.functions import register_log_auto
 
 module = 'raw_materials'
 
@@ -153,7 +154,7 @@ def suppliers_material(id):
     )
 
 @raw_materials_bp.route('/inventory')
-@roles_accepted('Administrador', 'Compras', 'Produccion') # Añadí Producción por si lo necesitan ver
+@roles_accepted('Administrador', 'Almacenista', 'Compras', 'Produccion') 
 def inventory_status():
     # Solo traemos las activas para el control de inventario actual
     raw_materials = Raw_Material.query.filter_by(estatus='Activo').all()
@@ -161,7 +162,7 @@ def inventory_status():
 
 
 @raw_materials_bp.route('/add_bulk_movement', methods=['GET', 'POST'])
-@roles_accepted('Administrador', 'Compras', 'Produccion')
+@roles_accepted('Administrador', 'Compras', 'Produccion', 'Almacenista')
 def add_bulk_movement():
     form = FormBulkInventoryMovement(request.form)
     materials_list = Raw_Material.query.filter_by(estatus='Activo').all()
@@ -231,6 +232,12 @@ def add_bulk_movement():
                     material.available_stock -= qty
                 
                 db.session.add(new_move)
+
+                register_log_auto(
+                    accion="Actualización", 
+                    modulo="Inventario Materia Prima", 
+                    obj_puro_nuevo=material 
+                )
 
             db.session.commit()
             flash("Ajustes aplicados correctamente.", "success")

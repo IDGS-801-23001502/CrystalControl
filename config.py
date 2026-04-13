@@ -1,5 +1,4 @@
 import os
-
 class Config(object):
     SECRET_KEY = os.urandom(24)
     SESSION_COOKIE_SECURE = False
