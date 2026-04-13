@@ -7,6 +7,8 @@ from sqlalchemy import func, extract, case
 from flask_security import current_user
 from datetime import datetime, timedelta, date
 import uuid
+from flask_security import roles_accepted
+
 
 module = 'sales'
 
@@ -442,3 +444,43 @@ def reports():
         ventas_tabla=ventas_tabla,
         now=datetime.now()
     )
+
+from flask_security import roles_accepted
+
+@sales_bp.route("/ship-order/<int:id>")
+@roles_accepted('Administrador', 'Almacenista', 'Gerente')
+def ship_order_view(id):
+    # Buscamos la venta
+    sale = Sales.query.get_or_404(id)
+    
+    # Validamos que esté PAGADA (status 3), ya que el e-commerce
+    # ya ejecutó sale_out al recibir el pago.
+    if sale.status != 3:
+        flash("Solo se pueden preparar envíos de ventas pagadas.", "warning")
+        return redirect(url_for('sales.sales'))
+
+    # Obtenemos los detalles para que el almacenista sepa qué empacar
+    # Hacemos un join con Producto para traer el nombre y código de barras
+    details = db.session.query(
+        SaleDetail, 
+        Producto.name.label('product_name'),
+        Producto.barcode.label('product_sku')
+    ).join(Producto, SaleDetail.id_product == Producto.id).filter(SaleDetail.id_sale == id).all()
+
+    return render_template("sales/ship_order.html", sale=sale, details=details)
+
+@sales_bp.route("/process-shipment/<int:id>", methods=['POST'])
+@roles_accepted('Administrador', 'Almacenista', 'Gerente')
+def process_shipment(id):
+    sale = Sales.query.get_or_404(id)
+    
+    if sale.status == 3:
+        # Aquí NO llamamos a sale_out porque ya se restó el stock al pagar
+        sale.status = 4  # Estatus: "En camino" o "Enviado"
+        register_log_auto('Actualización', 'Logística', obj_puro_nuevo=sale)
+        db.session.commit()
+        flash(f"✓ El pedido {sale.folio} ha sido marcado como enviado.", "success")
+    else:
+        flash("No se puede procesar el envío de esta venta.", "danger")
+        
+    return redirect(url_for('sales.sales'))

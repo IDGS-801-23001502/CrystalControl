@@ -1,0 +1,58 @@
+{% extends "layout_employees.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-primary">📦 Preparación de Envío - Folio: {{ sale.folio }}</h4>
+            <span class="badge bg-success">ESTATUS: PAGADO</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 border-end">
+                    <h5 class="text-muted border-bottom pb-2">Destinatario</h5>
+                    <p class="mb-1"><strong>Cliente:</strong> {{ sale.client.nombre if sale.client else 'General' }}</p>
+                    <p class="mb-4"><strong>Teléfono:</strong> {{ sale.client.telefono if sale.client else 'N/A' }}</p>
+                    
+                    <h5 class="text-muted border-bottom pb-2">Dirección de Entrega</h5>
+                    <div class="p-3 bg-light rounded border border-dashed border-secondary">
+                        <p class="mb-0 italic">{{ sale.shipping_address_text or 'Entrega en sucursal' }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <h5 class="text-muted border-bottom pb-2">Artículos a Empacar</h5>
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>SKU/Código</th>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad a Enviar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in details %}
+                            <tr>
+                                <td class="font-monospace">{{ item.product_sku }}</td>
+                                <td>{{ item.product_name }}</td>
+                                <td class="text-center">
+                                    <span class="h5 fw-bold text-success">{{ item.SaleDetail.lot }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{{ url_for('sales.sales') }}" class="btn btn-outline-secondary me-2">Regresar</a>
+                        <form action="{{ url_for('sales.process_shipment', id=sale.id) }}" method="POST">
+                            <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
+                                ✅ CONFIRMAR ENVÍO
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

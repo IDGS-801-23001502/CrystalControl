@@ -142,7 +142,7 @@ def update_cart():
 
     if cart_key in cart:
         producto_id = cart[cart_key].get('id_producto') 
-        producto = Producto.query.get(producto_id)
+        producto = ProductoPresentacionPrecio.query.get(producto_id)
 
         if producto and nueva_cantidad > producto.stock:
             flash(f'¡Stock insuficiente! Solo hay {producto.stock} disponibles.', 'danger')

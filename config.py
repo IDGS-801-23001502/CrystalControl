@@ -2,7 +2,7 @@ import os
 class Config(object):
     SECRET_KEY = os.urandom(24)
     SESSION_COOKIE_SECURE = False
-    
+
     # --- Configuración MongoDB (PyMongo) ---
     # Definimos el nombre de la base de datos por defecto
     MONGO_DBNAME = "crystalcontrol"
