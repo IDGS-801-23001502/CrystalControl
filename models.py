@@ -114,7 +114,7 @@ class Raw_Material_Supplier(db.Model):
                             db.ForeignKey('Proveedores.id_proveedor'), 
                             primary_key=True, nullable=False)
     price = db.Column('precio_referencia', db.Numeric(10, 2), nullable=False)
-    lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
+    #lot = db.Column('cantidad', db.Numeric(10, 2), nullable=False)
     # (1: Kilos, 2: Litros, etc.)
     unidad_medida = db.Column('unidad_medida', db.Integer, nullable=False)
     @property
@@ -265,7 +265,7 @@ class PurchaseDetail(db.Model):
     approved_quantity = db.Column('cantidad_aprobada', db.Numeric(10, 2), default=0.0)
     unit_price = db.Column('precio_unitario_final', db.Numeric(10, 2), default=0.0)
     delivery_days = db.Column('dias_entrega', db.Integer)
-    # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: Recibido, 5:Revibido con retraso
+    # 1: Pendiente, 2: Aprobado, 3: Rechazado, 4: En camino, 5: Recibido, 6:Recibido con retraso
     status = db.Column('status_item', db.Integer, default=1)
 
     material = db.relationship('Raw_Material', backref='purchase_details')
@@ -455,9 +455,23 @@ class ProductionLot(db.Model):
     # 1: Disponible, 2: Cuarentena, 3: Agotado, 4: Retirado
     status = db.Column('status', db.Integer, default=2)
 
+    @property
+    def value_status(self):
+        values = {
+            1: 'Disponible',
+            2: 'Cuarentena',
+            3: 'Agotado',
+            4: 'Retirado',
+            5: 'Sin Embasar',
+            6: 'Embasado Parcial',
+            7: 'Empaquetado'
+        }
+        return values.get(self.status, 'Desconocido')
+
     product = db.relationship('Producto', backref='production_lots')
     quality_controls = db.relationship('ProductionLotQuality', backref='lot', cascade="all, delete-orphan")
 
+    
 class ProductionLotQuality(db.Model):
     __tablename__ = 'lotesproduccion_calidad'
 
@@ -505,3 +519,93 @@ class InventoryMovementPT(db.Model):
     status = db.Column('status', db.Integer, nullable=False)
     products = db.relationship('Producto', backref='product_movements')
     user = db.relationship('User', backref='user_inventory_actions')
+
+class PackagingMaterial(db.Model):
+    __tablename__ = 'packaging_materials'
+
+    id = db.Column('id_packaging', db.Integer, primary_key=True)
+    
+    # Qué presentación consume estos materiales
+    id_presentacion = db.Column(
+        db.Integer, 
+        db.ForeignKey('producto_presentación_precio.id_presentacion_precio'), 
+        nullable=False
+    )
+    # Qué materia prima se descuenta (botella, etiqueta, tapa, etc.)
+    id_material = db.Column(
+        db.Integer, 
+        db.ForeignKey('MateriaPrima.id_materia'), 
+        nullable=False
+    )
+    # Cuánto se descuenta por unidad producida
+    quantity_per_unit = db.Column('cantidad_por_unidad', db.Numeric(10, 4), nullable=False)
+    
+    # Relaciones
+    presentacion = db.relationship('ProductoPresentacionPrecio', backref='packaging_materials')
+    material = db.relationship('Raw_Material', backref='used_in_packaging')
+
+    def __repr__(self):
+        return f'<PackagingMaterial Pres:{self.id_presentacion} Mat:{self.id_material}>'
+    
+class PackagingRecord(db.Model):
+    __tablename__ = 'packaging_records'
+
+    id = db.Column('id_packaging_record', db.Integer, primary_key=True, autoincrement=True)
+    
+    # Lote de producción que se está embasando
+    lot_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('lotesproduccion.id_lote'), 
+        nullable=False
+    )
+    # Presentación elegida para este embasado
+    id_presentacion = db.Column(
+        db.Integer,
+        db.ForeignKey('producto_presentación_precio.id_presentacion_precio'),
+        nullable=False
+    )
+    # Cuántas unidades se embasaron en esta operación
+    units_packaged = db.Column('unidades_embasadas', db.Integer, nullable=False)
+    
+    # Cuánto contenido del lote se consumió (units_packaged × unit_size de la presentación)
+    content_used = db.Column('contenido_utilizado', db.Numeric(10, 2), nullable=False)
+    
+    # Quién lo hizo y cuándo
+    operator_id = db.Column(db.Integer, db.ForeignKey('Usuarios.id_usuario'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 1: Completado, 2: Cancelado
+    status = db.Column(db.Integer, default=1)
+
+    # Relaciones
+    lot = db.relationship('ProductionLot', backref='packaging_records')
+    presentacion = db.relationship('ProductoPresentacionPrecio', backref='packaging_records')
+    operator = db.relationship('User', backref='packaging_actions')
+    # Detalle de qué materias primas se descontaron
+    mp_consumed = db.relationship('PackagingMPConsumed', backref='packaging_record', cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f'<PackagingRecord Lote:{self.lot_id} Pres:{self.id_presentacion} Unidades:{self.units_packaged}>'
+    
+class PackagingMPConsumed(db.Model):
+    """
+    Snapshot de qué materia prima se descontó en cada operación de embasado.
+    Igual que ProductionOrderInput guarda snapshot, aquí guardamos el detalle
+    para no perder trazabilidad si cambian los PackagingMaterials después.
+    """
+    __tablename__ = 'packaging_mp_consumed'
+
+    id = db.Column('id_mp_consumed', db.Integer, primary_key=True, autoincrement=True)
+    
+    packaging_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey('packaging_records.id_packaging_record', ondelete='CASCADE'),
+        nullable=False
+    )
+    material_id = db.Column(db.Integer, db.ForeignKey('MateriaPrima.id_materia'), nullable=False)
+    material_name = db.Column('nombre_material', db.String(100))  # snapshot
+    quantity_consumed = db.Column('cantidad_consumida', db.Numeric(10, 4), nullable=False)
+    stock_before = db.Column('stock_antes', db.Numeric(10, 2))    # auditoría
+    stock_after = db.Column('stock_despues', db.Numeric(10, 2))   # auditoría
+
+    material = db.relationship('Raw_Material', backref='packaging_consumed')

@@ -384,4 +384,33 @@ class AddressForm(FlaskForm):
     ])
     submit = SubmitField('Guardar y continuar')
 
+class FormPackaging(FlaskForm):
+    id_presentacion = SelectField(
+        'Presentación a Embasar', 
+        coerce=int, 
+        validators=[validators.DataRequired(message="Selecciona una presentación")]
+    )
+    units_to_package = IntegerField(
+        'Unidades a Embasar', [
+            validators.DataRequired(message="Indica cuántas unidades embasar"),
+            validators.NumberRange(min=1, message="Debe ser al menos 1 unidad")
+        ]
+    )
+    submit = SubmitField('Ejecutar Embasado')
 
+
+class FormPackagingMaterial(FlaskForm):
+    """Para asociar MP de empaque a una presentación"""
+    id_presentacion = HiddenField('ID Presentación', validators=[validators.DataRequired()])
+    id_material = SelectField(
+        'Material de Empaque', 
+        coerce=int,
+        validators=[validators.DataRequired(message="Selecciona el material")]
+    )
+    quantity_per_unit = DecimalField(
+        'Cantidad por Unidad', [
+            validators.InputRequired(message="Requerido"),
+            validators.NumberRange(min=0.0001, message="Debe ser mayor a 0")
+        ], 
+        places=4
+    )

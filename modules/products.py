@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request, current_app
-from models import db, Producto, ProductoPresentacionPrecio 
-from forms import FormProduct
+from models import db, Producto, ProductoPresentacionPrecio, PackagingMaterial, Raw_Material, PackagingMaterial 
+from forms import FormProduct, FormPackagingMaterial
 from utils.decorators import roles_accepted
 from werkzeug.utils import secure_filename
 from utils.functions import generar_gs1_128
@@ -87,6 +87,7 @@ def add_product():
 def edit_product(id):
     producto = Producto.query.get_or_404(id)
     precios_existentes = ProductoPresentacionPrecio.query.filter_by(id_producto=id).first()
+    precios = ProductoPresentacionPrecio.query.filter_by(id_producto=id).all()
     
     # Inicializamos con el objeto producto para cargar name, category, etc.
     form = FormProduct(obj=producto)
@@ -142,7 +143,7 @@ def edit_product(id):
             db.session.rollback()
             flash(f"Error al actualizar: {str(e)}", "danger")
 
-    return render_template('products/edit.html', form=form, producto=producto)
+    return render_template('products/edit.html', form=form, producto=producto, precios=precios)
 
 @products_bp.route('/delete_product/<int:id>', methods=['GET','POST'])
 @roles_accepted('Administrador')
@@ -191,3 +192,84 @@ def ver_etiqueta(prod_id, pres_id, lote):
     return render_template('products/barcode_view.html', 
                            barcode_img=img_b64,
                            lote=lote)
+
+# ─── PACKAGING MATERIALS (botellas/etiquetas por presentación) ───────────────
+
+@products_bp.route('/presentacion/<int:pres_id>/packaging', methods=['GET', 'POST'])
+@roles_accepted('Administrador')
+def manage_packaging_materials(pres_id):
+    """
+    Lista y agrega los materiales de empaque asociados a una presentación.
+    """
+    presentacion = ProductoPresentacionPrecio.query.get_or_404(pres_id)
+    materiales_mp = Raw_Material.query.filter_by(estatus='Activo').all()
+
+    form = FormPackagingMaterial()
+    form.id_material.choices = [
+        (m.id, f"{m.name} ({m.nombre_unidad})") for m in materiales_mp
+    ]
+    
+    # En GET, inicializamos el campo oculto
+    if request.method == 'GET':
+        form.id_presentacion.data = pres_id
+
+    # CAMBIO: Usar validate_on_submit() para validar POST y CSRF al mismo tiempo
+    if form.validate_on_submit():
+        try:
+            # Evitar duplicados: si ya existe esa combinación, actualizar cantidad
+            existing = PackagingMaterial.query.filter_by(
+                id_presentacion=pres_id,
+                id_material=form.id_material.data
+            ).first()
+
+            if existing:
+                existing.quantity_per_unit = form.quantity_per_unit.data
+                flash("Cantidad actualizada.", "info")
+            else:
+                nuevo = PackagingMaterial(
+                    id_presentacion=pres_id,
+                    id_material=form.id_material.data,
+                    quantity_per_unit=form.quantity_per_unit.data
+                )
+                db.session.add(nuevo)
+                flash("Material de empaque agregado.", "success")
+
+            db.session.commit()
+            return redirect(url_for('products.manage_packaging_materials', pres_id=pres_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error: {str(e)}", "danger")
+
+    # Si la validación falla (ej. CSRF inválido), los errores estarán en form.errors
+    # y se mostrarán en el HTML gracias a los bloques de error que ya tienes.
+
+    packaging_actuales = PackagingMaterial.query.filter_by(
+        id_presentacion=pres_id
+    ).all()
+
+    return render_template(
+        'products/packaging_materials.html',
+        presentacion=presentacion,
+        form=form,
+        packaging_actuales=packaging_actuales
+    )
+
+
+@products_bp.route('/presentacion/<int:pres_id>/packaging/delete/<int:pm_id>', methods=['POST'])
+@roles_accepted('Administrador')
+def delete_packaging_material(pres_id, pm_id):    
+    # Nota: Flask-WTF protege automáticamente las rutas POST si CSRF está habilitado globalmente.
+    # Como en el HTML enviamos el <input type="hidden" name="csrf_token"...>, 
+    # Flask validará que sea correcto antes de entrar aquí.
+    
+    pm = PackagingMaterial.query.get_or_404(pm_id)
+    try:
+        db.session.delete(pm)
+        db.session.commit()
+        flash("Material eliminado.", "warning")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error: {str(e)}", "danger")
+        
+    return redirect(url_for('products.manage_packaging_materials', pres_id=pres_id))

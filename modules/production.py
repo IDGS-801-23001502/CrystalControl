@@ -1,12 +1,12 @@
 from wtforms import form
 import os
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request, current_app
-from models import db, Recipe, ProductionOrder, ProductionOrderInput, Raw_Material, User, ProductionLot, ProductionLotQuality, InventoryMovementMP, InventoryMovementPT, Producto, Raw_Material_Supplier
-from forms import FormProductionOrder, FormQualityCheck, FormCloseProductionOrder, FormInventoryAdjustment
+from models import db, Recipe, ProductionOrder, ProductionOrderInput, Raw_Material, User, ProductionLot, ProductionLotQuality, InventoryMovementMP, InventoryMovementPT, Producto, Raw_Material_Supplier, ProductoPresentacionPrecio, PackagingRecord
+from forms import FormProductionOrder, FormQualityCheck, FormCloseProductionOrder, FormInventoryAdjustment, FormPackaging
 from utils.decorators import roles_accepted
 from flask_security import current_user
 from datetime import datetime, timedelta
-from utils.functions import generar_gs1_128, formatear_cadena_gs1_128
+from utils.functions import generar_gs1_128, formatear_cadena_gs1_128, process_packaging
 
 
 module='production'
@@ -191,13 +191,20 @@ def close_order(id):
         return redirect(url_for('production.production'))
 
     form = FormCloseProductionOrder()
-    total_input_qty = sum(float(i.used_quantity) for i in order.inputs)
+    recipe = order.recipe
+
+    # ═══════════════════════════════════════════
+    # CÁLCULO DE VOLUMEN TEÓRICO (Igual que en details)
+    # ═══════════════════════════════════════════
+    num_lotes = int(order.requested_quantity or 1)
+    # Qty teórica total según receta (ej: 2 lotes de 100L = 200L)
+    qty_teorica_total = num_lotes * float(recipe.produced_quantity or 1)
 
     if request.method == 'GET':
-        recipe = order.recipe
+        # Aplicamos el % de merma estimada de la receta al volumen teórico
         porcentaje_merma = float(recipe.estimated_waste or 0) / 100
-        qty_esperada = round(total_input_qty * (1 - porcentaje_merma), 2)
-        merma_esperada = round(total_input_qty - qty_esperada, 2)
+        qty_esperada = round(qty_teorica_total * (1 - porcentaje_merma), 2)
+        merma_esperada = round(qty_teorica_total - qty_esperada, 2)
 
         form.produced_qty.data = qty_esperada
         form.real_waste.data = merma_esperada
@@ -208,27 +215,26 @@ def close_order(id):
     if form.validate_on_submit():
         try:
             qty_real = float(form.produced_qty.data)
-            merma_real = round(total_input_qty - qty_real, 2)
+            # La merma real es la diferencia entre lo que DEBIÓ salir (teórico) y lo que salió
+            merma_real = round(qty_teorica_total - qty_real, 2)
 
             if qty_real <= 0:
                 flash("La cantidad producida debe ser mayor a cero.", "warning")
-                return render_template('production/close.html',
-                                       order=order, form=form,
-                                       total_input=total_input_qty)
+                return render_template('production/close.html', 
+                                     order=order, form=form, 
+                                     total_input=qty_teorica_total)
 
-            #Cerrar la orden
+            # 1. Actualizar Orden
             order.real_waste = merma_real
             order.end_date = datetime.now()
             order.status = 4
 
+            # 2. Descontar Stock Real de Materiales (Insumos)
             for insumo in order.inputs:
                 material = Raw_Material.query.with_for_update().get(insumo.material_id)
-
-                #Descontar real_stock
                 material.real_stock = float(material.real_stock or 0) - float(insumo.used_quantity)
 
-                #Buscar el movimiento pendiente de este insumo en esta orden
-                #Usando pending_quantity que guardamos en add_order
+                # Actualizar movimiento de inventario de "Pendiente" a "Completado"
                 mov_pendiente = InventoryMovementMP.query.filter_by(
                     material_id = insumo.material_id,
                     status = 2,
@@ -240,6 +246,7 @@ def close_order(id):
                     mov_pendiente.resulting_stock = material.real_stock
                     mov_pendiente.pending_quantity = 0
                 else:
+                    # Si no existe (raro), crear uno nuevo de salida
                     db.session.add(InventoryMovementMP(
                         material_id = insumo.material_id,
                         movement_type = 2,
@@ -251,50 +258,37 @@ def close_order(id):
                         user_id = current_user.id
                     ))
 
-            # 3. Costo unitario
-            total_costo = sum(float(i.moment_cost or 0) for i in order.inputs)
-            costo_u = round(total_costo / qty_real, 4) if qty_real > 0 else 0
+            # 3. Costo unitario (Costo total de insumos / Cantidad real obtenida)
+            total_costo_insumos = sum(float(i.moment_cost or 0) for i in order.inputs)
+            costo_u = round(total_costo_insumos / qty_real, 4) if qty_real > 0 else 0
 
-            #Crear lote en cuarentena
-            #Stock de PT NO se toca — lo hace quality_check al aprobar
+            # 4. Crear Lote en Cuarentena
             new_lot = ProductionLot(
                 lot_code = f"LOT-{order.folio}-{datetime.now().strftime('%y%m%d%H%M')}",
-                product_id = order.recipe.product_id,
-                product_name = order.recipe.final_name,
+                product_id = recipe.product_id,
+                product_name = recipe.final_name,
                 order_folio_ref = order.folio,
                 produced_quantity = qty_real,
-                current_stock = qty_real,
+                current_stock = qty_real, # Este es el volumen total (L/kg) que se envasará luego
                 unit_med = str(order.unit_med),
                 unit_cost = costo_u,
                 expiry_date = form.expiry_date.data,
                 warehouse_location = form.location.data,
-                status = 2
+                status = 2 # Cuarentena
             )
             db.session.add(new_lot)
             db.session.commit()
 
-            flash(
-                f"Orden {order.folio} cerrada. "
-                f"Producido: {qty_real} | Merma: {merma_real} | "
-                f"Costo unitario: ${costo_u:.4f} | "
-                f"Lote {new_lot.lot_code} en cuarentena.",
-                "success"
-            )
+            flash(f"Orden {order.folio} cerrada exitosamente.", "success")
             return redirect(url_for('production.quality_pending'))
 
         except Exception as e:
             db.session.rollback()
-            flash(f"Error al cerrar la orden: {type(e).__name__} - {str(e)}", "danger")
-    else:
-        if request.method == 'POST':
-            for field, errors in form.errors.items():
-                for error in errors:
-                    flash(f"Campo {getattr(form, field).label.text}: {error}", "warning")
+            flash(f"Error al cerrar la orden: {str(e)}", "danger")
 
-    return render_template('production/close.html',
-                           order=order,
-                           form=form,
-                           total_input=total_input_qty)
+    return render_template('production/close.html', 
+                         order=order, form=form, 
+                         total_input=qty_teorica_total)
 
 @production_bp.route('/quality_check/<int:lot_id>', methods=['GET', 'POST'])
 @roles_accepted('Administrador', 'Produccion')
@@ -316,7 +310,7 @@ def quality_check(lot_id):
             db.session.add(check)
 
             if is_approved:
-                lot.status = 1  # Disponible
+                lot.status = 5  # Pendiente de embasado
 
                 #AQUÍ sí entra el stock real a PT
                 prod = Producto.query.get_or_404(lot.product_id)
@@ -579,4 +573,149 @@ def lot_barcode(lot_id):
         'codigo_gs1': cadena_gs1,
         'lot_code': lot.lot_code,
         'product_name': lot.product_name
+    })
+
+#Empaquetado
+@production_bp.route('/lots_pending')
+@roles_accepted('Administrador', 'Produccion')
+def lots_list():
+    """Lotes aprobados en QC esperando ser embasados (status 5 y 6)."""
+    lotes = ProductionLot.query.filter(
+        ProductionLot.status.in_([5, 6])
+    ).order_by(ProductionLot.manufacture_date.desc()).all()
+
+    return render_template('production/lots_list.html', lotes=lotes)
+
+
+@production_bp.route('/lots_package/<int:lot_id>', methods=['GET', 'POST'])
+@roles_accepted('Administrador', 'Produccion')
+def package_lot(lot_id):
+    """Detalle del lote + acción de embasado por presentación."""
+    lote = ProductionLot.query.get_or_404(lot_id)
+
+    if lote.status not in [5, 6]:
+        flash("Este lote no está disponible para embasado.", "warning")
+        return redirect(url_for('production.lots_list'))
+
+    presentaciones = ProductoPresentacionPrecio.query.filter_by(
+        id_producto=lote.product_id
+    ).all()
+
+    form = FormPackaging()
+    form.id_presentacion.choices = [
+        (p.id, f"{p.presentation} — {p.unit_size} {'ml' if p.unit_type == 1 else 'g'}")
+        for p in presentaciones
+    ]
+
+    # Precálculo por presentación: max unidades posibles considerando
+    # tanto el contenido del lote como el stock de MP de empaque
+    calculos = {}
+    for p in presentaciones:
+        contenido_por_unidad = float(p.unit_size) / 1000
+        max_units = int(float(lote.current_stock) / contenido_por_unidad) if contenido_por_unidad > 0 else 0
+
+        mp_details = []
+        for pm in p.packaging_materials:
+            disponible = float(pm.material.available_stock)
+            requerido_max = float(pm.quantity_per_unit) * max_units
+            alcanza = disponible >= requerido_max
+
+            if not alcanza and float(pm.quantity_per_unit) > 0:
+                max_units = min(max_units, int(disponible / float(pm.quantity_per_unit)))
+
+            mp_details.append({
+                'nombre':        pm.material.name,
+                'disponible':    disponible,
+                'requerido_max': float(pm.quantity_per_unit) * max_units,
+                'alcanza':       alcanza
+            })
+
+        calculos[p.id] = {
+            'max_units':           max_units,
+            'contenido_por_unidad': contenido_por_unidad,
+            'mp_details':          mp_details,
+            'mp_suficiente':       all(d['alcanza'] for d in mp_details)
+        }
+
+    historial = PackagingRecord.query.filter_by(lot_id=lot_id).order_by(
+        PackagingRecord.timestamp.desc()
+    ).all()
+
+    if form.validate_on_submit():
+        ok, resultado = process_packaging(
+            lot_id=lot_id,
+            id_presentacion=form.id_presentacion.data,
+            units_to_package=form.units_to_package.data,
+            operator_id=current_user.id
+        )
+        if ok:
+            flash(
+                f"Embasado exitoso: {resultado['units_packaged']} unidades. "
+                f"Stock PT actualizado: {resultado['stock_pt_nuevo']}",
+                "success"
+            )
+            return redirect(url_for('production.package_lot', lot_id=lot_id))
+        else:
+            flash(f"Error: {resultado}", "danger")
+
+    return render_template(
+        'production/package_lot.html',
+        lote=lote,
+        form=form,
+        presentaciones=presentaciones,
+        calculos=calculos,
+        historial=historial
+    )
+
+
+@production_bp.route('/api/calcular-embasado')
+@roles_accepted('Administrador', 'Produccion')
+def api_calcular_embasado():
+    """Validación AJAX en tiempo real para el formulario de embasado."""
+    lot_id = request.args.get('lot_id', type=int)
+    id_pres = request.args.get('id_presentacion', type=int)
+    units   = request.args.get('units', type=int, default=0)
+
+    lote = ProductionLot.query.get(lot_id)
+    pres = ProductoPresentacionPrecio.query.get(id_pres)
+
+    if not lote or not pres:
+        return jsonify({'ok': False, 'error': 'Lote o presentación no encontrada'})
+
+    contenido_por_unidad  = float(pres.unit_size) / 1000
+    contenido_necesario   = contenido_por_unidad * units
+
+    errores  = []
+    mp_check = []
+
+    if contenido_necesario > float(lote.current_stock):
+        errores.append(
+            f"Contenido insuficiente. Necesario: {contenido_necesario:.2f}, "
+            f"Disponible: {lote.current_stock}"
+        )
+
+    for pm in pres.packaging_materials:
+        requerido  = float(pm.quantity_per_unit) * units
+        disponible = float(pm.material.available_stock)
+        alcanza    = disponible >= requerido
+
+        if not alcanza:
+            errores.append(
+                f"Stock insuficiente de '{pm.material.name}': "
+                f"necesario {requerido:.2f}, disponible {disponible:.2f}"
+            )
+
+        mp_check.append({
+            'material':   pm.material.name,
+            'requerido':  requerido,
+            'disponible': disponible,
+            'ok':         alcanza
+        })
+
+    return jsonify({
+        'ok':                   len(errores) == 0,
+        'errores':              errores,
+        'contenido_necesario':  contenido_necesario,
+        'contenido_disponible': float(lote.current_stock),
+        'mp_check':             mp_check
     })

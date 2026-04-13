@@ -39,7 +39,7 @@ def index():
 def demand():
     form = PurchaseRequestForm()
     try:
-        materials = [(m.id, m.name) for m in Raw_Material.query.all()]
+        materials = [(m.id, m.name) for m in Raw_Material.query.filter_by(estatus="Activo")]
         for item in form.items:
             item.material_id.choices = materials
     except Exception as e:
@@ -225,10 +225,10 @@ def manage_generated_order(id):
         try:
             # Cambiamos a Estatus 5: En Tránsito
             purchase.status = 5
-            
+            purchase.generate_date = datetime.now()
             # También actualizamos el estatus de los ítems individuales a 4 (Recibiendo/En camino) 
             for detail in purchase.details:
-                detail.status = 4 
+                detail.status = 4
                 
             db.session.commit()
             flash(f"La orden {purchase.folio} ha sido marcada 'En Tránsito'. El almacén ya puede visualizarla.", "info")

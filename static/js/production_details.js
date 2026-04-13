@@ -94,29 +94,6 @@ function renderInfo(data, numLotes) {
         `;
         insumosTbody.appendChild(row);
     });
-
-    // Renderizar Presentaciones (Proyección de empaquetado)
-    const presWrap = document.getElementById('presentaciones-wrap');
-    const presList = document.getElementById('presentaciones-list');
-    
-    if (data.presentaciones && data.presentaciones.length > 0) {
-        presList.innerHTML = '';
-        // Lógica de conversión (kg/L a gramos/ml si es necesario)
-        const multiplicador = { 'kg': 1000, 'L': 1000 };
-        const mult = multiplicador[data.unidad] || 1;
-        const cantBaseEnGramosML = qtyTotal * mult;
-
-        data.presentaciones.forEach(p => {
-            const piezas = p.unit_size > 0 ? Math.floor(cantBaseEnGramosML / p.unit_size) : 0;
-            presList.innerHTML += `
-                <span class="emerald-badge inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border">
-                    ${p.nombre} — <strong>${piezas} uds</strong>
-                </span>`;
-        });
-        presWrap.classList.remove('hidden');
-    } else {
-        presWrap.classList.add('hidden');
-    }
 }
 
 // --- 3. REINICIO DE INTERFAZ ---

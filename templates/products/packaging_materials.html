@@ -1,0 +1,258 @@
+{% extends "layout_employees.html" %}
+{% block title %} Materiales de Empaque — {{ presentacion.presentation }} {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg   { background-color: rgba(16,185,129,.10); border-color: rgba(16,185,129,.20); }
+  .emerald-icon      { color: #059669; }
+  .emerald-btn       { background-color: #059669; color: #fff; }
+  .emerald-btn:hover { background-color: #047857; }
+  .emerald-border-top{ border-top: 3px solid #10b981; }
+  .cancel-btn        { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover  { background-color: #f3f4f6; color: #374151; }
+</style>
+
+<div class="max-w-4xl mx-auto mt-10 px-4 mb-20">
+
+  <!-- ── Encabezado ── -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+      <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl font-semibold text-slate-800 leading-tight">Materiales de Empaque</h1>
+      <p class="text-xs text-slate-500">
+        Configura qué insumos se descuentan al embasar cada unidad de esta presentación
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Ficha de la presentación ── -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5 mb-6">
+    <p class="text-[10px] uppercase font-bold text-slate-400 mb-3">Presentación</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      <div class="bg-slate-50 rounded-lg px-4 py-3">
+        <p class="text-[10px] uppercase font-bold text-slate-400">Nombre</p>
+        <p class="text-sm font-bold text-slate-800 mt-0.5">{{ presentacion.presentation }}</p>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg px-4 py-3">
+        <p class="text-[10px] uppercase font-bold text-slate-400">Tamaño</p>
+        <p class="text-sm font-semibold text-slate-700 mt-0.5">
+          {{ presentacion.unit_size }}
+          {{ 'ml' if presentacion.unit_type == 1 else 'g' }}
+        </p>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg px-4 py-3">
+        <p class="text-[10px] uppercase font-bold text-slate-400">Precio menudeo</p>
+        <p class="text-sm font-semibold text-slate-700 mt-0.5">${{ "%.2f"|format(presentacion.price_men) }}</p>
+      </div>
+
+      <div class="bg-slate-50 rounded-lg px-4 py-3">
+        <p class="text-[10px] uppercase font-bold text-slate-400">Precio mayoreo</p>
+        <p class="text-sm font-semibold text-slate-700 mt-0.5">${{ "%.2f"|format(presentacion.price_may) }}</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Columna izquierda: materiales actuales -->
+    <!-- ══════════════════════════════════════ -->
+    <div>
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+        Materiales configurados
+        <span class="ml-2 px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-bold text-[10px]">
+          {{ packaging_actuales | length }}
+        </span>
+      </p>
+
+      {% if packaging_actuales %}
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-100">
+              <th class="px-4 py-3 text-left text-[10px] uppercase font-bold text-slate-400 tracking-wider">Material</th>
+              <th class="px-4 py-3 text-center text-[10px] uppercase font-bold text-slate-400 tracking-wider">Cant. / unidad</th>
+              <th class="px-4 py-3 text-center text-[10px] uppercase font-bold text-slate-400 tracking-wider">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for pm in packaging_actuales %}
+            <tr class="hover:bg-slate-50 transition-colors">
+
+              <td class="px-4 py-3">
+                <p class="font-semibold text-slate-700">{{ pm.material.name }}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">{{ pm.material.nombre_unidad }}</p>
+              </td>
+
+              <td class="px-4 py-3 text-center">
+                <span class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-full text-xs">
+                  {{ pm.quantity_per_unit|round|int }}
+                </span>
+              </td>
+
+              <td class="px-4 py-3 text-center">
+                <form action="{{ url_for('products.delete_packaging_material', pres_id=presentacion.id, pm_id=pm.id) }}"
+                      method="POST">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold
+                           text-red-600 bg-red-50 border border-red-100 rounded-lg
+                           hover:bg-red-100 active:scale-95 transition-all">
+                    <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                    Eliminar
+                  </button>
+                </form>
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Resumen de costo de empaque estimado -->
+      <div class="mt-3 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
+        <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">
+          Stock disponible de cada material
+        </p>
+        {% for pm in packaging_actuales %}
+        <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
+          <span class="text-slate-600">{{ pm.material.name }}</span>
+          <span class="font-semibold
+            {% if pm.material.available_stock <= pm.material.stock_min %}text-red-600
+            {% else %}text-emerald-600{% endif %}">
+            {{ pm.material.available_stock }} {{ pm.material.nombre_unidad }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <!-- Estado vacío -->
+      <div class="bg-white border border-dashed border-slate-300 rounded-xl p-8 text-center">
+        <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg"
+             fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+        </svg>
+        <p class="text-sm font-medium text-slate-500">Sin materiales configurados</p>
+        <p class="text-xs text-slate-400 mt-1">
+          Agrega los insumos que se necesitan para embasar una unidad de esta presentación
+        </p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Columna derecha: formulario agregar    -->
+    <!-- ══════════════════════════════════════ -->
+    <div>
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Agregar material</p>
+
+      <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm
+            {% if category == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-800
+            {% elif category == 'info' %}bg-blue-50 border border-blue-200 text-blue-800
+            {% elif category == 'danger' %}bg-red-50 border border-red-200 text-red-800
+            {% else %}bg-amber-50 border border-amber-200 text-amber-800{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('products.manage_packaging_materials', pres_id=presentacion.id) }}"
+              method="POST">
+          {{ form.hidden_tag() }}
+
+          <!-- Material -->
+          <div class="relative z-0 w-full group mb-8">
+            {{ form.id_material(
+              class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0
+                     border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0
+                     focus:border-emerald-500 peer"
+            ) }}
+            <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6
+                          scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600">
+              Material de empaque
+            </label>
+            {% if form.id_material.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.id_material.errors[0] }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Cantidad por unidad -->
+          <div class="relative z-0 w-full group mb-8">
+            {{ form.quantity_per_unit(
+              class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0
+                     border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0
+                     focus:border-emerald-500 peer",
+              placeholder=" "
+            ) }}
+            <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6
+                          scale-75 top-3 -z-10 origin-[0] peer-focus:text-emerald-600
+                          peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
+                          peer-focus:scale-75 peer-focus:-translate-y-6">
+              Cantidad por unidad producida
+            </label>
+            {% if form.quantity_per_unit.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.quantity_per_unit.errors[0] }}</p>
+            {% endif %}
+            <p class="text-[11px] text-slate-400 mt-2">
+              Ej: <strong>1</strong> botella por unidad, <strong>1</strong> etiqueta por unidad.
+              Si el material es compartido (ej. tapa), también es 1.
+            </p>
+          </div>
+
+          <!-- Nota -->
+          <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6 flex items-start gap-2">
+            <svg class="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-xs text-blue-700 leading-relaxed">
+              Si el material ya existe en esta presentación, se actualizará su cantidad.
+            </p>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex items-center gap-3 border-t border-slate-100 pt-5">
+            <button type="submit"
+              class="emerald-btn inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold
+                     rounded-lg shadow-md active:scale-95 transition-all">
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Agregar material
+            </button>
+            <a href="{{ url_for('production.lots_list') }}"
+               class="cancel-btn inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg">
+              Volver
+            </a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

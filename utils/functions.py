@@ -236,3 +236,138 @@ def sale_out(sale_id, status = 2):
         db.session.rollback()
         print(f"Error al procesar salida de inventario: {e}")
         return False, str(e)
+    
+def process_packaging(lot_id, id_presentacion, units_to_package, operator_id):
+    """
+    Ejecuta una operación de embasado:
+    1. Valida que el lote tenga suficiente contenido
+    2. Valida stock de materiales de empaque (botellas, etiquetas)
+    3. Descuenta MP de empaque + genera movimientos InventoryMovementMP
+    4. Actualiza stock_actual del lote
+    5. Suma unidades al stock del producto terminado + genera InventoryMovementPT
+    6. Actualiza status del lote (Embasado Parcial / Empaquetado)
+    7. Registra PackagingRecord + PackagingMPConsumed
+    """
+    try:
+        from models import (db, ProductionLot, ProductoPresentacionPrecio,
+                            PackagingMaterial, PackagingRecord, PackagingMPConsumed,
+                            InventoryMovementMP, InventoryMovementPT, Raw_Material, Producto)
+
+        # --- 1. Cargar y validar el lote ---
+        lote = ProductionLot.query.get(lot_id)
+        if not lote:
+            return False, "Lote no encontrado."
+        if lote.status not in [5, 6]:  # Sin Embasar o Embasado Parcial
+            return False, "El lote no está disponible para embasado."
+
+        # --- 2. Cargar presentación y calcular contenido necesario ---
+        presentacion = ProductoPresentacionPrecio.query.get(id_presentacion)
+        if not presentacion:
+            return False, "Presentación no encontrada."
+        
+        # unit_size está en ml o g, el lote está en Litros o Kilos
+        # Convertimos: si unit_type=1 (ml) → dividimos entre 1000 para litros
+        #              si unit_type=2 (g)  → dividimos entre 1000 para kilos
+        contenido_por_unidad = float(presentacion.unit_size) / 1000
+        contenido_necesario = contenido_por_unidad * units_to_package
+
+        if float(lote.current_stock) < contenido_necesario:
+            return False, (
+                f"Contenido insuficiente en el lote. "
+                f"Disponible: {lote.current_stock}, "
+                f"Necesario: {contenido_necesario:.4f}"
+            )
+
+        # --- 3. Validar stock de materiales de empaque ---
+        packaging_mats = PackagingMaterial.query.filter_by(id_presentacion=id_presentacion).all()
+        
+        for pm in packaging_mats:
+            cantidad_requerida = float(pm.quantity_per_unit) * units_to_package
+            if float(pm.material.available_stock) < cantidad_requerida:
+                return False, (
+                    f"Stock insuficiente de '{pm.material.name}'. "
+                    f"Disponible: {pm.material.available_stock}, "
+                    f"Requerido: {cantidad_requerida:.2f}"
+                )
+
+        # --- 4. Crear PackagingRecord ---
+        record = PackagingRecord(
+            lot_id=lot_id,
+            id_presentacion=id_presentacion,
+            units_packaged=units_to_package,
+            content_used=contenido_necesario,
+            operator_id=operator_id,
+            status=1
+        )
+        db.session.add(record)
+        db.session.flush()  # para obtener record.id
+
+        # --- 5. Descontar materiales de empaque ---
+        for pm in packaging_mats:
+            cantidad_consumida = float(pm.quantity_per_unit) * units_to_package
+            material = Raw_Material.query.get(pm.id_material)
+            
+            stock_antes = float(material.available_stock)
+            material.available_stock = stock_antes - cantidad_consumida
+            material.real_stock = float(material.real_stock) - cantidad_consumida
+
+            # Movimiento de inventario MP
+            mov_mp = InventoryMovementMP(
+                material_id=material.id,
+                movement_type=2,       # Salida
+                reason=2,              # Consumo
+                quantity=cantidad_consumida,
+                resulting_stock=material.available_stock,
+                user_id=operator_id,
+                status=1
+            )
+            db.session.add(mov_mp)
+
+            # Snapshot en PackagingMPConsumed
+            consumed = PackagingMPConsumed(
+                packaging_record_id=record.id,
+                material_id=material.id,
+                material_name=material.name,
+                quantity_consumed=cantidad_consumida,
+                stock_before=stock_antes,
+                stock_after=material.available_stock
+            )
+            db.session.add(consumed)
+
+        # --- 6. Actualizar stock del lote ---
+        lote.current_stock = float(lote.current_stock) - contenido_necesario
+        
+        # Determinar nuevo status del lote
+        if float(lote.current_stock) <= 0:
+            lote.status = 7  # Empaquetado (completo)
+            lote.current_stock = 0
+        else:
+            lote.status = 6  # Embasado Parcial
+
+        # --- 7. Sumar al stock de Producto Terminado ---
+        producto = Producto.query.get(lote.product_id)
+        stock_antes_pt = producto.stock or 0
+        producto.stock = stock_antes_pt + units_to_package
+
+        mov_pt = InventoryMovementPT(
+            product_id=producto.id,
+            type=1,            # Entrada
+            reason=4,          # Producción
+            quantity=units_to_package,
+            resulting_stock=producto.stock,
+            user_id=operator_id,
+            status=1
+        )
+        db.session.add(mov_pt)
+
+        db.session.commit()
+        return True, {
+            "units_packaged": units_to_package,
+            "content_used": contenido_necesario,
+            "lote_status": lote.status,
+            "stock_pt_nuevo": producto.stock
+        }
+
+    except Exception as e:
+        db.session.rollback()
+        return False, f"Error en embasado: {str(e)}"
