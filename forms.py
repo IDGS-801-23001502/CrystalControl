@@ -35,12 +35,13 @@ class FormSupplier(FlaskForm):
     ])
     
     address = StringField('Domicilio', [
-        validators.DataRequired(message="La dirección es requerida")
+        validators.DataRequired(message="La dirección es requerida"),
+        validators.Length(min=3, max=100)
     ])
     
     phone = StringField('Teléfono', [
         validators.DataRequired(message="El teléfono es requerido"),
-        validators.Length(min=10, max=20, message="Introduce un número válido")
+        validators.Length(min=12, max=12, message="Introduce un número válido")
     ])
     
     email = EmailField('Correo Electrónico', [
@@ -198,12 +199,12 @@ class FormRecipeStep(FlaskForm):
         (6,  'Filtrado'),
         (7,  'Control de Calidad (Muestreo)'),
         # ACONDICIONAMIENTO
-        (8,  'Envasado'),
-        (9,  'Etiquetado y Codificado'),
-        (10, 'Paletizado / Emplayado'),
+        #(8,  'Envasado'),
+        #(9,  'Etiquetado y Codificado'),
+        #(10, 'Paletizado / Emplayado'),
         # ESPECIALES
-        (11, 'Dilución de Concentrados'),
-        (12, 'Neutralización'),
+        (8, 'Dilución de Concentrados'),
+        (9, 'Neutralización'),
     ])
 # --- FORMULARIO PRINCIPAL ---
 class FormRecipe(FlaskForm):

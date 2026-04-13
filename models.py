@@ -196,11 +196,11 @@ class RecipeStep(db.Model):
         5:  'Reposo / Desaireación',
         6:  'Filtrado',
         7:  'Control de Calidad (Muestreo)',
-        8:  'Envasado',
-        9:  'Etiquetado y Codificado',
-        10: 'Paletizado / Emplayado',
-        11: 'Dilución de Concentrados',
-        12: 'Neutralización',
+        #8:  'Envasado',
+        #9:  'Etiquetado y Codificado',
+        #10: 'Paletizado / Emplayado',
+        8: 'Dilución de Concentrados',
+        9: 'Neutralización',
     }
         return procesos.get(self.process_type, 'Otro')
 

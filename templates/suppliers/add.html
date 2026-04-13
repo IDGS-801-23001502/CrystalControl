@@ -1,7 +1,6 @@
 {% extends "layout_employees.html" %}
 {% block content %}
 
-
 <style>
   .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
   .emerald-icon       { color: #059669; }
@@ -11,6 +10,41 @@
   .emerald-btn:hover  { background-color: #047857; }
   .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
   .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
+
+  .field-error {
+    color: #dc2626;
+    font-size: 11px;
+    margin-top: 4px;
+    display: none;
+    align-items: center;
+    gap: 4px;
+    font-family: monospace;
+  }
+  .field-error.visible { display: flex; }
+  .field-error::before { content: '⚠'; font-size: 10px; }
+
+  .input-invalid {
+    border-bottom: 2px solid #dc2626 !important;
+  }
+
+  .error-banner {
+    display: none;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-left: 4px solid #dc2626;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .error-banner.visible { display: block; }
+  .error-banner-title {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #dc2626; margin-bottom: 0.5rem;
+    font-family: monospace;
+  }
+  .error-banner ul { margin: 0; padding-left: 1.25rem; }
+  .error-banner ul li { font-size: 12.5px; color: #dc2626; margin-bottom: 3px; }
 </style>
 
 <div class="max-w-2xl mx-auto mt-10 px-4">
@@ -23,56 +57,60 @@
     </div>
     <div>
       <h1 class="text-xl font-semibold text-heading leading-tight">Registrar Proveedor</h1>
-      <p class="text-xs text-body">Completa los datos para Express and Clean</p>
+      <p class="text-xs text-body">Completa los datos del nuevo proveedor</p>
     </div>
     <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border">
       Nuevo
     </span>
   </div>
 
+  <!-- Banner de errores -->
+  <div class="error-banner" id="error-banner">
+    <p class="error-banner-title">⚠ Corrige los siguientes errores antes de continuar</p>
+    <ul id="error-banner-list"></ul>
+  </div>
+
   <div class="emerald-border-top bg-neutral-primary-soft border border-default rounded-base shadow-xs p-8">
-    <form action="{{ url_for('suppliers.add_supplier') }}" method="post">
+    <form action="{{ url_for('suppliers.add_supplier') }}" method="post" id="supplier-form" novalidate>
       {{ form.csrf_token }}
       {{ form.id }}
 
+      <!-- Nombre -->
       <div class="relative z-0 w-full mb-8 group">
-        {{ form.name(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+        {{ form.name(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ", id="name") }}
         <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
           Nombre o Razón Social
         </label>
-        {% if form.name.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.name.errors[0] }}</p>
-        {% endif %}
+        <span class="field-error" id="error-name"></span>
       </div>
 
       <div class="grid md:grid-cols-2 md:gap-8">
+        <!-- Teléfono -->
         <div class="relative z-0 w-full mb-8 group">
-          {{ form.phone(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+          {{ form.phone(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ", id="phone") }}
           <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
             Teléfono
           </label>
+          <span class="field-error" id="error-phone"></span>
         </div>
+        <!-- Email -->
         <div class="relative z-0 w-full mb-8 group">
-          {{ form.email(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+          {{ form.email(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ", id="email") }}
           <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
             Correo Electrónico
           </label>
+          <span class="field-error" id="error-email"></span>
         </div>
-      </div>  
+      </div>
 
+      <!-- Dirección -->
       <div class="relative z-0 w-full mb-8 group">
-        {{ form.address(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ") }}
+        {{ form.address(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer", placeholder=" ", id="address") }}
         <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
           Domicilio completo
         </label>
+        <span class="field-error" id="error-address"></span>
       </div>
-
-      <!--<div class="relative z-0 w-full mb-10 group">
-        {{ form.status(class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer") }}
-        <label class="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-          Estado del Proveedor
-        </label>
-      </div>-->
 
       <div class="flex items-center gap-3">
         <button type="submit"
@@ -92,5 +130,122 @@
   </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+// Formatear teléfono automáticamente XXX-XXX-XXXX
+const phoneInput = document.getElementById('phone');
+
+phoneInput.addEventListener('input', function (e) {
+  let value = e.target.value.replace(/\D/g, ''); // solo números
+
+  // Limitar a 10 dígitos
+  value = value.substring(0, 10);
+
+  let formatted = '';
+
+  if (value.length > 0) {
+    formatted = value.substring(0, 3);
+  }
+  if (value.length >= 4) {
+    formatted += '-' + value.substring(3, 6);
+  }
+  if (value.length >= 7) {
+    formatted += '-' + value.substring(6, 10);
+  }
+
+  e.target.value = formatted;
+});
+
+  function showError(fieldId, msg) {
+    const span = document.getElementById('error-' + fieldId);
+    const input = document.getElementById(fieldId);
+    if (span) { span.textContent = msg; span.classList.add('visible'); }
+    if (input) input.classList.add('input-invalid');
+  }
+
+  function clearError(fieldId) {
+    const span = document.getElementById('error-' + fieldId);
+    const input = document.getElementById(fieldId);
+    if (span) { span.textContent = ''; span.classList.remove('visible'); }
+    if (input) input.classList.remove('input-invalid');
+  }
+
+  function clearAll() {
+    ['name', 'phone', 'email', 'address'].forEach(clearError);
+    const banner = document.getElementById('error-banner');
+    banner.classList.remove('visible');
+    document.getElementById('error-banner-list').innerHTML = '';
+  }
+
+  function isValidEmail(val) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  }
+
+  function isValidPhone(val) {
+  return /^\d{3}-\d{3}-\d{4}$/.test(val);
+}
+
+  function validateForm() {
+    clearAll();
+    let isValid = true;
+
+    // Nombre
+    const name = document.getElementById('name');
+    if (!name.value.trim()) {
+      showError('name', 'El nombre del proveedor es obligatorio');
+      isValid = false;
+    } else if (name.value.trim().length < 3) {
+      showError('name', 'El nombre debe tener al menos 3 caracteres');
+      isValid = false;
+    }
+
+    // Teléfono
+    const phone = document.getElementById('phone');
+    if (!phone.value.trim()) {
+      showError('phone', 'El teléfono es obligatorio');
+      isValid = false;
+    } else if (!isValidPhone(phone.value.trim())) {
+      showError('phone', 'Introduce un número válido (10 dígitos)');
+      isValid = false;
+    } 
+
+    // Email
+    const email = document.getElementById('email');
+    if (!email.value.trim()) {
+      showError('email', 'El correo electrónico es obligatorio');
+      isValid = false;
+    } else if (!isValidEmail(email.value.trim())) {
+      showError('email', 'Introduce un correo electrónico válido');
+      isValid = false;
+    }
+
+    // Dirección
+    const address = document.getElementById('address');
+    if (!address.value.trim()) {
+      showError('address', 'El domicilio es obligatorio');
+      isValid = false;
+    } else if (address.value.trim().length < 10) {
+      showError('address', 'El domicilio debe tener al menos 10 caracteres');
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  // Limpiar errores al escribir
+  ['name', 'phone', 'email', 'address'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => clearError(id));
+  });
+
+  document.getElementById('supplier-form').addEventListener('submit', function (e) {
+    if (!validateForm()) {
+      e.preventDefault();
+      document.querySelector('.input-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
+});
+</script>
 
 {% endblock %}

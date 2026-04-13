@@ -3,6 +3,7 @@ from models import db, Recipe, RecipeDetail, RecipeStep, Producto, Raw_Material,
 from forms import FormRecipe, FormRecipeDetail, FormRecipeStep
 from datetime import datetime
 from utils.functions import register_log_auto
+from utils.decorators import roles_accepted
 
 
 module = 'recipes'
@@ -14,6 +15,7 @@ recipes_bp = Blueprint(
     static_folder='static')
 
 @recipes_bp.route('/')
+@roles_accepted('Administrador', 'Produccion')
 def index():
     # Seguimos ordenando por los primeros 8 caracteres (REC-XXXX)
     # 1 = Activa, 0 = Inactiva (Baja manual), 2 = Versionada (Histórica)
@@ -24,6 +26,7 @@ def index():
 
 
 @recipes_bp.route('/add_recipe', methods=['GET', 'POST'])
+@roles_accepted('Administrador', 'Produccion')
 def add_recipe():
     materiales_db = Raw_Material.query.filter_by(estatus='Activo').all()
     material_choices = [(m.id, m.name) for m in materiales_db]
@@ -38,11 +41,11 @@ def add_recipe():
     (5,  'Reposo / Desaireación'),
     (6,  'Filtrado'),
     (7,  'Control de Calidad (Muestreo)'),
-    (8,  'Envasado'),
-    (9,  'Etiquetado y Codificado'),
-    (10, 'Paletizado / Emplayado'),
-    (11, 'Dilución de Concentrados'),
-    (12, 'Neutralización'),
+    #(8,  'Envasado'),
+    #(9,  'Etiquetado y Codificado'),
+    #(10, 'Paletizado / Emplayado'),
+    (8, 'Dilución de Concentrados'),
+    (9, 'Neutralización'),
     ]
 
     form = FormRecipe()
@@ -88,11 +91,11 @@ def add_recipe():
                 5: 0.1,
                 6: 0.6,
                 7: 0.05,
-                8: 0.5,
-                9: 0.2,
-                10: 0.1,
-                11: 0.8,
-                12: 0.9,
+                #8: 0.5,
+                #9: 0.2,
+                #10: 0.1,
+                8: 0.8,
+                9: 0.9,
             }
             for s in form.steps.data:
                 t_proc = int(s.get('process_type') or 1)
@@ -137,6 +140,7 @@ def add_recipe():
 
 
 @recipes_bp.route('/edit_recipe/<int:id>', methods=['GET', 'POST'])
+@roles_accepted('Administrador', 'Produccion')
 def edit_recipe(id):
     old_recipe = Recipe.query.get_or_404(id)
     materiales_db = Raw_Material.query.filter_by(estatus='Activo').all()
@@ -152,11 +156,11 @@ def edit_recipe(id):
     (5,  'Reposo / Desaireación'),
     (6,  'Filtrado'),
     (7,  'Control de Calidad (Muestreo)'),
-    (8,  'Envasado'),
-    (9,  'Etiquetado y Codificado'),
-    (10, 'Paletizado / Emplayado'),
-    (11, 'Dilución de Concentrados'),
-    (12, 'Neutralización'),
+    #(8,  'Envasado'),
+    #(9,  'Etiquetado y Codificado'),
+    #(10, 'Paletizado / Emplayado'),
+    (8, 'Dilución de Concentrados'),
+    (9, 'Neutralización'),
     ]
 
     form = FormRecipe(obj=old_recipe)
@@ -210,11 +214,11 @@ def edit_recipe(id):
                 5: 0.1,
                 6: 0.6,
                 7: 0.05,
-                8: 0.5,
-                9: 0.2,
-                10: 0.1,
-                11: 0.8,
-                12: 0.9,
+                #8: 0.5,
+                #9: 0.2,
+                #10: 0.1,
+                8: 0.8,
+                9: 0.9,
             }
             for s in form.steps.data:
                 t_proc = int(s.get('process_type') or 1)
@@ -266,7 +270,7 @@ def edit_recipe(id):
 
 
 @recipes_bp.route('/delete_recipe/<int:id>', methods=['GET', 'POST'])
-#@roles_accepted('Administrador', 'Producción')
+@roles_accepted('Administrador', 'Producción')
 def delete_recipe(id):
     recipe = Recipe.query.get_or_404(id)
 
@@ -300,6 +304,7 @@ def delete_recipe(id):
 
 
 @recipes_bp.route('/view_recipe/<int:id>')
+@roles_accepted('Administrador', 'Produccion')
 def view_recipe(id):
     recipe = Recipe.query.get_or_404(id)
     return render_template('recipes/view.html', 
