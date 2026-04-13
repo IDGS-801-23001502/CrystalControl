@@ -61,7 +61,6 @@
             <th class="px-6 py-4 font-bold">Información de Orden</th>
             <th class="px-6 py-4 font-bold">Producto / Receta</th>
             <th class="px-6 py-4 font-bold">Cantidad Programada</th>
-            <th class="px-6 py-4 font-bold">Cronograma</th>
             <th class="px-6 py-4 font-bold text-center">Estatus</th>
             <th class="px-6 py-4 font-bold text-right">Acciones</th>
           </tr>
@@ -90,21 +89,6 @@
                 <span class="text-xs font-bold text-slate-400">
                 Lotes
                 </span>
-              </div>
-            </td>
-
-            <td class="px-6 py-4">
-              <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-slate-600">
-                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  <span class="text-xs font-semibold">{{ order.scheduled_date.strftime('%d %b, %Y') if order.scheduled_date else '—'}}</span>
-                </div>
-                {% if order.start_date %}
-                <div class="flex items-center gap-2 text-blue-500">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    <span class="text-[10px] font-bold uppercase italic">Inició: {{ order.start_date.strftime('%H:%M') }}</span>
-                </div>
-                {% endif %}
               </div>
             </td>
 

@@ -86,7 +86,6 @@ def create_admin():
 
             client_info = Cliente(
                 id_usuario=user_client.id,
-                direccion_envio="Tienda Fisica",
                 telefono="1234567890"
             )
             db.session.add(client_info)

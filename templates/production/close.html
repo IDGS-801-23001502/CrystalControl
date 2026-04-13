@@ -36,7 +36,7 @@
         <div>
             <p class="text-[10px] uppercase text-slate-400 font-bold">Cant. Programada</p>
             <p class="text-sm text-slate-700 font-bold">{{ order.requested_quantity }} 
-                <span class="text-[10px]">{% if order.unit_med == 1 %}KG{% elif order.unit_med == 2 %}L{% else %}PZ{% endif %}</span>
+                <span class="text-[10px]">Lote(s)</span>
             </p>
         </div>
         <div>
@@ -72,7 +72,7 @@
 
       <div class="flex items-center gap-3 pt-6 border-t border-slate-100">
         <button type="submit" class="emerald-btn px-8 py-3 text-sm font-bold rounded-xl shadow-lg transition-all active:scale-95">
-          FINALIZAR Y GENERAR LOTE
+          FINALIZAR Y GENERAR LOTE(S)
         </button>
         <a href="{{ url_for('production.production') }}" class="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">CANCELAR</a>
       </div>

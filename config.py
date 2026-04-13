@@ -34,7 +34,7 @@ class Config(object):
 class DevelopmentConfig(Config):
     DEBUG = True
     # --- Configuración MySQL (SQLAlchemy) ---
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://crystalcontrol:robloxianos@10.147.17.28:3306/crystalcontrol"
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://crystalcontrol:robloxianos@10.147.17.29:3306/crystalcontrol"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # --- Configuración PyMongo ---

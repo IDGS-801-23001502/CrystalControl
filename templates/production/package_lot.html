@@ -1,0 +1,435 @@
+{% extends "layout_employees.html" %}
+{% block title %} Embasar Lote — {{ lote.lot_code }} {% endblock %}
+{% block content %}
+
+<style>
+  .emerald-icon-bg  { background-color: rgba(16,185,129,.10); border-color: rgba(16,185,129,.20); }
+  .emerald-icon     { color: #059669; }
+  .emerald-btn      { background-color: #059669; color: #fff; }
+  .emerald-btn:hover{ background-color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .cancel-btn       { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover { background-color: #f3f4f6; color: #374151; }
+</style>
+
+<div class="max-w-5xl mx-auto mt-10 px-4 mb-20">
+
+  <!-- ── Encabezado ── -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="emerald-icon-bg flex items-center justify-center w-10 h-10 rounded-xl border">
+      <svg class="emerald-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl font-semibold text-slate-800 leading-tight">Embasar Lote</h1>
+      <p class="text-xs text-slate-500">Selecciona la presentación y la cantidad a envasar</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- Columna izquierda: info del lote + formulario  -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="lg:col-span-2 flex flex-col gap-6">
+
+      <!-- Info del lote -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Información del Lote</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+
+          <div class="bg-slate-50 rounded-lg px-4 py-3">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Código</p>
+            <p class="font-mono font-bold text-emerald-700 mt-0.5">{{ lote.lot_code }}</p>
+          </div>
+
+          <div class="bg-slate-50 rounded-lg px-4 py-3">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Producto</p>
+            <p class="font-semibold text-slate-700 mt-0.5">{{ lote.product_name }}</p>
+          </div>
+
+          <div class="bg-slate-50 rounded-lg px-4 py-3">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Contenido disponible</p>
+            <p class="font-bold text-slate-800 mt-0.5">
+              {{ lote.current_stock }}
+              <span class="text-slate-500 font-normal text-xs">
+                {{ 'L' if lote.unit_med == '2' else ('kg' if lote.unit_med == '1' else 'uds') }}
+              </span>
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-lg px-4 py-3">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Producido total</p>
+            <p class="font-medium text-slate-700 mt-0.5">{{ lote.produced_quantity }}</p>
+          </div>
+
+          <div class="bg-slate-50 rounded-lg px-4 py-3">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Caducidad</p>
+            <p class="font-medium text-slate-700 mt-0.5">
+              {{ lote.expiry_date.strftime('%d/%m/%Y') if lote.expiry_date else '—' }}
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-lg px-4 py-3">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Ubicación</p>
+            <p class="font-medium text-slate-700 mt-0.5">{{ lote.warehouse_location or '—' }}</p>
+          </div>
+
+        </div>
+
+        <!-- Barra de progreso de embasado -->
+        {% if lote.produced_quantity and lote.produced_quantity > 0 %}
+        {% set pct = ((lote.produced_quantity - lote.current_stock) / lote.produced_quantity * 100) | round(1) %}
+        <div class="mt-4">
+          <div class="flex justify-between text-xs text-slate-500 mb-1">
+            <span>Progreso de embasado</span>
+            <span class="font-semibold">{{ pct }}%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2">
+            <div class="bg-emerald-500 h-2 rounded-full transition-all" style="width: {{ pct }}%"></div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Estado -->
+        <div class="mt-4">
+          {% if lote.status == 5 %}
+          <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-md uppercase">Sin Embasar</span>
+          {% elif lote.status == 6 %}
+          <span class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-md uppercase">Embasado Parcial</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Formulario de embasado -->
+      <div class="emerald-border-top bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-6">Ejecutar Embasado</h2>
+
+        <form action="{{ url_for('production.package_lot', lot_id=lote.id) }}" method="post" id="packaging-form">
+          {{ form.csrf_token }}
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6 items-end">
+
+            <!-- Presentación -->
+            <div class="relative z-0 w-full group">
+              {{ form.id_presentacion(
+                id="id_presentacion",
+                class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0
+                       border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0
+                       focus:border-emerald-500 peer"
+              ) }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75
+                            top-3 -z-10 origin-[0] peer-focus:text-emerald-600">
+                Presentación a embasar
+              </label>
+              {% if form.id_presentacion.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.id_presentacion.errors[0] }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Cantidad -->
+            <div class="relative z-0 w-full group">
+              {{ form.units_to_package(
+                id="units_to_package",
+                class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0
+                       border-b-2 border-slate-200 appearance-none focus:outline-none focus:ring-0
+                       focus:border-emerald-500 peer",
+                placeholder=" "
+              ) }}
+              <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75
+                            top-3 -z-10 origin-[0] peer-focus:text-emerald-600
+                            peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
+                            peer-focus:scale-75 peer-focus:-translate-y-6">
+                Unidades a embasar
+              </label>
+              {% if form.units_to_package.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.units_to_package.errors[0] }}</p>
+              {% endif %}
+            </div>
+
+          </div>
+
+          <!-- Panel de validación AJAX -->
+          <div id="validacion-result" class="hidden mb-6 rounded-lg px-4 py-3 text-sm"></div>
+
+          <!-- Detalle de MP en tiempo real -->
+          <div id="mp-check-panel" class="hidden mb-6">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Materiales de empaque requeridos</p>
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+              <table class="w-full text-xs text-slate-700">
+                <thead class="bg-slate-50 text-slate-400 uppercase">
+                  <tr>
+                    <th class="px-3 py-2 text-left">Material</th>
+                    <th class="px-3 py-2 text-right">Requerido</th>
+                    <th class="px-3 py-2 text-right">Disponible</th>
+                    <th class="px-3 py-2 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="mp-check-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Nota -->
+          <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-xs text-blue-700 leading-relaxed">
+              <strong>Nota:</strong> Al confirmar, se descontarán los materiales de empaque del inventario de
+              materias primas y las unidades producidas se sumarán al stock de producto terminado.
+            </p>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex items-center gap-3 border-t border-slate-100 pt-6">
+            <button type="submit" id="submit-btn"
+              class="emerald-btn inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-semibold
+                     rounded-lg shadow-md active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              Confirmar Embasado
+            </button>
+            <a href="{{ url_for('production.lots_list') }}"
+               class="cancel-btn inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-lg">
+              Cancelar
+            </a>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ── Historial de embasados de este lote ── -->
+      {% if historial %}
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100">
+          <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Historial de Embasados</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-slate-700">
+            <thead class="bg-slate-50 text-slate-400 uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">Fecha</th>
+                <th class="px-4 py-3 text-left">Presentación</th>
+                <th class="px-4 py-3 text-right">Unidades</th>
+                <th class="px-4 py-3 text-right">Contenido usado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for reg in historial %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-slate-500">
+                  {{ reg.timestamp.strftime('%d/%m/%Y %H:%M') }}
+                </td>
+                <td class="px-4 py-3 font-medium text-slate-700">
+                  {{ reg.presentacion.presentation if reg.presentacion else '—' }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-emerald-700">
+                  {{ reg.units_packaged }}
+                </td>
+                <td class="px-4 py-3 text-right text-slate-600">
+                  {{ reg.content_used }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- Columna derecha: tarjetas de presentaciones    -->
+    <!-- ══════════════════════════════════════════════ -->
+<div class="flex flex-col gap-4">
+
+  <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Presentaciones disponibles</p>
+
+  {% for p in presentaciones %}
+  {% set cal = calculos[p.id] %}
+  <div class="bg-white border rounded-xl shadow-sm overflow-hidden
+              {% if cal.mp_suficiente %}border-slate-200{% else %}border-amber-200{% endif %}">
+
+    <div class="px-4 py-3 border-b
+                {% if cal.mp_suficiente %}border-slate-100 bg-slate-50{% else %}border-amber-100 bg-amber-50{% endif %}">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-bold text-slate-700">{{ p.presentation }}</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">
+            {{ p.unit_size }} {{ 'ml' if p.unit_type == 1 else 'g' }} por unidad
+          </p>
+        </div>
+        
+        <a href="{{ url_for('products.manage_packaging_materials', pres_id=p.id) }}" 
+           class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-transparent hover:border-emerald-100 transition-colors"
+           title="Configurar materiales de empaque">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="px-4 py-2 flex justify-between items-center bg-white">
+      <span class="text-[10px] uppercase font-bold text-slate-400">Capacidad Máxima</span>
+      <span class="text-xs font-bold {% if cal.mp_suficiente %}text-emerald-600{% else %}text-amber-600{% endif %}">
+        {{ cal.max_units }} uds
+      </span>
+    </div>
+
+    <div class="px-4 py-3 border-t border-slate-50">
+      {% if cal.mp_details %}
+        <div class="space-y-2">
+          {% for mp in cal.mp_details %}
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-600">{{ mp.nombre }}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-500">{{ mp.disponible | round | int}} disp.</span>
+              {% if mp.alcanza %}
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              {% else %}
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-1">
+          <p class="text-[11px] text-slate-400 italic mb-2">Sin materiales de empaque</p>
+          <a href="{{ url_for('products.manage_packaging_materials', pres_id=p.id) }}"
+             class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 hover:bg-emerald-100 transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.5v15m7.5-7.5h-15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Configurar ahora
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="px-4 pb-3">
+      <button type="button"
+        onclick="seleccionarPresentacion({{ p.id }}, {{ cal.max_units }})"
+        class="w-full text-xs font-semibold py-2 rounded-lg border transition-all active:scale-95
+               {% if cal.max_units > 0 %}
+               border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm
+               {% else %}
+               border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed
+               {% endif %}">
+        {% if cal.max_units > 0 %}Seleccionar Presentación{% else %}Stock Insuficiente{% endif %}
+      </button>
+    </div>
+
+  </div>
+  {% else %}
+  <div class="bg-white border border-dashed border-slate-300 rounded-xl p-8 text-center">
+    <p class="text-sm text-slate-400">No hay presentaciones configuradas.</p>
+  </div>
+  {% endfor %}
+
+</div>
+
+<script>
+  const LOT_ID = {{ lote.id }};
+  const API_URL = "{{ url_for('production.api_calcular_embasado') }}";
+
+  const selectPres   = document.getElementById('id_presentacion');
+  const inputUnits   = document.getElementById('units_to_package');
+  const resultBox    = document.getElementById('validacion-result');
+  const mpPanel      = document.getElementById('mp-check-panel');
+  const mpTbody      = document.getElementById('mp-check-tbody');
+  const submitBtn    = document.getElementById('submit-btn');
+
+  let debounceTimer = null;
+
+  function validarEmbasado() {
+    const pres  = selectPres.value;
+    const units = parseInt(inputUnits.value) || 0;
+
+    if (!pres || units <= 0) {
+      resultBox.classList.add('hidden');
+      mpPanel.classList.add('hidden');
+      return;
+    }
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      fetch(`${API_URL}?lot_id=${LOT_ID}&id_presentacion=${pres}&units=${units}`)
+        .then(r => r.json())
+        .then(data => {
+          resultBox.classList.remove('hidden');
+
+          if (data.ok) {
+            resultBox.className = 'mb-6 rounded-lg px-4 py-3 text-sm bg-emerald-50 border border-emerald-200 text-emerald-800';
+            resultBox.innerHTML = `
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4.5 12.75 6 6 9-13.5"/>
+                </svg>
+                <span><strong>Operación válida.</strong> Contenido a consumir del lote: <strong>${data.contenido_necesario.toFixed(3)}</strong>
+                — Disponible: <strong>${data.contenido_disponible.toFixed(3)}</strong></span>
+              </div>`;
+            submitBtn.disabled = false;
+          } else {
+            resultBox.className = 'mb-6 rounded-lg px-4 py-3 text-sm bg-red-50 border border-red-200 text-red-800';
+            resultBox.innerHTML = `
+              <p class="font-semibold mb-1 flex items-center gap-1.5">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+                </svg>
+                No es posible ejecutar el embasado:
+              </p>
+              ${data.errores.map(e => `<p class="text-xs ml-5">• ${e}</p>`).join('')}`;
+            submitBtn.disabled = true;
+          }
+
+          // Tabla de MP
+          if (data.mp_check && data.mp_check.length > 0) {
+            mpPanel.classList.remove('hidden');
+            mpTbody.innerHTML = data.mp_check.map(mp => `
+              <tr class="border-t border-slate-100">
+                <td class="px-3 py-2 font-medium">${mp.material}</td>
+                <td class="px-3 py-2 text-right">${mp.requerido.toFixed(2)}</td>
+                <td class="px-3 py-2 text-right">${mp.disponible.toFixed(2)}</td>
+                <td class="px-3 py-2 text-center">
+                  ${mp.ok
+                    ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px]">OK</span>'
+                    : '<span class="px-2 py-0.5 bg-red-100 text-red-700 font-bold rounded text-[10px]">FALTA</span>'
+                  }
+                </td>
+              </tr>`).join('');
+          } else {
+            mpPanel.classList.add('hidden');
+          }
+        })
+        .catch(() => {
+          resultBox.className = 'mb-6 rounded-lg px-4 py-3 text-sm bg-slate-50 border border-slate-200 text-slate-600';
+          resultBox.textContent = 'No se pudo conectar con el servidor. Intenta de nuevo.';
+          resultBox.classList.remove('hidden');
+        });
+    }, 350); // debounce 350ms
+  }
+
+  function seleccionarPresentacion(presId, maxUnits) {
+    selectPres.value  = presId;
+    inputUnits.value  = maxUnits;
+    inputUnits.focus();
+    validarEmbasado();
+    // Scroll al formulario en móvil
+    document.getElementById('packaging-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  selectPres.addEventListener('change', validarEmbasado);
+  inputUnits.addEventListener('input',  validarEmbasado);
+</script>
+
+{% endblock %}

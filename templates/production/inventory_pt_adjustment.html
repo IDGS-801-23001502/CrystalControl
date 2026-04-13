@@ -2,16 +2,15 @@
 {% block content %}
 
 <style>
-  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
-  .emerald-icon       { color: #059669; }
+  .emerald-icon-bg     { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon        { color: #059669; }
   .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
   .emerald-border-top { border-top: 3px solid #10b981; }
-  .emerald-btn        { background-color: #059669; color: #fff; }
+  .emerald-btn         { background-color: #059669; color: #fff; }
   .emerald-btn:hover  { background-color: #047857; }
-  .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn          { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
   .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
   
-  /* Estilo para los selects para que coincidan con el diseño Floating Label */
   .custom-select {
     display: block;
     padding: 0.625rem 0;
@@ -41,7 +40,7 @@
     </div>
     <div>
       <h1 class="text-xl font-semibold text-slate-800 leading-tight">Ajuste de Inventario PT</h1>
-      <p class="text-xs text-slate-500">Gestión manual de existencias de productos terminados</p>
+      <p class="text-xs text-slate-500">Gestión manual por presentación específica</p>
     </div>
     <span class="emerald-badge ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border uppercase tracking-wider">
       Módulo Producción
@@ -53,8 +52,9 @@
       {{ form.csrf_token }}
       
       <div class="relative z-0 w-full mb-8 group">
-        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 block">Producto a ajustar</label>
+        <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 block">Presentación a ajustar</label>
         {{ form.product_id(class="custom-select peer") }}
+        <p class="text-[10px] text-slate-400 mt-1 italic">Selecciona el producto y su tamaño específico (ej. Cloro - 1L)</p>
         {% if form.product_id.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.product_id.errors[0] }}</p>
         {% endif %}
@@ -72,7 +72,7 @@
         <div class="relative z-0 w-full mb-8 group">
           {{ form.quantity(class="block py-2.5 px-0 w-full text-sm text-slate-900 bg-transparent border-0 border-b-2 border-slate-300 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer", placeholder=" ") }}
           <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-            Cantidad (Pzas/Unidades)
+            Cantidad (Unidades/Piezas)
           </label>
           {% if form.quantity.errors %}
             <p class="text-red-500 text-xs mt-1">{{ form.quantity.errors[0] }}</p>
@@ -93,9 +93,6 @@
         <label class="absolute text-sm text-slate-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-emerald-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
           Notas adicionales / Referencia de auditoría
         </label>
-        {% if form.notes.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.notes.errors[0] }}</p>
-        {% endif %}
       </div>
 
       <div class="flex items-center gap-3">
@@ -121,7 +118,7 @@
           </svg>
           <div class="text-xs text-amber-800 leading-relaxed">
             <p class="font-bold mb-1">Registro de Auditoría Activo</p>
-            Esta acción modificará el stock global de forma inmediata. Todos los cambios se guardarán con la estampa de tiempo y el usuario <strong>{{ current_user.username if current_user.is_authenticated else 'Sesión Actual' }}</strong>.
+            <p>Esta acción modificará el stock de la <strong>presentación seleccionada</strong> de forma inmediata.</p>
           </div>
       </div>
   </div>
