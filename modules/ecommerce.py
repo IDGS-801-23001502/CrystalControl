@@ -85,18 +85,31 @@ def add_to_cart():
     producto = Producto.query.get_or_404(producto_id)
     form = AddToCartForm()
     form.id_presentacion_precio.choices = [(p.id, p.presentation) for p in producto.precios]
+    
     if form.validate_on_submit():
         id_pres = form.id_presentacion_precio.data
         cantidad = form.quantity.data
+        
+        # BUSCAMOS EL STOCK EN LA PRESENTACIÓN ESPECÍFICA
         pres_precio = ProductoPresentacionPrecio.query.get(id_pres)
+        if not pres_precio:
+            flash("La presentación seleccionada no es válida.", "danger")
+            return redirect(url_for('e-commerce.product_detail', id=producto.id))
+
         if 'cart' not in session:
             session['cart'] = {}
+        
         cart = session['cart']
         cart_key = f"{producto.id}_{id_pres}"
         cantidad_en_carrito = cart[cart_key]['cantidad'] if cart_key in cart else 0
-        if (cantidad_en_carrito + cantidad) > producto.stock:
-            flash(f"No puedes agregar más. Ya tienes {cantidad_en_carrito} en el carrito y el stock total es {producto.stock}.", "danger")
+        
+        # VALIDACIÓN: Usamos pres_precio.stock en lugar de producto.stock
+        stock_disponible = pres_precio.stock if pres_precio.stock is not None else 0
+        
+        if (cantidad_en_carrito + cantidad) > stock_disponible:
+            flash(f"No puedes agregar más. Ya tienes {cantidad_en_carrito} en el carrito y el stock de {pres_precio.presentation} es {stock_disponible}.", "danger")
             return redirect(url_for('e-commerce.product_detail', id=producto.id))
+        
         if cart_key in cart:
             cart[cart_key]['cantidad'] += cantidad
         else:
@@ -109,8 +122,10 @@ def add_to_cart():
                 'presentacion': pres_precio.presentation,
                 'imagen': pres_precio.picture or 'default.png'
             }
+        
         session.modified = True
-        flash(f"✓ {producto.name} agregado al carrito.", "success")
+        flash(f"✓ {producto.name} ({pres_precio.presentation}) agregado al carrito.", "success")
+        
     return redirect(url_for('e-commerce.catalog'))
 
 @ecommerce_bp.route("/carrito")
@@ -137,16 +152,24 @@ def remove_from_cart(cart_key):
 @only_client
 def update_cart():
     cart_key = request.form.get('cart_key')
-    nueva_cantidad = int(request.form.get('cantidad', 1))
+    try:
+        nueva_cantidad = int(request.form.get('cantidad', 1))
+    except ValueError:
+        nueva_cantidad = 1
+        
     cart = session.get('cart', {})
 
     if cart_key in cart:
-        producto_id = cart[cart_key].get('id_producto') 
-        producto = ProductoPresentacionPrecio.query.get(producto_id)
+        # OBTENEMOS EL ID DE LA PRESENTACIÓN DESDE LA SESIÓN
+        id_pres = cart[cart_key].get('id_presentacion')
+        pres_precio = ProductoPresentacionPrecio.query.get(id_pres)
 
-        if producto and nueva_cantidad > producto.stock:
-            flash(f'¡Stock insuficiente! Solo hay {producto.stock} disponibles.', 'danger')
-            return redirect(url_for('e-commerce.carrito'))
+        # VALIDACIÓN: Revisamos el stock de la presentación
+        if pres_precio:
+            stock_disponible = pres_precio.stock if pres_precio.stock is not None else 0
+            if nueva_cantidad > stock_disponible:
+                flash(f'¡Stock insuficiente para {pres_precio.presentation}! Solo hay {stock_disponible} disponibles.', 'danger')
+                return redirect(url_for('e-commerce.carrito'))
 
         if nueva_cantidad > 0:
             cart[cart_key]['cantidad'] = nueva_cantidad

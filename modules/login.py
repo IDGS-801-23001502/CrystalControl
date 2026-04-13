@@ -46,18 +46,9 @@ def login_client():
         if user and verify_password(password, user.password):
             # Verificamos que el usuario sea realmente un cliente (por rol o flag)
             if hasattr(user, 'id_perfil') and user.id_perfil == 6: # Asumiendo 2 como ID de rol Cliente
-                cliente_data = Cliente.query.filter_by(id_usuario=user.id).first()
-                
-                if cliente_data and cliente_data.telefono:
-                    if send_otp(cliente_data.telefono):
-                        session['temp_user_id'] = user.id
-                        session['temp_remember'] = remember
-                        flash("Código enviado a tu celular", "info")
-                        return redirect(url_for('login.verify_otp'))
-                    else:
-                        flash("Error al enviar el SMS. Intenta más tarde.", "danger")
-                else:
-                    flash("No hay un teléfono registrado para esta cuenta.", "warning")
+                login_user(user, remember=session.get('temp_remember', False))
+                register_log_auto("Login", "Ecommerce", obj_puro_nuevo=user)
+                return redirect(url_for('home'))
             else:
                 flash("Esta cuenta no tiene perfil de cliente.", "warning")
         else:
@@ -88,8 +79,6 @@ def verify_otp():
             session.pop('otp_expiry', None)
             session.pop('temp_remember', None)
             
-            register_log_auto("Login-2FA", "Ecommerce", obj_puro_nuevo=user)
-            return redirect(url_for('home'))
         else:
             flash("Código incorrecto.", "danger")
 

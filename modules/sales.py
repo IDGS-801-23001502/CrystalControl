@@ -323,6 +323,39 @@ def procesar_codigo_pos(barcode_raw):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     
+@sales_bp.route('/api/pos/catalogo')
+@roles_accepted('Administrador', 'Vendedor')
+def obtener_catalogo():
+    try:
+        # Traemos productos activos con sus presentaciones y precios
+        productos = db.session.query(
+            Producto.id,
+            Producto.name,
+            Producto.category,
+            ProductoPresentacionPrecio.id_presentacion_precio,
+            ProductoPresentacionPrecio.presentation,
+            ProductoPresentacionPrecio.price_men,
+            ProductoPresentacionPrecio.picture
+        ).join(ProductoPresentacionPrecio, Producto.id == ProductoPresentacionPrecio.id_producto)\
+         .filter(Producto.status == 'Activo')\
+         .all()
+
+        catalogo = []
+        for p in productos:
+            catalogo.append({
+                "id_producto": p.id,
+                "id_presentacion": p.id_presentacion_precio,
+                "nombre": p.name,
+                "categoria": p.category,
+                "presentacion": p.presentation,
+                "precio": float(p.price_men),
+                "foto": p.picture or 'default_product.png' # Imagen por defecto si no hay foto
+            })
+
+        return jsonify({"success": True, "productos": catalogo})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
 @sales_bp.route('/reports')
 @roles_accepted('Administrador', 'Gerente')
 def reports():

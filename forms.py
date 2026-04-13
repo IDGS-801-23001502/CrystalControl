@@ -2,6 +2,25 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, EmailField, HiddenField, DecimalField, DateTimeLocalField, SubmitField, DateField
 from wtforms import DecimalField, StringField, PasswordField, SelectField, BooleanField, EmailField, HiddenField, FileField, IntegerField, TextAreaField, FieldList,FormField
 from wtforms import validators, ValidationError
+from flask_wtf import FlaskForm
+from wtforms import FieldList, FormField, SelectField, DecimalField, TextAreaField, StringField
+from wtforms.validators import DataRequired, NumberRange
+
+class PurchaseItemForm(FlaskForm):
+    # Usamos render_kw para soporte de HTML5 en el navegador
+    material_id = SelectField('Materia Prima', coerce=int, validators=[DataRequired()])
+    quantity = DecimalField('Cantidad', validators=[
+        DataRequired(message="La cantidad es obligatoria"),
+        NumberRange(min=0.01, message="La cantidad debe ser mayor a 0")
+    ], render_kw={"min": "0.01", "step": "0.01"})
+
+    # Necesario para que FieldList no pida CSRF por cada fila, solo el principal
+    class Meta:
+        csrf = False
+
+class PurchaseRequestForm(FlaskForm):
+    items = FieldList(FormField(PurchaseItemForm), min_entries=1)
+    admin_notes = TextAreaField('Observaciones')
 
 class FormUsuarios(FlaskForm):
     id = HiddenField('id')
@@ -114,6 +133,7 @@ class FormPresentacion(FlaskForm):
     cant_may = IntegerField('Pzas Mayoreo', [validators.DataRequired()])
     unit_size = DecimalField('Contenido Numérico', [validators.DataRequired()])
     unit_type = SelectField('Unidad', choices=[(1, 'ml'), (2, 'g')], coerce=int)
+    stock = HiddenField('stock', default=0)
     picture = FileField('Foto')
 
     class Meta:
