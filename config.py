@@ -39,3 +39,5 @@ class DevelopmentConfig(Config):
 
     # --- Configuración PyMongo ---
     MONGO_URI = "mongodb://crystalcontrol:robloxianos@10.147.17.28:27017/crystalcontrol?authSource=admin"
+
+    
