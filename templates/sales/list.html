@@ -105,7 +105,7 @@
           </td>
 
           <td class="px-6 py-4 font-bold text-slate-700">
-            ${{ "{:,.2f}".format(sale.gross_total) }}
+            ${{ sale.gross_total }}
           </td>
 
           <td class="px-6 py-4 text-center">
@@ -117,15 +117,18 @@
           <td class="px-6 py-4">
             <div class="flex items-center justify-center gap-3">
               <a href="{{ url_for('sales.view_detail', id=sale.id) }}" class="emerald-link text-xs font-semibold">Ver Ticket</a>
-              {# 
+              
                 {% if sale.status == 2 %}
                     <a href="{{ url_for('sales.process_payment', id=sale.id) }}" class="text-blue-600 hover:text-blue-800 text-xs font-bold">Registrar Pago</a>
                 {% endif %}
-
                 {% if sale.status == 3 %}
-                    <a href="{{ url_for('sales.ship_order', id=sale.id) }}" class="text-purple-600 hover:text-purple-800 text-xs font-bold">Enviar</a>
+                    <a href="{{ url_for('sales.ship_order_view', id=sale.id) }}" 
+                      class="btn btn-sm btn-info text-purple" 
+                      title="Preparar Envío">
+                        <i class="fas fa-shipping-fast"></i> Enviar
+                    </a>
                 {% endif %}
-            #}  
+              
             </div>
           </td>
         </tr>

@@ -333,15 +333,7 @@
               {% endfor %}
             </div>
 
-            {# Costo del ciclo #}
-            {% set costo_ciclo = ciclo.inputs | sum(attribute='estimated_quantity') %}
-            <div class="px-4 py-2 bg-slate-50/50 border-t border-slate-100 text-right">
-              <span class="text-[10px] text-slate-400">Costo estimado: </span>
-              <span class="text-xs font-bold text-emerald-600">
-                ${{ "{:,.2f}".format(ciclo.inputs | selectattr('moment_unit_cost') | map(attribute='moment_unit_cost') |
-                map('float') | sum | default(0)) }}
-              </span>
-            </div>
+
           </div>
 
           <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">

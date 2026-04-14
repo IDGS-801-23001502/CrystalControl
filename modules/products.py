@@ -37,21 +37,27 @@ def add_product():
                 status='Activo'
             )
             db.session.add(new_product)
+            # flush() para obtener el ID y generar el barcode
             db.session.flush() 
 
-            # Generar código de barras base
             id_str = str(new_product.id).zfill(3)
             new_product.barcode = f"C750{id_str}"
 
-            # 2. Iterar sobre las presentaciones enviadas
+            # 2. Iterar sobre las presentaciones
             for p_form in form.presentaciones:
+                # Validamos que la presentación tenga nombre para evitar registros vacíos
+                if not p_form.presentation.data:
+                    continue
+
                 new_pricing = ProductoPresentacionPrecio(
                     id_producto=new_product.id,
                     presentation=p_form.presentation.data,
                     price_men=p_form.price_men.data,
                     price_may=p_form.price_may.data,
                     cant_may=p_form.cant_may.data,
-                    stock=p_form.stock.data,
+                    # FORZAMOS STOCK A 0: Según tu nueva lógica, 
+                    # el stock se carga vía Producción/Envasado, no aquí.
+                    stock=0, 
                     unit_size=p_form.unit_size.data,
                     unit_type=p_form.unit_type.data
                 )
@@ -67,23 +73,13 @@ def add_product():
                 db.session.add(new_pricing)
 
             db.session.commit()
-            flash("Producto y presentaciones registradas", "success")
+            flash("Producto y presentaciones registradas con stock inicial en cero.", "success")
             return redirect(url_for('products.products'))
 
         except Exception as e:
             db.session.rollback()
-            # Log de error detallado en consola
-            print(f"DEBUG: Error de Base de Datos: {str(e)}")
-            flash(f"Error de base de datos: {str(e)}", "danger")
-
-    # --- BLOQUE DE DEPURACIÓN DE VALIDACIÓN ---
-    if request.method == 'POST' and not form.validate_on_submit():
-        print(f"DEBUG: Errores de validación: {form.errors}")
-        for fieldName, errorMessages in form.errors.items():
-            for err in errorMessages:
-                # Si el error es en una presentación específica, aparecerá como diccionario
-                flash(f"Error en campo {fieldName}: {err}", "warning")
-    # ------------------------------------------
+            print(f"DEBUG Error: {str(e)}")
+            flash(f"Error al registrar: {str(e)}", "danger")
 
     return render_template('products/add.html', form=form)
 
@@ -103,7 +99,6 @@ def edit_product(id):
                 'price_men': pres.price_men,
                 'price_may': pres.price_may,
                 'cant_may': pres.cant_may,
-                'stock': pres.stock,
                 'unit_size': pres.unit_size,
                 'unit_type': pres.unit_type
             })
@@ -128,7 +123,6 @@ def edit_product(id):
                     p_db.price_men = data_f['price_men']
                     p_db.price_may = data_f['price_may']
                     p_db.cant_may = data_f['cant_may']
-                    p_db.stock = data_f['stock']
                     p_db.unit_size = data_f['unit_size']
                     p_db.unit_type = data_f['unit_type']
                     
@@ -147,7 +141,6 @@ def edit_product(id):
                         price_men=data_f['price_men'],
                         price_may=data_f['price_may'],
                         cant_may=data_f['cant_may'],
-                        stock=data_f['stock'],
                         unit_size=data_f['unit_size'],
                         unit_type=data_f['unit_type']
                     )

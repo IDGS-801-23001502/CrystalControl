@@ -147,13 +147,6 @@
       <p class="kpi-value">${{ "{:,.2f}".format(total_ingresos) }}</p>
       <p class="text-xs text-slate-400 mt-2 font-mono">{{ num_ventas }} venta(s)</p>
     </div>
-    <div class="kpi-card" style="border-top:3px solid #10b981;">
-      <p class="kpi-label">Utilidad Neta</p>
-      <p class="kpi-value text-emerald-600">${{ "{:,.2f}".format(total_utilidad) }}</p>
-      <p class="text-xs text-slate-400 mt-2 font-mono">
-        {% if total_ingresos > 0 %}{{ "{:.1f}".format(total_utilidad / total_ingresos * 100) }}% margen{% else %}Sin ingresos{% endif %}
-      </p>
-    </div>
     <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
       <p class="kpi-label">Ticket Promedio</p>
       <p class="kpi-value text-sky-600">${{ "{:,.2f}".format(ticket_promedio) }}</p>
@@ -186,34 +179,7 @@
     </div>
 
     <!-- Doughnut -->
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5" style="border-top:3px solid #f59e0b;">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-7 h-7 rounded-lg border flex items-center justify-center"
-             style="background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.25);">
-          <svg class="w-3.5 h-3.5" style="color:#d97706" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-          </svg>
-        </div>
-        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Composición del ingreso</h3>
-      </div>
-      <div class="flex justify-center" style="height:160px;">
-        <canvas id="chartDoughnut"></canvas>
-      </div>
-      <div class="flex justify-around text-center mt-4 pt-4 border-t border-slate-100">
-        <div>
-          <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Costo</p>
-          <p class="text-base font-bold text-slate-700">
-            ${{ "{:,.0f}".format([total_ingresos - total_utilidad, 0] | max) }}
-          </p>
-        </div>
-        <div class="w-px bg-slate-100"></div>
-        <div>
-          <p class="text-[10px] text-emerald-600 uppercase font-bold tracking-wider">Utilidad</p>
-          <p class="text-base font-bold text-emerald-600">${{ "{:,.0f}".format(total_utilidad) }}</p>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <!-- UTILIDAD POR PRODUCTO -->
@@ -357,15 +323,7 @@
       <p class="print-kpi-lbl">Total Ingresos</p>
       <p class="print-kpi-val">${{ "{:,.2f}".format(total_ingresos) }}</p>
     </div>
-    <div class="print-kpi-box">
-      <p class="print-kpi-lbl">Utilidad Neta</p>
-      <p class="print-kpi-val">${{ "{:,.2f}".format(total_utilidad) }}</p>
-      {% if total_ingresos > 0 %}
-      <p style="font-size:8pt; margin:2px 0 0;">
-        Margen: {{ "{:.1f}".format(total_utilidad / total_ingresos * 100) }}%
-      </p>
-      {% endif %}
-    </div>
+
     <div class="print-kpi-box">
       <p class="print-kpi-lbl">Ticket Promedio</p>
       <p class="print-kpi-val">${{ "{:,.2f}".format(ticket_promedio) }}</p>
