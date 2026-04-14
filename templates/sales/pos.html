@@ -1083,14 +1083,23 @@
       return;
     }
 
-    container.innerHTML = items.map(p => `
+    container.innerHTML = items.map(p => {
+    // 1. Definimos la ruta base usando Jinja, pero dejamos el final abierto
+    const baseUrl = "{{ url_for('static', filename='img/products/') }}";
+    
+    // 2. Usamos el nombre del archivo que viene en el objeto 'p'
+    // Si p.foto es null o vacío, usamos 'default.png'
+    const fotoUrl = p.foto ? baseUrl + p.foto : baseUrl + 'default.png';
+
+    return `
         <div class="product-card-manual" onclick='quickAddManual(${JSON.stringify(p)})'>
-            <img src="/static/products/${p.foto}" class="catalog-img" onerror="this.src='/static/img/default_product.jpg'">
+            <img src="${fotoUrl}" class="catalog-img">
             <div class="catalog-name">${p.nombre}</div>
             <div class="prod-pres" style="font-size:0.6rem">${p.presentacion}</div>
             <div class="catalog-price">$${parseFloat(p.precio).toFixed(2)}</div>
         </div>
-    `).join('');
+    `;
+}).join('');
   }
 
   // Buscador en tiempo real

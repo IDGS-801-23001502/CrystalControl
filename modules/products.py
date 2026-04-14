@@ -99,7 +99,6 @@ def edit_product(id):
                 'price_men': pres.price_men,
                 'price_may': pres.price_may,
                 'cant_may': pres.cant_may,
-                'stock': pres.stock,
                 'unit_size': pres.unit_size,
                 'unit_type': pres.unit_type
             })
@@ -124,7 +123,6 @@ def edit_product(id):
                     p_db.price_men = data_f['price_men']
                     p_db.price_may = data_f['price_may']
                     p_db.cant_may = data_f['cant_may']
-                    p_db.stock = data_f['stock']
                     p_db.unit_size = data_f['unit_size']
                     p_db.unit_type = data_f['unit_type']
                     
@@ -143,7 +141,6 @@ def edit_product(id):
                         price_men=data_f['price_men'],
                         price_may=data_f['price_may'],
                         cant_may=data_f['cant_may'],
-                        stock=data_f['stock'],
                         unit_size=data_f['unit_size'],
                         unit_type=data_f['unit_type']
                     )
