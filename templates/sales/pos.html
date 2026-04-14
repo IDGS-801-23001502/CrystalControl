@@ -1085,7 +1085,7 @@
 
     container.innerHTML = items.map(p => `
         <div class="product-card-manual" onclick='quickAddManual(${JSON.stringify(p)})'>
-            <img src="/static/products/${p.foto}" class="catalog-img" onerror="this.src='/static/img/default_product.png'">
+            <img src="/static/products/${p.foto}" class="catalog-img" onerror="this.src='/static/img/default_product.jpg'">
             <div class="catalog-name">${p.nombre}</div>
             <div class="prod-pres" style="font-size:0.6rem">${p.presentacion}</div>
             <div class="catalog-price">$${parseFloat(p.precio).toFixed(2)}</div>
