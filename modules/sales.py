@@ -7,7 +7,6 @@ from sqlalchemy import func, extract, case
 from flask_security import current_user
 from datetime import datetime, timedelta, date
 import uuid
-from flask_security import roles_accepted
 
 
 module = 'sales'
@@ -210,7 +209,7 @@ def view_pos():
                            corte=corte_activo)
 
 @sales_bp.route('/pos/procesar-venta', methods=['POST'])
-@roles_accepted('Vendedor')
+@roles_accepted('Administrador','Vendedor')
 def procesar_venta_pos():
     data = request.get_json()
     items = data.get('items', [])
@@ -227,51 +226,57 @@ def procesar_venta_pos():
         return jsonify({"success": False, "message": "No hay un corte de caja abierto"}), 400
 
     try:
-        # 2. Crear la Cabecera de la Venta
         nueva_venta = Sales(
-            folio=str(uuid.uuid4())[:8].upper(), # Generamos un folio rápido
+            folio=str(uuid.uuid4())[:8].upper(),
             id_user=current_user.id,
             id_break=corte.id,
-            status=3, # 3 = Pagada
+            status=5,
+            id_client_sold=0, 
             gross_total=Decimal(str(data.get('total', 0)))
         )
         db.session.add(nueva_venta)
-        db.session.flush() # Para obtener el id_venta
+        db.session.flush() 
 
-        # 3. Registrar Detalles y actualizar Stock
+        # 3. Detalles (Aquí suele tronar)
         for item in items:
-            # Buscamos la presentación para validar precio y utilidad
             pres = ProductoPresentacionPrecio.query.get(item['id_presentacion'])
             if not pres: continue
 
             detalle = SaleDetail(
                 id_sale=nueva_venta.id,
                 id_product=item['id_producto'],
+                id_presentation=item['id_presentacion'], # <--- USAR EL NOMBRE DEL MODELO
                 lot=item['cantidad'],
                 unit_price_moment=pres.price_men,
-                moment_utility=pres.price_men - (pres.price_men * Decimal('0.7')) # Ejemplo 30% utilidad
+                moment_utility=pres.price_men - (pres.price_men * Decimal('0.7'))
             )
-            # Actualizar stock global del producto
-            prod = Producto.query.get(item['id_producto'])
-            prod.stock -= item['cantidad']
             
+            # Restar stock a la presentación, no al producto
+            pres.stock -= item['cantidad']
             db.session.add(detalle)
 
-        # 4. Registrar el Pago
-        # Mapeo de nombres a IDs de tu modelo
+        # 4. Pago
         map_metodos = {'Efectivo': 1, 'Tarjeta': 5, 'Transferencia': 4}
         pago = SalePayment(
             id_sale=nueva_venta.id,
-            payment_method=map_metodos.get(metodo_pago_nombre, 1),
+            payment_method=map_metodos.get(data.get('metodo_pago'), 1),
             paid_amount=nueva_venta.gross_total
         )
         db.session.add(pago)
+        
         db.session.commit()
-        sale_out(nueva_venta.id,status=1)
+        
+        # Si sale_out da error, envuélvelo en un try o verifica su existencia
+        try:
+            sale_out(nueva_venta.id, status=1)
+        except NameError:
+            print("Advertencia: sale_out no está definida")
+
         return jsonify({"success": True, "folio": nueva_venta.folio})
 
     except Exception as e:
         db.session.rollback()
+        print(f"Error al procesar venta: {str(e)}") # MIRA TU TERMINAL
         return jsonify({"success": False, "message": str(e)}), 500
 
 @sales_bp.route('/api/pos/procesar_codigo/<string:barcode>')
@@ -327,12 +332,12 @@ def procesar_codigo_pos(barcode_raw):
 @roles_accepted('Administrador', 'Vendedor')
 def obtener_catalogo():
     try:
-        # Traemos productos activos con sus presentaciones y precios
+        # Usamos los nombres de los atributos definidos en la clase
         productos = db.session.query(
             Producto.id,
             Producto.name,
             Producto.category,
-            ProductoPresentacionPrecio.id_presentacion_precio,
+            ProductoPresentacionPrecio.id, # Cambiado de id_presentacion_precio a id
             ProductoPresentacionPrecio.presentation,
             ProductoPresentacionPrecio.price_men,
             ProductoPresentacionPrecio.picture
@@ -344,16 +349,17 @@ def obtener_catalogo():
         for p in productos:
             catalogo.append({
                 "id_producto": p.id,
-                "id_presentacion": p.id_presentacion_precio,
+                "id_presentacion": p[3], # Usamos índice si da problemas el nombre
                 "nombre": p.name,
                 "categoria": p.category,
                 "presentacion": p.presentation,
                 "precio": float(p.price_men),
-                "foto": p.picture or 'default_product.png' # Imagen por defecto si no hay foto
+                "foto": p.picture or 'default_product.png'
             })
 
         return jsonify({"success": True, "productos": catalogo})
     except Exception as e:
+        print(f"Error en catálogo: {str(e)}") 
         return jsonify({"success": False, "message": str(e)}), 500
     
 @sales_bp.route('/reports')
