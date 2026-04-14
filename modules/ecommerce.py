@@ -99,6 +99,8 @@ def add_to_cart():
         if 'cart' not in session:
             session['cart'] = {}
         
+        print(session['cart']) 
+
         cart = session['cart']
         cart_key = f"{producto.id}_{id_pres}"
         cantidad_en_carrito = cart[cart_key]['cantidad'] if cart_key in cart else 0
@@ -126,6 +128,9 @@ def add_to_cart():
         session.modified = True
         flash(f"✓ {producto.name} ({pres_precio.presentation}) agregado al carrito.", "success")
         
+    for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error en {field}: {error}", "danger")
     return redirect(url_for('e-commerce.catalog'))
 
 @ecommerce_bp.route("/carrito")
@@ -179,6 +184,7 @@ def update_cart():
         session.modified = True
         
     return redirect(url_for('e-commerce.carrito'))
+
 
 @ecommerce_bp.route("/checkout/direccion", methods=['GET', 'POST'])
 @only_client

@@ -5,6 +5,7 @@ from wtforms import validators, ValidationError
 from flask_wtf import FlaskForm
 from wtforms import FieldList, FormField, SelectField, DecimalField, TextAreaField, StringField
 from wtforms.validators import DataRequired, NumberRange
+from models import ProductoPresentacionPrecio
 
 class PurchaseItemForm(FlaskForm):
     # Usamos render_kw para soporte de HTML5 en el navegador
@@ -339,10 +340,10 @@ class AddToCartForm(FlaskForm):
     submit = SubmitField('Añadir al Carrito')
 # Validación personalizada
     def validate_quantity(self, field):
-        from models import Producto # Importa tu modelo aquí o arriba
-        producto = Producto.query.get(self.id_product.data)
-        if producto and field.data > producto.stock:
-            raise ValidationError(f'Solo quedan {producto.stock} unidades disponibles.')
+        presentacion = ProductoPresentacionPrecio.query.get(self.id_presentacion_precio.data)
+        if presentacion:
+            if field.data > (presentacion.stock or 0):
+                raise ValidationError(f'Solo quedan {presentacion.stock} unidades disponibles.')
 
 
 class CheckoutForm(FlaskForm):
