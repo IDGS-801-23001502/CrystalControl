@@ -77,7 +77,6 @@
           <th scope="col" class="px-6 py-3 font-semibold">Producto</th>
           <th scope="col" class="px-6 py-3 font-semibold">Categoría</th>
           <th scope="col" class="px-6 py-3 font-semibold">Stock por Presentación</th>
-          <th scope="col" class="px-6 py-3 font-semibold text-center">Lotes Listos</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Estatus</th>
           <th scope="col" class="px-6 py-3 font-semibold text-center">Acciones</th>
         </tr>
@@ -124,11 +123,6 @@
                 {% endfor %}
             </div>
           </td>
-
-          <td class="px-6 py-4 text-center text-slate-500 font-medium">
-             {{ prod.production_lots|selectattr("status", "equalto", 5)|list|length }}
-          </td>
-          
           <td class="px-6 py-4 text-center">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {{ 'bg-emerald-50 text-emerald-700 border-emerald-200' if prod.status == 'Activo' else 'bg-red-50 text-red-600 border-red-200' }} border">
               {{ prod.status }}
