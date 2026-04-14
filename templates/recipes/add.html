@@ -620,14 +620,6 @@ document.addEventListener('DOMContentLoaded', function () {
       isValid = false;
     }
 
-    // ── 2. Producto ──
-    const prodHidden = document.getElementById('product_id_hidden');
-    if (!prodHidden.value) {
-      showFieldError('product_id', 'Debes seleccionar un producto');
-      // marcar también el input de búsqueda visualmente
-      document.getElementById('prod-search-input').classList.add('is-invalid');
-      isValid = false;
-    }
 
     // ── 3. Cantidad producida ──
     const cantidad = document.getElementById('produced_quantity');

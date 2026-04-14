@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify, request, flash, redirect,
 from models import db, Producto, ProductoPresentacionPrecio, ProductionLot, CashBox, CashRegisters, User, Role, SalePayment, Sales, SaleDetail,Producto
 from decimal import Decimal
 from utils.decorators import roles_accepted
-from utils.functions import parse_gs1_128, sale_out
+from utils.functions import parse_gs1_128, sale_out, register_log_auto
 from sqlalchemy import func, extract, case
 from flask_security import current_user
 from datetime import datetime, timedelta, date

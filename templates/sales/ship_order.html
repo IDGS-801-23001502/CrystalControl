@@ -1,58 +1,127 @@
 {% extends "layout_employees.html" %}
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h4 class="mb-0 text-primary">📦 Preparación de Envío - Folio: {{ sale.folio }}</h4>
-            <span class="badge bg-success">ESTATUS: PAGADO</span>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 border-end">
-                    <h5 class="text-muted border-bottom pb-2">Destinatario</h5>
-                    <p class="mb-1"><strong>Cliente:</strong> {{ sale.client.nombre if sale.client else 'General' }}</p>
-                    <p class="mb-4"><strong>Teléfono:</strong> {{ sale.client.telefono if sale.client else 'N/A' }}</p>
-                    
-                    <h5 class="text-muted border-bottom pb-2">Dirección de Entrega</h5>
-                    <div class="p-3 bg-light rounded border border-dashed border-secondary">
-                        <p class="mb-0 italic">{{ sale.shipping_address_text or 'Entrega en sucursal' }}</p>
-                    </div>
-                </div>
 
-                <div class="col-md-8">
-                    <h5 class="text-muted border-bottom pb-2">Artículos a Empacar</h5>
-                    <table class="table table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>SKU/Código</th>
-                                <th>Producto</th>
-                                <th class="text-center">Cantidad a Enviar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in details %}
-                            <tr>
-                                <td class="font-monospace">{{ item.product_sku }}</td>
-                                <td>{{ item.product_name }}</td>
-                                <td class="text-center">
-                                    <span class="h5 fw-bold text-success">{{ item.SaleDetail.lot }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+<style>
+  /* Paleta Esmeralda - CrystalControl Style */
+  .emerald-icon-bg    { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); }
+  .emerald-icon       { color: #059669; }
+  .emerald-badge      { background-color: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.20); color: #047857; }
+  .emerald-border-top { border-top: 3px solid #10b981; }
+  .emerald-btn        { background-color: #059669; color: #fff; border: none; }
+  .emerald-btn:hover  { background-color: #047857; color: #fff; }
+  .cancel-btn         { background-color: transparent; color: #6b7280; border: 1px solid #d1d5db; }
+  .cancel-btn:hover   { background-color: #f3f4f6; color: #374151; }
+  
+  /* Utilidades de texto */
+  .text-heading { color: #111827; }
+  .text-body { color: #4b5563; }
+  .bg-neutral-soft { background-color: #f9fafb; }
+</style>
 
-                    <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ url_for('sales.sales') }}" class="btn btn-outline-secondary me-2">Regresar</a>
-                        <form action="{{ url_for('sales.process_shipment', id=sale.id) }}" method="POST">
-                            <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
-                                ✅ CONFIRMAR ENVÍO
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="max-w-5xl mx-auto mt-10 px-4">
+  
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+      <div class="emerald-icon-bg flex items-center justify-center w-12 h-12 rounded-xl border">
+        <svg class="emerald-icon w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.806H8.044a2.056 2.056 0 0 0-1.58.806c-1.293 1.84-2.185 3.935-2.613 6.176" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-semibold text-heading leading-tight">Preparación de Envío</h1>
+        <p class="text-sm text-body">Folio: <span class="font-mono font-bold">{{ sale.folio }}</span></p>
+      </div>
     </div>
+    <span class="emerald-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border uppercase tracking-wider">
+      Estatus: Pagado
+    </span>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6">
+    
+    <div class="md:col-span-1 space-y-6">
+      <div class="bg-white border border-default rounded-xl shadow-sm p-6 emerald-border-top">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Destinatario</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="text-[11px] text-gray-500 block">CLIENTE</label>
+            <p class="text-sm font-medium text-heading">{{ sale.client.nombre if sale.client else 'Venta General' }}</p>
+          </div>
+          <div>
+            <label class="text-[11px] text-gray-500 block">TELÉFONO</label>
+            <p class="text-sm font-medium text-heading">{{ sale.client.telefono if sale.client else 'Sin teléfono' }}</p>
+          </div>
+        </div>
+
+        <hr class="my-5 border-gray-100">
+
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Dirección de Entrega</h3>
+        <div class="p-4 bg-neutral-soft rounded-lg border border-dashed border-gray-300">
+          <p class="text-sm text-body italic leading-relaxed">
+            {{ sale.shipping_address_text or 'Entrega programada en sucursal' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:col-span-2">
+      <div class="bg-white border border-default rounded-xl shadow-sm overflow-hidden emerald-border-top">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+          <h3 class="text-sm font-bold text-heading">Artículos en este pedido</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                <th class="px-6 py-4">SKU / Código</th>
+                <th class="px-6 py-4">Producto</th>
+                <th class="px-6 py-4 text-center">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              {% for item in details %}
+              <tr class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-6 py-4 text-xs font-mono text-emerald-icon font-semibold">
+                  {{ item.product_sku }}
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-sm font-medium text-heading block">{{ item.product_name }}</span>
+                  <span class="text-[10px] text-gray-400">Presentación Estándar</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span class="inline-flex items-center justify-center bg-emerald-icon-bg text-emerald-icon font-bold px-3 py-1 rounded-lg border border-emerald-200">
+                    {{ item.SaleDetail.lot }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="px-6 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+          <a href="{{ url_for('sales.sales') }}" class="cancel-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            Volver a Ventas
+          </a>
+
+          <form action="{{ url_for('sales.process_shipment', id=sale.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <button type="submit" class="emerald-btn inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold rounded-lg shadow-sm active:scale-95 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              CONFIRMAR Y DESPACHAR
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
+
 {% endblock %}

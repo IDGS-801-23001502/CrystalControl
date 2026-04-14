@@ -125,6 +125,8 @@ endblock %} {% block content %}
                 stroke-width="2"
               ></path>
             </svg>
+            {% if p.status == 6 %}
+            
             <span
               >Generada:
               <b
@@ -132,6 +134,7 @@ endblock %} {% block content %}
                 'N/A' }}</b
               ></span
             >
+            {% endif %}
           </div>
         </div>
 
@@ -166,7 +169,8 @@ endblock %} {% block content %}
           >Ver Detalles</a
         >
 
-        <a
+        {% if p.status == 6 %}
+          <a
           href="{{url_for('purchases.receive_purchase_view', id=p.id)}}"
           class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-[11px] font-black rounded-lg hover:bg-emerald-700 transition-all shadow-sm uppercase active:scale-95"
         >
@@ -180,6 +184,7 @@ endblock %} {% block content %}
             <path d="M9 5l7 7-7 7" stroke-width="3"></path>
           </svg>
         </a>
+        {% endif %}
       </div>
     </div>
     {% endfor %}
