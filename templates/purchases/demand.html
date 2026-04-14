@@ -45,6 +45,7 @@
           <thead class="text-xs text-slate-400 uppercase bg-slate-50">
             <tr>
               <th class="px-4 py-3 font-semibold">Materia Prima</th>
+              <th class="px-4 py-3 font-semibold w-24">Unidad</th>
               <th class="px-4 py-3 font-semibold w-32">Cantidad</th>
               <th class="px-4 py-3 font-semibold w-10"></th>
             </tr>
@@ -53,10 +54,13 @@
             {% for item in form.items %}
             <tr class="material-row border-b border-slate-100">
               <td class="px-2 py-4">
-                {{ item.material_id(class="block w-full py-2 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 text-sm") }}
+                {{ item.material_id(class="material-select block w-full py-2 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 text-sm") }}
               </td>
               <td class="px-2 py-4">
-                {{ item.quantity(class="block w-full py-2 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 text-sm", placeholder="0.00") }}
+                <span class="unit-badge emerald-badge px-2.5 py-1 rounded-md text-xs font-medium italic">---</span>
+              </td>
+              <td class="px-2 py-4">
+                {{ item.quantity(class="block w-full py-2 bg-transparent border-0 border-b-2 border-slate-200 focus:outline-none focus:ring-0 focus:border-emerald-500 text-sm", placeholder="0.00", step="0.01", min="0.01") }}
               </td>
               <td class="px-2 py-4 text-center">
                 <button type="button" class="remove-row-btn">
@@ -90,34 +94,58 @@
 </div>
 
 {% endblock %}
+
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('materials-body');
     const addBtn = document.getElementById('add-material-btn');
+    
+    // El mapa de unidades que pasamos desde Flask
+    const unidadesMap = {{ unidades_map | tojson }};
 
-    // Función para añadir fila
+    // Función para actualizar el texto de la unidad
+    function updateUnitDisplay(selectElement) {
+        const row = selectElement.closest('tr');
+        const badge = row.querySelector('.unit-badge');
+        const materialId = selectElement.value;
+        badge.textContent = unidadesMap[materialId] || '---';
+    }
+
+    // Inicializar unidades en las filas existentes al cargar
+    document.querySelectorAll('.material-select').forEach(select => {
+        updateUnitDisplay(select);
+    });
+
+    // Añadir fila
     addBtn.addEventListener('click', function() {
       const rows = container.getElementsByClassName('material-row');
       const nextIndex = rows.length;
-      
-      // Clonamos la primera fila
       const newRow = rows[0].cloneNode(true);
       
-      // Limpiamos los inputs y actualizamos los IDs/Names para Flask-WTF FieldList
       const inputs = newRow.querySelectorAll('select, input');
       inputs.forEach(input => {
-        const name = input.name.replace('-0-', `-${nextIndex}-`);
-        const id = input.id.replace('-0-', `-${nextIndex}-`);
+        const name = input.name.replace(/-0-/, `-${nextIndex}-`);
+        const id = input.id.replace(/-0-/, `-${nextIndex}-`);
         input.name = name;
         input.id = id;
-        input.value = ''; // Limpiar valor
+        input.value = (input.tagName === 'SELECT') ? input.options[0].value : '';
       });
 
       container.appendChild(newRow);
+      
+      // Actualizar el badge de la nueva fila recién creada
+      const newSelect = newRow.querySelector('.material-select');
+      updateUnitDisplay(newSelect);
     });
 
-    // Eliminar fila (Delegación de eventos)
+    // Delegación de eventos para cambios en el select y botón eliminar
+    container.addEventListener('change', function(e) {
+        if (e.target.classList.contains('material-select')) {
+            updateUnitDisplay(e.target);
+        }
+    });
+
     container.addEventListener('click', function(e) {
       if (e.target.closest('.remove-row-btn')) {
         const rows = container.getElementsByClassName('material-row');
@@ -130,5 +158,4 @@
     });
   });
 </script>
-
 {% endblock %}
