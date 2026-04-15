@@ -1,4 +1,4 @@
-/*! tailwindcss v4.2.1 | MIT License | https://tailwindcss.com */
+/*! tailwindcss v4.2.2 | MIT License | https://tailwindcss.com */
 @layer properties;
 @layer theme, base, components, utilities;
 @layer theme {
@@ -993,9 +993,6 @@
   .me-1 {
     margin-inline-end: calc(var(--spacing) * 1);
   }
-  .me-2 {
-    margin-inline-end: calc(var(--spacing) * 2);
-  }
   .-mt-16 {
     margin-top: calc(var(--spacing) * -16);
   }
@@ -1327,9 +1324,6 @@
       border-color: var(--color-light) !important;
       color: var(--color-heading) !important;
     }
-  }
-  .mb-0 {
-    margin-bottom: calc(var(--spacing) * 0);
   }
   .mb-1 {
     margin-bottom: calc(var(--spacing) * 1);
@@ -2039,9 +2033,6 @@
   .items-start {
     align-items: flex-start;
   }
-  .justify-around {
-    justify-content: space-around;
-  }
   .justify-between {
     justify-content: space-between;
   }
@@ -2695,9 +2686,6 @@
   .bg-indigo-600 {
     background-color: var(--color-indigo-600);
   }
-  .bg-light {
-    background-color: var(--color-light);
-  }
   .bg-neutral-primary {
     background-color: var(--color-neutral-primary);
   }
@@ -2784,9 +2772,6 @@
   }
   .bg-slate-800 {
     background-color: var(--color-slate-800);
-  }
-  .bg-success {
-    background-color: var(--color-success);
   }
   .bg-transparent {
     background-color: transparent;
@@ -3509,9 +3494,6 @@
   .text-heading {
     color: var(--color-heading);
   }
-  .text-muted {
-    color: var(--color-muted);
-  }
   .text-orange-700 {
     color: var(--color-orange-700);
   }
@@ -3580,9 +3562,6 @@
   }
   .text-slate-900 {
     color: var(--color-slate-900);
-  }
-  .text-success {
-    color: var(--color-success);
   }
   .text-white {
     color: var(--color-white);
